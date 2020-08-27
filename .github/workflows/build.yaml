@@ -5,8 +5,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v1
+    - uses: actions/setup-node@v1
       with:
         node-version: '12.x'
     - run: npm ci
@@ -15,3 +14,6 @@ jobs:
       env:
         CI: true
     - run: npm run docs
+    - uses: actions/upload-artifact@v2
+      with:
+        path: dist
