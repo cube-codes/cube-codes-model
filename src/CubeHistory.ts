@@ -1,0 +1,303 @@
+import { Cube, CubeState, CubeMove } from "./Cube";
+import { Event, EventData, EventListener } from "./Event";
+
+/**
+ * Change of a {@link Cube}'s {@link CubeState} possibly through a {@link CubeMove} that is recorded by the {@link CubeHistory}
+ */
+export interface CubeHistoryChange {
+
+	/**
+	 * {@link CubeState} before the change
+	 */
+	readonly oldState: CubeState
+
+	/**
+	 * {@link CubeState} after the change
+	 */
+	readonly newState: CubeState
+
+	/**
+	 * Possible {@link CubeMove} while changing the {@link CubeState}
+	 */
+	readonly move?: CubeMove
+}
+
+/**
+ * Data describing the event of moving within the {@link CubeHistory}
+ */
+export interface CubeHistoryMoved extends EventData {
+
+	/**
+	 * Current position within the {@link CubeHistory} before the move
+	 */
+	readonly from: number
+
+	/**
+	 * Signed count of {@link CubeHistoryChange}s within the {@link CubeHistory} that are stepped over by the move (= to - from)
+	 */
+	readonly by: number
+
+	/**
+	 * Current position within the {@link CubeHistory} after the move
+	 */
+	readonly to: number
+}
+
+/**
+ * Data describing the event of recording a new {@link CubeHistoryChange} within the {@link CubeHistory}
+ */
+export interface CubeHistoryRecorded extends EventData {
+
+	/**
+	 * {@link CubeHistoryChange} that was recorded 
+	 */
+	readonly change: CubeHistoryChange
+
+	/**
+	 * Index of the newly recorded {@link CubeHistoryChange} within the {@link CubeHistory} and the new current position
+	 */
+	readonly position: number
+}
+
+/**
+ * Data describing the event of cleaning the old branch of {@link CubeHistoryChange}s within the {@link CubeHistory} before a new branch is used
+ * 
+ * This happens when a new {@link CubeHistoryChange} is recorded while the current position of the {@link CubeHistory} is not at its end. As the history cannot hold multiple branches the old one has to be removed.
+ */
+export interface CubeHistoryBranchCleaned extends EventData {
+
+	/**
+	 * Index of the {@link CubeHistoryChange}s within the {@link CubeHistory} that the cleaning starts from (this and all further changes were removed)
+	 */
+	readonly from: number
+}
+
+/**
+ * History holding all changes to one specific {@link Cube}
+ * 
+ * Each {@link CubeHistoryChange} describes a recorded change of the {@link CubeState}. They are kept in an ordered list and the first {@link CubeHistoryChange} (position = 0) describes the change away from the initial {@link CubeState} when the history was created, while position = -1 stands for this initial state.
+ * As it is possible to move around within the history, the current position denotes the index within the list of the {@link CubeHistoryChange} that lead to the current {@link CubeState}.
+ * While moving around changes this current position, the specified {@link Cube} is updated accordingly. E.g. moving backwards will play the inverse of possible {@link CubeMove}s of the {@link CubeHistoryChange}s on the {@link Cube}, too.
+ * 
+ * Beeing a simple list of {@link CubeHistoryChange}s the history cannot keep multiple branches. That's why before a new {@link CubeHistoryChange} is recorded while the current position is not at the end of the list, the old branch has to be removed.
+ * 
+ * As the history must differentiate changes of the {@link CubeState} that are based on moves within the history on the one side and real new changes to be recorded on the other side, the history sets a number-property 'history' in the 'source' parameter of the {@link Cube}'s commands (denoting the jump in the list) to tell apart these two cases when listening to changes of the {@link CubeState}.
+ */
+export class CubeHistory {
+
+	/**
+	 * Event of moving within the {@link CubeHistory}
+	 * @event
+	 */
+	readonly moved = new Event<CubeHistoryMoved>()
+	
+	/**
+	 * Event of recording a new {@link CubeHistoryChange} within the {@link CubeHistory}
+	 * @event
+	 */
+	readonly recorded = new Event<CubeHistoryRecorded>()
+	
+	/**
+	 * Event of cleaning the old branch of {@link CubeHistoryChange}s within the {@link CubeHistory} before a new branch is used
+	 * @event
+	 */
+	readonly branchCleaned = new Event<CubeHistoryBranchCleaned>()
+
+	/**
+	 * {@link Cube} that is listened on for {@link CubeHistoryChange}s of its {@link CubeState}
+	 */
+	private readonly cube: Cube
+
+	/**
+	 * Initial {@link CubeState} when the history started to listen on the {@link Cube}
+	 */
+	private readonly initialState: CubeState
+
+	/**
+	 * List of recorded {@link CubeHistoryChange}s describing changes of the {@link Cube}'s {@link CubeState}s
+	 */
+	private readonly changes: Array<CubeHistoryChange>
+
+	/**
+	 * Current position within the history and index of the {@link CubeHistoryChange} within the list that lead to the current {@link Cube}'s {@link CubeState}
+	 */
+	private currentPosition: number
+
+	/**
+	 * Constructs a new history listening to the changes of the {@link CubeState} of the specified {@link Cube}, starting with a empty list of {@link CubeHistoryChange}s and a current position = -1
+	 * @param cube - {@link Cube} this history is listening on
+	 * @returns Newly created history
+	 */
+	constructor(cube: Cube) {
+		
+		this.cube = cube
+		this.initialState = this.cube.getState();
+		this.changes = new Array();
+		this.currentPosition = -1;
+		
+		let me = this;
+		this.cube.stateChanged.on(function(e) {
+		
+			// If the change was triggered by the history, do not record but move only
+			if(typeof e.source['history'] === 'number') {
+				let oldChangeIndex = me.currentPosition;
+				me.currentPosition += e.source['history'];
+				me.moved.trigger({from: oldChangeIndex, by: e.source['history'], to: me.currentPosition});
+				return;
+			}
+			
+			let newChangeIndex = me.currentPosition + 1;
+			
+			// If we are currently not at the end, clean/remove the history ahead of us
+			if(me.changes.length !== newChangeIndex) {
+				me.changes.splice(newChangeIndex, me.changes.length - newChangeIndex);
+				me.branchCleaned.trigger({from: newChangeIndex});
+			}
+			
+			// Record change and move
+			let newChange: CubeHistoryChange = {oldState: e.oldState, newState: e.newState, move: e.move};
+			me.changes.push(newChange);
+			me.recorded.trigger({change: newChange, position: newChangeIndex});
+			let oldChangeIndex = me.currentPosition;
+			me.currentPosition = newChangeIndex;
+			me.moved.trigger({from: oldChangeIndex, by: 1, to: me.currentPosition});
+			
+		});
+		
+	}
+
+	/**
+	 * Whether the current position is at the beginning of the history (= -1)
+	 * @returns (explanation above)
+	 */
+	isAtStart() {
+		return this.currentPosition <= -1;
+	}
+
+	/**
+	 * Whether the current position is at the end of the history (= list length - 1)
+	 * @returns (explanation above)
+	 */
+	isAtEnd() {
+		return this.currentPosition >= this.changes.length - 1;
+	}
+
+	/**
+	 * Reads the current position within the history
+	 * @returns (explanation above)
+	 */
+	getCurrentPosition() {
+		return this.currentPosition;
+	}
+
+	/**
+	 * Reads the last {@link CubeHistoryChange} leading historically to the current {@link Cube}'s {@link CubeState}
+	 * @returns (explanation above)
+	 */
+	getLastChange() {
+		return this.changes[this.currentPosition];
+	}
+
+	/**
+	 * Reads the {@link CubeHistoryChange} that lead historically to the {@link Cube}'s {@link CubeState} of the specified position
+	 * @param position - Position of the {@link CubeState} whoose creating {@link CubeHistoryChange} is read
+	 * @returns (explanation above)
+	 */
+	getChangeByPosition(position: number) {
+
+		if(!Number.isInteger(position) || position < 0 || position > this.changes.length - 1) throw 'Invalid position';
+		
+		return this.changes[position];
+	
+	}
+
+	/**
+	 * Executes the inverse of the last {@link CubeHistoryChange} within the history with a {@link CubeMove}
+	 */
+	stepBack() {
+		
+		if(this.isAtStart()) throw 'Cannot go back further';
+		
+		let currentChange = this.changes[this.currentPosition];
+		if(currentChange.move) {
+			this.cube.move(currentChange.move.getInverse(), {
+				history: -1
+			});
+		} else {
+			this.cube.setState(currentChange.oldState, {
+				history: -1
+			});
+		}
+		
+	}
+
+	/**
+	 * Executes the next {@link CubeHistoryChange} within the history with a {@link CubeMove}
+	 */
+	stepAhead() {
+		
+		if(this.isAtEnd()) throw 'Cannot go ahead further';
+		
+		let nextChange = this.changes[this.currentPosition + 1];
+		if(nextChange.move) {
+			this.cube.move(nextChange.move, {
+				history: 1
+			});
+		} else {
+			this.cube.setState(nextChange.newState, {
+				history: 1
+			});
+		}
+		
+	}
+
+	/**
+	 * Jumps back the initial position (= -1) within the history and updates the {@link Cube}'s {@link CubeState} without a {@link CubeMove} (setState)
+	 */
+	jumpToStart() {
+	
+		if(this.currentPosition <= -1) return;
+	
+		this.cube.setState(this.initialState, {
+			history: -this.currentPosition - 1
+		});
+		
+	}
+
+	/**
+	 * Jumps ahead the final position (= list length - 1) within the history and updates the {@link Cube}'s {@link CubeState} without a {@link CubeMove} (setState)
+	 */
+	jumpToEnd() {
+	
+		if(this.currentPosition >= this.changes.length - 1) return;
+	
+		if(this.changes.length === 0) {
+			return;
+		}
+	
+		let lastChange = this.changes[this.changes.length - 1];
+		this.cube.setState(lastChange.newState, {
+			history: this.changes.length - 1 - this.currentPosition
+		});
+		
+	}
+
+	/**
+	 * Jumps to the specified position within the history and updates the {@link Cube}'s {@link CubeState} without a {@link CubeMove} (setState)
+	 */
+	jumpToIndex(newPosition: number) {
+		
+		if(!Number.isInteger(newPosition) || newPosition < 0 || newPosition > this.changes.length - 1) throw 'Invalid position';
+	
+		if(newPosition === -1) {
+			this.jumpToStart();
+			return;
+		}
+	
+		let newChange = this.changes[newPosition];
+		this.cube.setState(newChange.newState, {
+			history: newPosition - this.currentPosition
+		});
+		
+	}
+}
