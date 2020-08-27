@@ -2,7 +2,7 @@
   "compilerOptions": {
   "outDir": "dist",
     "lib": ["es2016"],
-    "sourceMap": true
+    "inlineSourceMap": true
   },
   "include": [
     "src/**/*.ts"
