@@ -7,7 +7,7 @@
   "scripts": {
     "build": "tsc",
     "test": "jest",
-    "doc": "typedoc --out dist/docs src"
+    "docs": "typedoc --out dist/docs src"
   },
   "files": [
     "dist"
