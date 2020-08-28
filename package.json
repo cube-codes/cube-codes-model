@@ -4,7 +4,7 @@
   "description": "Model describing a Rubik cube and others",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "browser": "dist/cube-codes-model.min.js",
+  "browser": "dist/browser/cube-codes-model.min.js",
   "scripts": {
     "build": "tsc",
     "test": "jest",

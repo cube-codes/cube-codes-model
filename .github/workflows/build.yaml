@@ -10,11 +10,20 @@ jobs:
         node-version: '12.x'
     - run: npm ci
     - run: npm run build
-    - run: npm test
-      env:
-        CI: true
+    - uses: actions/upload-artifact@v2
+      with:
+        name: Build Output
+        path: dist
     - run: npm run docs
+    - uses: actions/upload-artifact@v2
+      with:
+        name: API Docs
+        path: dist/docs
     - run: npm run rollup
     - uses: actions/upload-artifact@v2
       with:
-        path: dist
+        name: Browser Output
+        path: dist/browser
+    - run: npm test
+      env:
+        CI: true
