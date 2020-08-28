@@ -9,7 +9,7 @@ export default [{
 	name: 'CC',
     file: pkg.browser,
     format: 'iife',
-    sourcemap: true,
+    sourcemap: 'inline',
   },
   plugins: [
     resolve(),
