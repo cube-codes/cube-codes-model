@@ -1,4 +1,4 @@
-name: Build
+name: Create Build
 on: [push]
 jobs:
   build:
@@ -8,22 +8,17 @@ jobs:
     - uses: actions/setup-node@v1
       with:
         node-version: '12.x'
-    - run: npm ci
-    - run: npm run build
+        registry-url: 'https://npm.pkg.github.com'
+    - run: npm run full
     - uses: actions/upload-artifact@v2
       with:
-        name: Build Output
-        path: dist
-    - run: npm run docs
+        name: Package
+        path: dist/package
     - uses: actions/upload-artifact@v2
       with:
-        name: API Docs
+        name: Docs
         path: dist/docs
-    - run: npm run rollup
     - uses: actions/upload-artifact@v2
       with:
-        name: Browser Output
+        name: Browser
         path: dist/browser
-    - run: npm test
-      env:
-        CI: true

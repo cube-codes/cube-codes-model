@@ -2,17 +2,18 @@
   "name": "cube-codes-model",
   "version": "1.0.0",
   "description": "Model describing a Rubik cube and others",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "dist/package/index.js",
+  "types": "dist/package/index.d.ts",
   "browser": "dist/browser/cube-codes-model.min.js",
   "scripts": {
     "build": "tsc",
     "test": "jest",
-    "docs": "typedoc --out dist/docs src",
-    "rollup": "rollup -c"
+    "browser": "rollup -c",
+    "docs": "typedoc --out dist/docs src && cd dist/docs && bestzip ../docs.zip * && cd ../..",
+	"full": "npm ci && npm run build && npm run test && npm run browser && npm run docs"
   },
   "files": [
-    "dist"
+    "dist/package"
   ],
   "publishConfig": {
     "registry": "https://npm.pkg.github.com/@lukaslentner"
@@ -37,6 +38,7 @@
   "homepage": "https://github.com/lukaslentner/cube-codes-model#readme",
   "devDependencies": {
     "@types/jest": "^26.0.10",
+    "bestzip": "^2.1.6",
     "jest": "^26.4.2",
     "rollup": "^2.26.6",
     "rollup-plugin-babel-minify": "^10.0.0",
