@@ -149,6 +149,12 @@ test('Single Rotation Move Parse Test', () => {
 
 });
 
+test('Multi Move Parse Test', () => {
+
+	expect(cml3.parse('2Fw\'.Fw;U2-U|U')).toEqual([new CubeMove(s3, 0, 2, -1), new CubeMove(s3, 0, 2, 1), new CubeMove(s3, 2, 1, 2), new CubeMove(s3, 2, 1, 1), new CubeMove(s3, 2, 1, 1)]);
+
+});
+
 test('Single Face Move Stringify Test', () => {
 
 	expect(cml3.stringify([new CubeMove(s3, 0, 1, 1)])).toEqual('F');
@@ -246,5 +252,11 @@ test('Single Rotation Move (3 slice) Stringify Test', () => {
 	expect(cml3.stringify([new CubeMove(s3, 3, 3, -1)])).toEqual('z');
 	expect(cml3.stringify([new CubeMove(s3, 4, 3, -1)])).toEqual('x');
 	expect(cml3.stringify([new CubeMove(s3, 5, 3, -1)])).toEqual('y');
+
+});
+
+test('Multi Move Stringify Test', () => {
+
+	expect(cml3.stringify([new CubeMove(s3, 5, 2, 5), new CubeMove(s3, 3, 3, -5), new CubeMove(s3, 2, 1, 2)])).toEqual('Dw z U2');
 
 });

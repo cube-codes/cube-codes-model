@@ -6,34 +6,35 @@ export class CubeMoveLanguage {
 
 	parse(movesString: string) {
 		let me = this;
+		// Split by everything that is not command character
 		return movesString.split(/[^1-9FRUBLDw'xyz]+/).map(function (moveString) {
 
 			let slices: number;
-			let letterPosition: number;
-			let hasSufffix: boolean;
-			if (moveString.match(/^\d?[FRUBLD]w['2]?$/)) {
+			let faceLetterPosition: number;
+			let hasAngleSpecifier: boolean;
+			if (moveString.match(/^\d?[FRUBLD]w['2]?$/)) { // If outer block move
 				slices = parseInt(moveString.substr(0, 1));
-				letterPosition = 1;
-				hasSufffix = moveString.length === 4;
-				if (isNaN(slices)) {
+				faceLetterPosition = 1;
+				hasAngleSpecifier = moveString.length === 4;
+				if (isNaN(slices)) { // If there was no slice prefix
 					slices = 2;
-					letterPosition = 0;
-					hasSufffix = moveString.length === 3;
+					faceLetterPosition = 0;
+					hasAngleSpecifier = moveString.length === 3;
 				}
-			} else if (moveString.match(/^[FRUBLD]['2]?$/)) {
+			} else if (moveString.match(/^[FRUBLD]['2]?$/)) { // If face moves
 				slices = 1;
-				letterPosition = 0;
-				hasSufffix = moveString.length === 2;
-			} else if (moveString.match(/^[xyz]['2]?$/)) {
+				faceLetterPosition = 0;
+				hasAngleSpecifier = moveString.length === 2;
+			} else if (moveString.match(/^[xyz]['2]?$/)) { // If rotation
 				slices = me.spec.edgeLength;
-				letterPosition = 0;
-				hasSufffix = moveString.length === 2;
+				faceLetterPosition = 0;
+				hasAngleSpecifier = moveString.length === 2;
 			} else {
 				throw 'Invalid CML string';
 			}
 
-			let face = me.parseFace(moveString.substr(letterPosition, 1));
-			let angle = me.parseAngle(hasSufffix ? moveString.substr(-1, 1) : '');
+			let face = me.parseFace(moveString.substr(faceLetterPosition, 1));
+			let angle = me.parseAngle(hasAngleSpecifier ? moveString.substr(-1, 1) : '');
 
 			return new CubeMove(me.spec, face, slices, angle);
 		});
