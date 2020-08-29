@@ -157,8 +157,12 @@ export class Cube {
 		return this.r(CubeFace.UP, angle, source);
 	}
 
+	getMoveLanguage() {
+		return new CubeMoveLanguage(this.state.spec);
+	}
+
 	ml(movesString: string, source?: object) {
-		CubeMoveLanguage.parse(this.state.spec, movesString).forEach(function (move) {
+		this.getMoveLanguage().parse(movesString).forEach(function (move) {
 			this.move(move, source);
 		});
 		return this;

@@ -2,7 +2,10 @@ import { CubeMove, CubeSpecification } from "./Cube";
 
 export class CubeMoveLanguage {
 
-	static parse(spec: CubeSpecification, movesString: string) {
+	constructor(private readonly spec: CubeSpecification) {}
+
+	parse(movesString: string) {
+		let me = this;
 		return movesString.split(/[^1-9FRUBLDw'xyz]+/).map(function (moveString) {
 
 			let slices: number;
@@ -22,21 +25,21 @@ export class CubeMoveLanguage {
 				letterPosition = 0;
 				hasSufffix = moveString.length === 2;
 			} else if (moveString.match(/^[xyz]['2]?$/)) {
-				slices = spec.edgeLength;
+				slices = me.spec.edgeLength;
 				letterPosition = 0;
 				hasSufffix = moveString.length === 2;
 			} else {
 				throw 'Invalid CML string';
 			}
 
-			let face = CubeMoveLanguage.parseFace(moveString.substr(letterPosition, 1));
-			let angle = CubeMoveLanguage.parseAngle(hasSufffix ? moveString.substr(-1, 1) : '');
+			let face = me.parseFace(moveString.substr(letterPosition, 1));
+			let angle = me.parseAngle(hasSufffix ? moveString.substr(-1, 1) : '');
 
-			return new CubeMove(spec, face, slices, angle);
+			return new CubeMove(me.spec, face, slices, angle);
 		});
 	}
 
-	private static parseFace(faceString: string) {
+	private parseFace(faceString: string) {
 		switch (faceString) {
 			case 'F':
 			case 'z':
@@ -58,7 +61,7 @@ export class CubeMoveLanguage {
 		}
 	}
 
-	private static parseAngle(angleString: string) {
+	private parseAngle(angleString: string) {
 		switch (angleString) {
 			case '':
 				return 1;
@@ -71,38 +74,53 @@ export class CubeMoveLanguage {
 		}
 	}
 
-	static stringify(moves: CubeMove[], cubeLength: number = 3) {
-		if (!Number.isInteger(cubeLength) || cubeLength < 2 || cubeLength > 8) throw 'Invalid cube length';
-		return moves.map(function (move) {
-			if(move.angle % 4 === 0) {
-				return null;
-			}
+	stringify(moves: CubeMove[]) {
+		let me = this;
+		return moves.filter(function(move) {
+
+			// Remove moves with 0 degree
+			return move.angle % 4 !== 0;
+
+		}).map(function (move) {
+
 			let moveString = '';
-			let angleModifier: number;
-			if (move.slices < cubeLength) {
+			let angleOrientation = 1;
+			if (move.slices < me.spec.edgeLength) { // If no rotation
+
 				if (move.slices > 2) {
+					// Add slice prefix
 					moveString += move.slices;
 				}
-				moveString += CubeMoveLanguage.stringifyFace(move.face);
+
+				// Add face letter
+				moveString += me.stringifyFace(move.face);
+				
 				if (move.slices > 1) {
+					// Add slice suffix
 					moveString += 'w';
 				}
-				angleModifier = 1;
-			} else {
-				moveString += CubeMoveLanguage.stringifyRotationFace(move.face);
-				angleModifier = 1;
+
+			} else { // If rotation
+				
+				// Add rotation face letter
+				moveString += me.stringifyRotationFace(move.face);
+				
+				// Change angle orientation if face has different orientation as rotation letter (e.g. "z" aligns with "F", but counteraligns with "B")
 				if(move.face >= 3) {
-					angleModifier = -1;
+					angleOrientation = -1;
 				}
+
 			}
-			moveString += CubeMoveLanguage.stringifyAngle(move.angle * angleModifier);
+			
+			// Add angle specifier
+			moveString += me.stringifyAngle(move.angle * angleOrientation);
+			
 			return moveString;
-		}).filter(function(moveString) {
-			return moveString !== null;
+
 		}).join(' ');
 	}
 
-	private static stringifyFace(face: number) {
+	private stringifyFace(face: number) {
 		switch (face) {
 			case 0:
 				return 'F';
@@ -121,7 +139,7 @@ export class CubeMoveLanguage {
 		}
 	}
 
-	private static stringifyRotationFace(face: number) {
+	private stringifyRotationFace(face: number) {
 		switch (face) {
 			case 0:
 			case 3:
@@ -137,7 +155,7 @@ export class CubeMoveLanguage {
 		}
 	}
 
-	private static stringifyAngle(angle: number) {
+	private stringifyAngle(angle: number) {
 		switch (((angle % 4) + 4) % 4) {
 			case 0:
 				throw 'No move';
