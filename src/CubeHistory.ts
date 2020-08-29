@@ -162,7 +162,7 @@ export class CubeHistory {
 		this.cube.stateChanged.on(function(e) {
 		
 			// If the change was triggered by the history, do not record but move only
-			if(typeof e.source['history'] === 'number') {
+			if(e.source && typeof e.source['history'] === 'number') {
 				let oldChangeIndex = me.currentPosition;
 				me.currentPosition += e.source['history'];
 				me.moved.trigger({from: oldChangeIndex, by: e.source['history'], to: me.currentPosition});
