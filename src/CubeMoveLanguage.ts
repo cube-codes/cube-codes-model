@@ -1,9 +1,8 @@
-import { CubeMove } from "./Cube";
+import { CubeMove, CubeSpecification } from "./Cube";
 
 export class CubeMoveLanguage {
 
-	static parse(movesString: string, cubeLength: number = 3) {
-		if (!Number.isInteger(cubeLength) || cubeLength < 2 || cubeLength > 8) throw 'Invalid cube length';
+	static parse(spec: CubeSpecification, movesString: string) {
 		return movesString.split(/[^1-9FRUBLDw'xyz]+/).map(function (moveString) {
 
 			let slices: number;
@@ -23,7 +22,7 @@ export class CubeMoveLanguage {
 				letterPosition = 0;
 				hasSufffix = moveString.length === 2;
 			} else if (moveString.match(/^[xyz]['2]?$/)) {
-				slices = cubeLength;
+				slices = spec.edgeLength;
 				letterPosition = 0;
 				hasSufffix = moveString.length === 2;
 			} else {
@@ -33,7 +32,7 @@ export class CubeMoveLanguage {
 			let face = CubeMoveLanguage.parseFace(moveString.substr(letterPosition, 1));
 			let angle = CubeMoveLanguage.parseAngle(hasSufffix ? moveString.substr(-1, 1) : '');
 
-			return new CubeMove(face, slices, angle);
+			return new CubeMove(spec, face, slices, angle);
 		});
 	}
 
@@ -75,6 +74,9 @@ export class CubeMoveLanguage {
 	static stringify(moves: CubeMove[], cubeLength: number = 3) {
 		if (!Number.isInteger(cubeLength) || cubeLength < 2 || cubeLength > 8) throw 'Invalid cube length';
 		return moves.map(function (move) {
+			if(move.angle % 4 === 0) {
+				return null;
+			}
 			let moveString = '';
 			let angleModifier: number;
 			if (move.slices < cubeLength) {
@@ -95,6 +97,8 @@ export class CubeMoveLanguage {
 			}
 			moveString += CubeMoveLanguage.stringifyAngle(move.angle * angleModifier);
 			return moveString;
+		}).filter(function(moveString) {
+			return moveString !== null;
 		}).join(' ');
 	}
 
@@ -134,15 +138,15 @@ export class CubeMoveLanguage {
 	}
 
 	private static stringifyAngle(angle: number) {
-		switch (angle) {
+		switch (((angle % 4) + 4) % 4) {
+			case 0:
+				throw 'No move';
 			case 1:
 				return '';
 			case 2:
 				return '2';
-			case -1:
+			case 3:
 				return '\'';
-			case -2:
-				return '2';
 			default:
 				throw 'Invalid angle';
 		}

@@ -1,14 +1,19 @@
 import { EventData, Event } from "./Event"
 import { CubeMoveLanguage } from "./CubeMoveLanguage";
 
+export class CubeSpecification {
+	constructor(
+		readonly edgeLength: number) {
+		if (!Number.isInteger(edgeLength) || edgeLength < 2 || edgeLength > 8) throw 'Invalid edge length';
+	}
+}
+
 export class CubeState {
 	constructor(
-		readonly length: number) {
-		if (!Number.isInteger(length) || length < 2 || length > 8) throw 'Invalid length';
-	}
+		readonly spec: CubeSpecification,
+		readonly value: number) {}
 	move(move: CubeMove) {
-		throw new Error("TODO");
-		return new CubeState(1);
+		return new CubeState(this.spec, this.value + move.angle);
 	}
 }
 
@@ -24,21 +29,20 @@ export enum CubeFace {
 export enum CubeAngle {
 	C90 = 1,
 	C180 = 2,
-	CC90 = -1,
-	CC108 = -2
+	CC90 = -1
 }
 
 export class CubeMove {
-	constructor(
+	constructor(readonly spec: CubeSpecification,
 		readonly face: number | CubeFace,
 		readonly slices: number,
 		readonly angle: number | CubeAngle) {
 		if (!Number.isInteger(face) || face < 0 || face > 5) throw 'Invalid face';
-		if (!Number.isInteger(slices) || slices < 1) throw 'Invalid slices';
-		if (!Number.isInteger(angle) || Math.abs(angle) < 1 || Math.abs(angle) > 2) throw 'Invalid angel';
+		if (!Number.isInteger(slices) || slices < 1 || slices > this.spec.edgeLength) throw 'Invalid slices';
+		if (!Number.isInteger(angle)) throw 'Invalid angel';
 	}
 	getInverse(): CubeMove {
-		return new CubeMove(this.face, this.slices, -this.angle);
+		return new CubeMove(this.spec, this.face, this.slices, -this.angle);
 	}
 }
 
@@ -67,12 +71,14 @@ export class Cube {
 
 	setState(newState: CubeState, source?: object) {
 		let oldState = this.state;
+		if (newState.spec !== oldState.spec) throw 'Invalid new spec';
 		this.state = newState;
 		this.stateChanged.trigger({ oldState: oldState, newState: this.state, source: source });
 		return this;
 	}
 
 	move(move: CubeMove, source?: object) {
+		if(move.angle % 4 === 0) return this;
 		let oldState = this.state;
 		this.state = this.state.move(move);
 		this.stateChanged.trigger({ oldState: oldState, newState: this.state, move: move, source: source });
@@ -80,7 +86,7 @@ export class Cube {
 	}
 
 	mw(face: number | CubeFace, slices: number, angle: number | CubeAngle = CubeAngle.C90, source?: object) {
-		return this.move(new CubeMove(face, slices, angle), source);
+		return this.move(new CubeMove(this.state.spec, face, slices, angle), source);
 	}
 
 	mwFront(slices: number, angle: number | CubeAngle = CubeAngle.C90, source?: object) {
@@ -136,7 +142,7 @@ export class Cube {
 	}
 
 	r(face: number | CubeFace, angle: number | CubeAngle = CubeAngle.C90, source?: object) {
-		return this.mw(face, this.state.length, angle, source);
+		return this.mw(face, this.state.spec.edgeLength, angle, source);
 	}
 
 	rZ(angle: number | CubeAngle = CubeAngle.C90, source?: object) {
@@ -152,7 +158,7 @@ export class Cube {
 	}
 
 	ml(movesString: string, source?: object) {
-		CubeMoveLanguage.parse(movesString, this.state.length).forEach(function (move) {
+		CubeMoveLanguage.parse(this.state.spec, movesString).forEach(function (move) {
 			this.move(move, source);
 		});
 		return this;
