@@ -62,7 +62,7 @@ export interface CubeHistoryRecorded extends EventData {
 /**
  * Data describing the event of cleaning some past of {@link CubeHistoryChange}s within the {@link CubeHistory}
  * 
- * The state after this past is set to the initial state and marked as the current position if the former was removed.
+ * The initial state was set to the final state after this past and was marked as the current position if the former was removed.
  */
 export interface CubeHistoryPastCleaned extends EventData {
 
@@ -75,7 +75,7 @@ export interface CubeHistoryPastCleaned extends EventData {
 /**
  * Data describing the event of cleaning some future of {@link CubeHistoryChange}s within the {@link CubeHistory}
  * 
- * The state before this future is marked as the current position if the former was removed.
+ * The state before this future was marked as the current position if the former was removed.
  * 
  * This can happen when a new {@link CubeHistoryChange} is recorded while the current position of the {@link CubeHistory} is not at its end. As the history cannot hold multiple branches the old one has to be removed.
  */
@@ -134,7 +134,7 @@ export class CubeHistory {
 	/**
 	 * Initial {@link CubeState} when the history started to listen on the {@link Cube}
 	 */
-	private readonly initialState: CubeState
+	private initialState: CubeState
 
 	/**
 	 * List of recorded {@link CubeHistoryChange}s describing changes of the {@link Cube}'s {@link CubeState}s
@@ -236,12 +236,14 @@ export class CubeHistory {
 	/**
 	 * Removes the {@link CubeHistoryChange}s up until inclusivly a specified position
 	 * 
-	 * The state after this past is set to the initial state and marked as the current position if the former was removed.
+	 * The initial state is set to the final state after this past and is marked as the current position if the former was removed.
 	 * @param position - Position up until inclusivly the history is removed
 	 */
 	cleanPastTo(position: number) {
 
 		if(!Number.isInteger(position) || position < 0 || position > this.changes.length - 1) throw 'Invalid position';
+
+		this.initialState = this.getChangeByPosition(position).newState;
 
 		this.changes.splice(0, position + 1);
 
@@ -256,7 +258,7 @@ export class CubeHistory {
 	/**
 	 * Removes the {@link CubeHistoryChange}s from down inclusivly a specified position
 	 * 
-	 * The position before that is marked as the current position if the former was removed.
+	 * The position before that future is marked as the current position if the former was removed.
 	 * @param position - Position from down inclusivly the history is removed
 	 */
 	cleanFutureFrom(position: number) {
@@ -349,7 +351,7 @@ export class CubeHistory {
 	 */
 	jumpToIndex(newPosition: number) {
 		
-		if(!Number.isInteger(newPosition) || newPosition < 0 || newPosition > this.changes.length - 1) throw 'Invalid position';
+		if(!Number.isInteger(newPosition) || newPosition < -1 || newPosition > this.changes.length - 1) throw 'Invalid position';
 	
 		if(newPosition === -1) {
 			this.jumpToStart();
