@@ -10,7 +10,7 @@
     "test": "jest",
     "browser": "rollup -c",
     "docs": "typedoc --out dist/docs src && cd dist/docs && bestzip ../docs.zip * && cd ../..",
-	"full": "npm ci && npm run build && npm run test && npm run browser && npm run docs"
+    "full": "npm ci && npm run build && npm run test && npm run browser && npm run docs"
   },
   "files": [
     "dist/package"
@@ -47,5 +47,9 @@
     "ts-jest": "^26.3.0",
     "typedoc": "^0.18.0",
     "typescript": "^4.0.2"
+  },
+  "dependencies": {
+    "@types/deep-equal": "^1.0.1",
+    "deep-equal": "^2.0.3"
   }
 }
