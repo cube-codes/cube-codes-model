@@ -28,9 +28,11 @@ export class Permutation {
 		}
 		return result;
 	}
+	
 	getInverse(): Permutation {
 		return new Permutation(this.inverse);
 	}
+
 	static multiply(permutation1: Permutation, permutation2: Permutation): Permutation {
 		if (permutation1.length !== permutation2.length) throw 'Invalid permutation length';
 		let resultMapping = new Array<number>();
@@ -39,4 +41,10 @@ export class Permutation {
         }
 		return new Permutation(resultMapping);
 	}
+
+	public toString(): String {
+		return this.mapping.toLocaleString();
+	}
+
+
 }

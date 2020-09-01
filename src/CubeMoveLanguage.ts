@@ -1,4 +1,4 @@
-import { CubeMove, CubeSpecification } from "./Cube";
+import { CubeMove, CubeFaceIndex, CubeSpecification } from "./Cube";
 
 export class CubeMoveLanguage {
 
@@ -107,7 +107,7 @@ export class CubeMoveLanguage {
 				moveString += me.stringifyRotationFace(move.face);
 				
 				// Change angle orientation if face has different orientation as rotation letter (e.g. "z" aligns with "F", but counteraligns with "B")
-				if(move.face >= 3) {
+				if(move.face>=3) {
 					angleOrientation = -1;
 				}
 
@@ -140,7 +140,7 @@ export class CubeMoveLanguage {
 		}
 	}
 
-	private stringifyRotationFace(face: number) {
+	private stringifyRotationFace(face: CubeFaceIndex) {
 		switch (face) {
 			case 0:
 			case 3:
