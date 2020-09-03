@@ -43,7 +43,7 @@ export class Permutation {
 	}
 
 	public toString(): String {
-		return this.mapping.toLocaleString();
+		return this.mapping.toString();
 	}
 
 

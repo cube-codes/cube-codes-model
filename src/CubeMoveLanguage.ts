@@ -1,4 +1,4 @@
-import { CubeMove, CubeFaceIndex, CubeSpecification } from "./Cube";
+import { CubeMove, CubeSpecification } from "./Cube";
 
 export class CubeMoveLanguage {
 
@@ -140,7 +140,7 @@ export class CubeMoveLanguage {
 		}
 	}
 
-	private stringifyRotationFace(face: CubeFaceIndex) {
+	private stringifyRotationFace(face: number) {
 		switch (face) {
 			case 0:
 			case 3:
