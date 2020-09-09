@@ -80,12 +80,7 @@ export class CubeMoveLanguage {
 
 	stringify(moves: ReadonlyArray<CubeMove>): string {
 		const me = this;
-		return moves.filter(function(move) {
-
-			// Remove moves with 0 degree
-			return move.angle % 4 !== 0;
-
-		}).map(function (move) {
+		return moves.filter(move => move.angle % 4 !== 0).map(move => {
 
 			let moveString = '';
 			let angleOrientation = 1;

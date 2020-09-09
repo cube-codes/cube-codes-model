@@ -1,37 +1,14 @@
-import { matrix, Matrix, identity, multiply, inv, number, getMatrixDataTypeDependencies, log, string, ResultSetDependencies } from 'mathjs'
-import { EventData, Event } from "./Event"
+import { EventData, Event } from "../Utilities/Event"
 import { CubeMoveLanguage } from "./CubeMoveLanguage";
 import { CubeSpecification, CubeDimension } from './CubeGeometry';
 import { CubeStateLanguage } from './CubeStateLanguage';
 import { CubeMoveAngle, CubeMove } from './CubeMove';
 import { CubeState } from './CubeState';
-import { CornerCubical, EdgeCubical, FaceCubical, CornerCubicalLocation, EdgeCubicalLocation, FaceCubicalLocation, ReadonlyCornerCubical, ReadonlyEdgeCubical, ReadonlyFaceCubical } from './Cubical';
-import { Random } from './Random';
-import { CubeFace } from './CubePart';
-var deepEqual = require('deep-equal')
-
-/*
-getLocationOfCubicle(v: Cubicle): Location
-getCubicleAt(v: Location): Cubical
-getOrientationAt<T>(v: Location<T>): Orientation<T>
-getOrientationOn<T>(v: Cubicle<T>): Orientation<T>
-isSolved: boolean
-isLocationSolved(v: Cubicle): boolean
-isCubicleSolved(v: Location): boolean
-*/
-
-
-
-/*
-getAllEdges
-getAllCorners
-getAllFaces
-getEdgesByFace
-getCornersByFace
-getEdgesByDimension
-getCornersByDimension
-getCubicalByCoordinates
-*/
+import { Cubical, CubicalSolvedCondition, AbstractCubicalLocation } from './Cubical';
+import { Random } from '../Utilities/Random';
+import { CubeFace, CubePartTypes } from './CubePart';
+import { CubicalInspector } from "./CubicalInspector";
+import deepEqual from "deep-equal";
 
 export interface CubeStateChanged extends EventData {
 	readonly oldState: CubeState
@@ -41,35 +18,34 @@ export interface CubeStateChanged extends EventData {
 
 export class Cube {
 
+	static defaultSolvedCondition(spec: CubeSpecification): CubicalSolvedCondition {
+		return cubical => {
+			//TODO: Implement
+			return false;
+		};
+	}
+
 	/**
 	 * @event
 	 */
 	readonly stateChanged = new Event<CubeStateChanged>();
 
-	readonly #cornerCubicals: ReadonlyArray<CornerCubical>
+	readonly solvedCondition: CubicalSolvedCondition
 
-	readonly #edgeCubicals: ReadonlyArray<EdgeCubical>
-	
-	readonly #faceCubicals: ReadonlyArray<FaceCubical>
+	readonly #cubicals: ReadonlyArray<Cubical<any>>
 
 	constructor(
-		readonly spec: CubeSpecification, state?: CubeState) {
+		readonly spec: CubeSpecification, customSolvedCondition?: CubicalSolvedCondition, state?: CubeState) {
+
+		this.solvedCondition = customSolvedCondition ?? Cube.defaultSolvedCondition(this.spec);
 		
-		const cornerCubicals: Array<CornerCubical> = new Array<CornerCubical>();
-		const edgeCubicals: Array<EdgeCubical> = new Array<EdgeCubical>();
-		const faceCubicals: Array<FaceCubical> = new Array<FaceCubical>();
-		for (let cornerCubicalIndex = 0; cornerCubicalIndex < CornerCubicalLocation.getIndexLength(spec); cornerCubicalIndex++) {
-			cornerCubicals[cornerCubicalIndex] = CornerCubical.fromInitialLocation(new CornerCubicalLocation(spec, cornerCubicalIndex));
+		const cubicals = new Array<Cubical<any>>();
+		for(const type of CubePartTypes.ALL) {
+			for (let cubicalIndex = 0; cubicalIndex < AbstractCubicalLocation.countByType(spec, type); cubicalIndex++) {
+				cubicals.push(Cubical.fromInitialIndex(this, type, cubicalIndex));
+			}
 		}
-		for (let edgeCubicalIndex = 0; edgeCubicalIndex < EdgeCubicalLocation.getIndexLength(spec); edgeCubicalIndex++) {
-			edgeCubicals[edgeCubicalIndex] = EdgeCubical.fromInitialLocation(new EdgeCubicalLocation(spec, edgeCubicalIndex));
-		}
-		for (let faceCubicalIndex = 0; faceCubicalIndex < FaceCubicalLocation.getIndexLength(spec); faceCubicalIndex++) {
-			faceCubicals[faceCubicalIndex] = FaceCubical.fromInitialLocation(new FaceCubicalLocation(spec, faceCubicalIndex));
-		}
-		this.#cornerCubicals = cornerCubicals;
-		this.#edgeCubicals = edgeCubicals;
-		this.#faceCubicals = faceCubicals;
+		this.#cubicals = cubicals;
 
 		if(state) {
 			this.setState(state);
@@ -77,19 +53,11 @@ export class Cube {
 	}
 
 	clone(): Cube {
-		return new Cube(this.spec, this.getState());
+		return new Cube(this.spec, this.solvedCondition, this.getState());
 	}
 
-	get cornerCubicals(): ReadonlyArray<ReadonlyCornerCubical> {
-		return this.#cornerCubicals;
-	}
-
-	get edgeCubicals(): ReadonlyArray<ReadonlyEdgeCubical> {
-		return this.#edgeCubicals;
-	}
-
-	get faceCubicals(): ReadonlyArray<ReadonlyFaceCubical> {
-		return this.#faceCubicals;
+	get cubicals(): CubicalInspector<any> {
+		return new CubicalInspector(this.#cubicals);
 	}
 
 	getStateLanguage(): CubeStateLanguage {
@@ -98,6 +66,10 @@ export class Cube {
 
 	getMoveLanguage(): CubeMoveLanguage {
 		return new CubeMoveLanguage(this.spec);
+	}
+
+	isSolved(customCondition?: CubicalSolvedCondition): boolean {
+		return this.cubicals.areSolved(customCondition);
 	}
 
 	getState(): CubeState {
@@ -122,19 +94,9 @@ export class Cube {
 
 	private rotateSlice(dimension: CubeDimension, sliceCoordinate: number): void {
 
-		for (let cornerCubicalIndex = 0; cornerCubicalIndex < CornerCubicalLocation.getIndexLength(this.spec); cornerCubicalIndex++) {
-			if (sliceCoordinate === this.#cornerCubicals[cornerCubicalIndex].location.coordinates.getComponent(dimension)) {
-				this.#cornerCubicals[cornerCubicalIndex].rotate(dimension);
-			}
-		}
-		for (let edgeCubicalIndex = 0; edgeCubicalIndex < EdgeCubicalLocation.getIndexLength(this.spec); edgeCubicalIndex++) {
-			if (sliceCoordinate === this.#edgeCubicals[edgeCubicalIndex].location.coordinates.getComponent(dimension)) {
-				this.#edgeCubicals[edgeCubicalIndex].rotate(dimension);
-			}
-		}
-		for (let faceCubicalIndex = 0; faceCubicalIndex < FaceCubicalLocation.getIndexLength(this.spec); faceCubicalIndex++) {
-			if (sliceCoordinate === this.#faceCubicals[faceCubicalIndex].location.coordinates.getComponent(dimension)) {
-				this.#faceCubicals[faceCubicalIndex].rotate(dimension);
+		for (let cubical of this.#cubicals) {
+			if (sliceCoordinate === cubical.location.coordinates.getComponent(dimension)) {
+				cubical.rotate(dimension);
 			}
 		}
 
@@ -238,8 +200,9 @@ export class Cube {
 	}
 
 	ml(movesString: string, source?: object): Cube {
+		const me = this;
 		this.getMoveLanguage().parse(movesString).forEach(function (move) {
-			this.move(move, source);
+			me.move(move, source);
 		});
 		return this;
 	}

@@ -1,4 +1,16 @@
 /**
+ * Arbitrary information added by the triggerer
+ */
+export interface EventSource {
+
+	/**
+	 * Arbitrary information part
+	 */
+	readonly [key: string]: any;
+
+}
+
+/**
  * Data of a triggered {@link Event} and received by a {@link EventListener}
  */
 export interface EventData {
@@ -6,7 +18,7 @@ export interface EventData {
 	/**
 	 * Arbitrary information added by the triggerer
 	 */
-	readonly source?: object
+	readonly source?: EventSource
 
 }
 

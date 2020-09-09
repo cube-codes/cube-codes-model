@@ -1,8 +1,3 @@
-import { CubeSpecification, CubeCoordinates, CubeDimension } from "../src/CubeGeometry";
-import { CubeEdge, CubeFace } from "../src/CubePart";
-import { CubeMove } from "../src/CubeMove";
-
-
 test('Basic Test', () => {});
 
 /*

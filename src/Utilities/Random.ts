@@ -1,7 +1,7 @@
 /**
  * Provides utility functions for randome numbers
  */
-export namespace Random {
+export abstract class Random {
 
 	/**
 	 * Generates a random integer in the range of [from, toExclusivly)
@@ -9,7 +9,7 @@ export namespace Random {
 	 * @param toExclusivly - Right boundary
 	 * @returns Generated random integer
 	 */
-	export function randomIntegerFromToExclusivly(from: number, toExclusivly: number): number {
+	static randomIntegerFromToExclusivly(from: number, toExclusivly: number): number {
 		if(!Number.isInteger(from)) throw new Error(`Left boundary is no integer: ${from}`);
 		if(!Number.isInteger(toExclusivly)) throw new Error(`Right boundary is no integer: ${toExclusivly}`);
 		const difference = toExclusivly - from;
@@ -21,7 +21,7 @@ export namespace Random {
 	 * @param toExclusivly - Right boundary
 	 * @returns Generated random integer
 	 */
-	export function randomIntegerToExclusivly(toExclusivly: number): number {
+	static randomIntegerToExclusivly(toExclusivly: number): number {
 		return Random.randomIntegerFromToExclusivly(0, toExclusivly);
 	}
 
@@ -31,7 +31,7 @@ export namespace Random {
 	 * @param toInclusivly - Right boundary
 	 * @returns Generated random integer
 	 */
-	export function randomIntegerFromToInclusivly(from: number, toInclusivly: number): number {
+	static randomIntegerFromToInclusivly(from: number, toInclusivly: number): number {
 		return Random.randomIntegerFromToExclusivly(from, toInclusivly + 1);
 	}
 
@@ -40,7 +40,7 @@ export namespace Random {
 	 * @param toInclusivly - Right boundary
 	 * @returns Generated random integer
 	 */
-	export function randomIntegerToInclusivly(toInclusivly: number): number {
+	static randomIntegerToInclusivly(toInclusivly: number): number {
 		return Random.randomIntegerFromToExclusivly(0, toInclusivly + 1);
 	}
 

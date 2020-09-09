@@ -1,6 +1,6 @@
-//TODO: Hier soll eine andere Darstellung als Cubicals stehen ...
-
 import { CubeSpecification } from "./CubeGeometry";
+
+//TODO: Hier soll eine andere Darstellung als Cubicals stehen ...
 
 export class CubeState {
 

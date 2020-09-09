@@ -1,5 +1,5 @@
 import { CubeCoordinates, CubeDimension } from "./CubeGeometry";
-var deepEqual = require('deep-equal');
+import deepEqual from "deep-equal";
 
 export enum CubePartType {
 	CORNER = 0,
@@ -7,10 +7,16 @@ export enum CubePartType {
 	FACE = 2
 }
 
-//TODO: Wofür brauchen wir hier indices???
-export abstract class AbstractCubePart {
+export abstract class CubePartTypes {
+	
+	static readonly ALL: ReadonlyArray<CubePartType> = [CubePartType.CORNER, CubePartType.EDGE, CubePartType.FACE];
 
-	protected constructor(readonly type: CubePartType, readonly index: number, readonly name: string, readonly neigbouringFaces: ReadonlyArray<CubeFace>, readonly coordinates: CubeCoordinates) { }
+}
+
+//TODO: Wofür brauchen wir hier indices???
+export abstract class AbstractCubePart<T extends CubePartType> {
+
+	protected constructor(readonly type: T, readonly index: number, readonly name: string, readonly neigbouringFaces: ReadonlyArray<CubeFace>, readonly coordinates: CubeCoordinates) { }
 
 	toString(): string {
 		return this.name;
@@ -18,7 +24,7 @@ export abstract class AbstractCubePart {
 
 }
 
-export class CubeFace extends AbstractCubePart {
+export class CubeFace extends AbstractCubePart<CubePartType.FACE> {
 
 	static readonly FRONT: CubeFace = new CubeFace(0, 'F', [], CubeDimension.X, CubeDimension.Y, CubeCoordinates.ZERO)
 	static readonly RIGHT: CubeFace = new CubeFace(1, 'R', [], CubeDimension.Y, CubeDimension.Z, CubeCoordinates.ZERO)
@@ -82,7 +88,7 @@ export class CubeFace extends AbstractCubePart {
 
 }
 
-export class CubeCorner extends AbstractCubePart {
+export class CubeCorner extends AbstractCubePart<CubePartType.CORNER> {
 
 	static readonly DRF: CubeCorner = new CubeCorner(0, 'DRF', [CubeFace.DOWN, CubeFace.RIGHT, CubeFace.FRONT], CubeCoordinates.E_Y)
 	static readonly DBR: CubeCorner = new CubeCorner(1, 'DBR', [CubeFace.DOWN, CubeFace.BACK, CubeFace.RIGHT], CubeCoordinates.E_YZ)
@@ -137,7 +143,7 @@ export class CubeCorner extends AbstractCubePart {
 
 }
 
-export class CubeEdge extends AbstractCubePart {
+export class CubeEdge extends AbstractCubePart<CubePartType.EDGE> {
 
 	static readonly UF: CubeEdge = new CubeEdge(0, 'UF', [CubeFace.UP, CubeFace.FRONT], CubeDimension.X, CubeCoordinates.ZERO)
 	static readonly UR: CubeEdge = new CubeEdge(1, 'UR', [CubeFace.UP, CubeFace.RIGHT], CubeDimension.Z, CubeCoordinates.ZERO)

@@ -9,7 +9,7 @@
 		"build": "tsc",
 		"test": "jest",
 		"browser": "rollup -c",
-		"docs": "typedoc --out dist/docs src && cd dist/docs && bestzip ../docs.zip * && cd ../..",
+		"docs": "typedoc --out dist/docs --mode modules --listInvalidSymbolLinks --name \"Cube Codes Model\" --exclude \"src/index.ts\" src && cd dist/docs && bestzip ../docs.zip * && cd ../..",
 		"full": "npm ci && npm run build && npm run test && npm run browser && npm run docs"
 	},
 	"files": [
@@ -37,15 +37,16 @@
 	},
 	"homepage": "https://github.com/lukaslentner/cube-codes-model#readme",
 	"devDependencies": {
-		"@types/jest": "^26.0.10",
+		"@types/jest": "^26.0.13",
 		"bestzip": "^2.1.7",
 		"jest": "^26.4.2",
-		"rollup": "^2.26.6",
+		"rollup": "^2.26.11",
 		"rollup-plugin-babel-minify": "^10.0.0",
 		"rollup-plugin-commonjs": "^10.1.0",
 		"rollup-plugin-node-resolve": "^5.2.0",
 		"ts-jest": "^26.3.0",
-		"typedoc": "^0.18.0",
+		"typedoc": "^0.19.1",
+		"typedoc-plugin-external-module-name": "^4.0.3",
 		"typescript": "^4.0.2"
 	},
 	"dependencies": {

@@ -1,8 +1,9 @@
 import { CubeSpecification, CubeCoordinates, CubeDimension, Matrices } from "./CubeGeometry";
-import { Arrays } from "./Arrays";
+import { Arrays } from "../Utilities/Arrays";
 import { Matrix } from "mathjs";
 import { AbstractCubePart, CubePartType, CubeFace, CubeCorner, CubeEdge } from "./CubePart";
-var deepEqual = require('deep-equal')
+import { Cube } from "./Cube";
+import deepEqual from "deep-equal";
 
 export class CubicalOrientation {
 
@@ -16,35 +17,82 @@ export class CubicalOrientation {
 
 }
 
-export abstract class CubicalLocation<SELF extends CubicalLocation<SELF, any>, P extends AbstractCubePart> {
+type CUBE_PART<T extends CubePartType> = AbstractCubePart<T> & (T extends CubePartType.CORNER ? CubeCorner : (T extends CubePartType.EDGE ? CubeEdge : (T extends CubePartType.FACE ? CubeFace : AbstractCubePart<T>)));
+type CUBICAL_LOCATION<T extends CubePartType> = AbstractCubicalLocation<T> & (T extends CubePartType.CORNER ? CornerCubicalLocation : (T extends CubePartType.EDGE ? EdgeCubicalLocation : (T extends CubePartType.FACE ? FaceCubicalLocation : AbstractCubicalLocation<T>)));
 
-	constructor(readonly spec: CubeSpecification, readonly index: number, readonly cubePart: P, readonly coordinates: CubeCoordinates) {
-		if (!Number.isInteger(index) || index < 0 || index >= this.getIndexLength()) throw new Error(`Invalid index: ${index}`);
+//TODO: Simon fragen wozu index???
+//TODO: Hier gibt es 2 große Fälle:
+/**
+ * A) Alle Cubicals eines Cubes mit fromInitialIndex und fromIndex generieren lassen
+ * B) location.rotate() verursacht, dass man this.fromCoordinates braucht und damit alle anderen from...
+ */
+export abstract class AbstractCubicalLocation<T extends CubePartType> {
+
+	static countByType<T extends CubePartType>(spec: CubeSpecification, type: T): number {
+		switch(type) {
+			case CubePartType.CORNER:
+				return 8; 
+			case CubePartType.EDGE:
+				return 12 * (spec.edgeLength - 2);
+			case CubePartType.FACE:
+				return 6 * Math.pow(spec.edgeLength - 2, 2)
+			default:
+				throw new Error(`Invalid type: ${type}`);
+		}
 	}
 
-	abstract fromCoordinates(coordinates: CubeCoordinates): SELF;
+	constructor(readonly spec: CubeSpecification, readonly index: number, readonly cubePart: CUBE_PART<T>, readonly coordinates: CubeCoordinates) {
+		if (!Number.isInteger(index) || index < 0 || index >= this.countByType()) throw new Error(`Invalid index: ${index}`);
+	}
+
+	static fromIndex<T extends CubePartType>(spec: CubeSpecification, type: T, index: number): CUBICAL_LOCATION<T> {
+		switch(type) {
+			case CubePartType.CORNER:
+				return new CornerCubicalLocation(spec, index) as any; 
+			case CubePartType.EDGE:
+				return new EdgeCubicalLocation(spec, index) as any;
+			case CubePartType.FACE:
+				return new FaceCubicalLocation(spec, index) as any;
+			default:
+				throw new Error(`Invalid type: ${type}`);
+		}
+	}
+
+	abstract fromCoordinates(coordinates: CubeCoordinates): CUBICAL_LOCATION<T>;
 	
-	get type(): CubePartType {
+	get type(): T {
 		return this.cubePart.type;
 	}
 
 	get neighbouringFaces(): ReadonlyArray<CubeFace> {
 		return this.cubePart.neigbouringFaces;
 	}
+	
+	countByType(): number {
+		return AbstractCubicalLocation.countByType(this.spec, this.type);
+	}
 
-	abstract getIndexLength(): number;
+	isIn(cubePart: AbstractCubePart<any>): boolean {
+		//TODO: Implement: ATTENTION: THIS IS NOT SIMPLY TO ASK WHETHER this.cubePart == cubePart. Because a EdgeCubical is Part of 2 faces but cubePart is a CubeEdge ...
+		throw new Error('Implement');
+	}
+
+	isAlong(dimension: CubeDimension): boolean {
+		//TODO: Implement: Corners are along every dimension
+		throw new Error('Implement');
+	}
 
 	isANormalVector(normalVector: CubeCoordinates): boolean {
 		return this.neighbouringFaces.some(function (f) { return deepEqual(f.getNormalVector(), normalVector); });
 	}
 
-	rotate(dimension: CubeDimension): SELF {
+	rotate(dimension: CubeDimension): CUBICAL_LOCATION<T> {
 		return this.fromCoordinates(this.coordinates.rotate(this.spec, dimension));
 	}
 	
 }
 
-export class CornerCubicalLocation extends CubicalLocation<CornerCubicalLocation, CubeCorner> {
+export class CornerCubicalLocation extends AbstractCubicalLocation<CubePartType.CORNER> {
 
 	constructor(spec: CubeSpecification, index: number) {
 		const cubePart: CubeCorner = CubeCorner.fromIndex(index);
@@ -56,6 +104,7 @@ export class CornerCubicalLocation extends CubicalLocation<CornerCubicalLocation
 		return new CornerCubicalLocation(spec, CubeCorner.fromCoordinates(coordinates.divide(spec.edgeLength - 1)).index);
 	}
 
+	//TODO: Simon fragen wozu
 	static fromCorner(spec: CubeSpecification, cubeCorner: CubeCorner): CornerCubicalLocation {
 		return new CornerCubicalLocation(spec, cubeCorner.index);
 	}
@@ -64,22 +113,16 @@ export class CornerCubicalLocation extends CubicalLocation<CornerCubicalLocation
 		return CornerCubicalLocation.fromCoordinates(this.spec, coordinates);
 	}
 
-	static getIndexLength(spec: CubeSpecification): number {
-		return 8;
-	}
-	
-	getIndexLength(): number {
-		return CornerCubicalLocation.getIndexLength(this.spec);
-	}
-
+	//TODO: Simon fragen wozu
 	static overviewToString(spec: CubeSpecification): string {
-		return Arrays.integerRangeToExclusivly(this.getIndexLength(spec)).map(i => i + '=' + (new this(spec, i)).coordinates).join(' ');
+		return Arrays.integerRangeToExclusivly(this.countByType(spec, CubePartType.CORNER)).map(i => i + '=' + (new this(spec, i)).coordinates).join(' ');
 	}
 
 }
 
-export class EdgeCubicalLocation extends CubicalLocation<EdgeCubicalLocation, CubeEdge> {
+export class EdgeCubicalLocation extends AbstractCubicalLocation<CubePartType.EDGE> {
 
+	//TODO: Simon fragen wozu
 	readonly lastCoordinate: number;
 
 	constructor(spec: CubeSpecification, index: number) {
@@ -90,14 +133,15 @@ export class EdgeCubicalLocation extends CubicalLocation<EdgeCubicalLocation, Cu
 		this.lastCoordinate = lastCoordinate;
 	}
 
+	//TODO: Simon fragen wozu
 	static fromEdgeAndCoordinate(spec: CubeSpecification, cubeEdge: CubeEdge, lastCoordinate: number): EdgeCubicalLocation {
 		return new EdgeCubicalLocation(spec, cubeEdge.index * (spec.edgeLength - 2) + (lastCoordinate - 1));
 	}
 
 	static fromCoordinates(spec: CubeSpecification, coordinates: CubeCoordinates): EdgeCubicalLocation {
 		//console.log(coordinates.toString());
-		let dimension: CubeDimension = null;
-		let lastCoordinate: number = null;
+		let dimension: CubeDimension | null = null;
+		let lastCoordinate: number | null = null;
 		let edgeCoordinates = coordinates;
 		if (coordinates.x < 0 || coordinates.x > spec.edgeLength - 1) throw new Error('Coordinate outside of cube');
 		if (coordinates.x > 0 && coordinates.x < spec.edgeLength - 1) {
@@ -123,6 +167,7 @@ export class EdgeCubicalLocation extends CubicalLocation<EdgeCubicalLocation, Cu
 		const cubeEdge = CubeEdge.fromCoordinates(dimension, edgeCoordinates.divide(spec.edgeLength - 1));
 		//console.log(cubeEdge.index);
 		//console.log(lastCoordinate);
+		if (lastCoordinate === null) throw new Error('Should not happen'); //TODO: Mit Simon besprechen
 		return EdgeCubicalLocation.fromEdgeAndCoordinate(spec, cubeEdge, lastCoordinate);
 	}
 
@@ -130,24 +175,19 @@ export class EdgeCubicalLocation extends CubicalLocation<EdgeCubicalLocation, Cu
 		return EdgeCubicalLocation.fromCoordinates(this.spec, coordinates);
 	}
 
-	static getIndexLength(spec: CubeSpecification): number {
-		return 12 * (spec.edgeLength - 2);
-	}
-	
-	getIndexLength(): number {
-		return EdgeCubicalLocation.getIndexLength(this.spec);
-	}
-
+	//TODO: Simon fragen wozu
 	static overviewToString(spec: CubeSpecification): string {
-		return Arrays.integerRangeToExclusivly(this.getIndexLength(spec)).map(i => i + '=' + (new this(spec, i)).coordinates.toString()).join(' ');
+		return Arrays.integerRangeToExclusivly(this.countByType(spec, CubePartType.EDGE)).map(i => i + '=' + (new this(spec, i)).coordinates.toString()).join(' ');
 	}
 
 }
 
-export class FaceCubicalLocation extends CubicalLocation<FaceCubicalLocation, CubeFace> {
+export class FaceCubicalLocation extends AbstractCubicalLocation<CubePartType.FACE> {
 
+	//TODO: Simon fragen wozu
 	readonly coordinate1: number;
 	
+	//TODO: Simon fragen wozu
 	readonly coordinate2: number;
 
 	constructor(spec: CubeSpecification, index: number) {
@@ -161,15 +201,16 @@ export class FaceCubicalLocation extends CubicalLocation<FaceCubicalLocation, Cu
 		this.coordinate2 = coordinate2;
 	}
 
+	//TODO: Simon fragen wozu
 	static fromFaceAndCoordinate(spec: CubeSpecification, cubeFace: CubeFace, coordinate1: number, coordinate2: number): FaceCubicalLocation {
 		return new FaceCubicalLocation(spec, cubeFace.index * (spec.edgeLength - 2) * (spec.edgeLength - 2) + (coordinate1 - 1) * (spec.edgeLength - 2) + (coordinate2 - 1));
 	}
 
 	static fromCoordinates(spec: CubeSpecification, coordinates: CubeCoordinates): FaceCubicalLocation {
-		let dimension1: CubeDimension = null;
-		let dimension2: CubeDimension = null;
-		let coordinate1: number = null;
-		let coordinate2: number = null;
+		let dimension1: CubeDimension | null = null;
+		let dimension2: CubeDimension | null = null;
+		let coordinate1: number | null = null;
+		let coordinate2: number | null = null;
 		let faceCoordinates = coordinates;
 		if (coordinates.x < 0 || coordinates.x > spec.edgeLength - 1) throw new Error('Coordinate outside of cube');
 		if (coordinates.x > 0 && coordinates.x < spec.edgeLength - 1) {
@@ -203,7 +244,10 @@ export class FaceCubicalLocation extends CubicalLocation<FaceCubicalLocation, Cu
 			}
 		}
 		if (dimension2 === null) throw new Error('Coordinate of CornerCubicle or EdgeCubical');
+		if (dimension1 === null) throw new Error('Should not happen'); //TODO: Mit Simon besprechen
 		const cubeFace = CubeFace.fromCoordinates(dimension1, dimension2, faceCoordinates.divide(spec.edgeLength - 1));
+		if (coordinate1 === null) throw new Error('Should not happen'); //TODO: Mit Simon besprechen
+		if (coordinate2 === null) throw new Error('Should not happen'); //TODO: Mit Simon besprechen
 		return FaceCubicalLocation.fromFaceAndCoordinate(spec, cubeFace, coordinate1, coordinate2);
 	}
 
@@ -211,54 +255,58 @@ export class FaceCubicalLocation extends CubicalLocation<FaceCubicalLocation, Cu
 		return FaceCubicalLocation.fromCoordinates(this.spec, coordinates);
 	}
 
-	static getIndexLength(spec: CubeSpecification): number {
-		return 6 * (spec.edgeLength - 2) * (spec.edgeLength - 2)
-	}
-	
-	getIndexLength(): number {
-		return FaceCubicalLocation.getIndexLength(this.spec);
-	}
-
+	//TODO: Simon fragen wozu
 	static overviewToString(spec: CubeSpecification): string {
-		return Arrays.integerRangeToExclusivly(this.getIndexLength(spec)).map(i => i + '=' + (new this(spec, i)).coordinates.toString()).join(' ');
+		return Arrays.integerRangeToExclusivly(this.countByType(spec, CubePartType.FACE)).map(i => i + '=' + (new this(spec, i)).coordinates.toString()).join(' ');
 	}
 
 }
 
-export interface ReadonlyCubical<L extends CubicalLocation<L, any>> {
+export interface CubicalSolvedCondition {
 
-	readonly spec: CubeSpecification;
-
-	readonly initialLocation: L;
-
-	readonly location: L;
-
-	readonly orientation: CubicalOrientation;
+	(cubical: ReadonlyCubical<any>): boolean
 
 }
 
-export interface ReadonlyCornerCubical extends ReadonlyCubical<CornerCubicalLocation> {}
+export interface ReadonlyCubical<T extends CubePartType> {
 
-export interface ReadonlyEdgeCubical extends ReadonlyCubical<EdgeCubicalLocation> {}
+	readonly cube: Cube
 
-export interface ReadonlyFaceCubical extends ReadonlyCubical<FaceCubicalLocation> {}
+	readonly initialLocation: CUBICAL_LOCATION<T>
 
-export abstract class AbstractCubical<L extends CubicalLocation<L, any>> implements ReadonlyCubical<L> {
+	readonly location: CUBICAL_LOCATION<T>
 
-	#location: L;
+	readonly orientation: CubicalOrientation
+
+	readonly type: T
+
+	isSolved(customCondition?: CubicalSolvedCondition): boolean
+
+}
+
+export class Cubical<T extends CubePartType> implements ReadonlyCubical<T> {
+
+	#location: CUBICAL_LOCATION<T>;
 
 	#orientation: CubicalOrientation;
 
 	constructor(
-		readonly spec: CubeSpecification,
-		readonly initialLocation: L,
-		location: L,
+		readonly cube: Cube,
+		readonly initialLocation: CUBICAL_LOCATION<T>,
+		location: CUBICAL_LOCATION<T>,
 		orientation: CubicalOrientation) {
+		if (!deepEqual(this.cube.spec, initialLocation.spec)) throw new Error(`Invalid spec of intial location: ${initialLocation.spec}`);
+		if (!deepEqual(this.cube.spec, location.spec)) throw new Error(`Invalid spec of location: ${location.spec}`);
 		this.#location = location;
 		this.#orientation = orientation;
 	}
 
-	get location(): L {
+	static fromInitialIndex<T extends CubePartType>(cube: Cube, type: T, index: number): Cubical<T> {
+		const initialLocation: CUBICAL_LOCATION<T> = AbstractCubicalLocation.fromIndex(cube.spec, type, index);
+		return new Cubical(cube, initialLocation, initialLocation, CubicalOrientation.IDENTITY);
+	}
+
+	get location(): CUBICAL_LOCATION<T> {
 		return this.#location;
 	}
 
@@ -266,33 +314,18 @@ export abstract class AbstractCubical<L extends CubicalLocation<L, any>> impleme
 		return this.#orientation;
 	}
 
+	get type(): T {
+		return this.initialLocation.type;
+	}
+
+	isSolved(customCondition?: CubicalSolvedCondition): boolean {
+		const condition: CubicalSolvedCondition = customCondition ?? this.cube.solvedCondition;
+		return condition.call(null, this);
+	}
+
 	rotate(dimension: CubeDimension): void {
-		this.#location = this.#location.rotate(dimension),
+		this.#location = this.#location.rotate(dimension);
 		this.#orientation = this.#orientation.rotate(dimension);
-	}
-
-}
-
-export class CornerCubical extends AbstractCubical<CornerCubicalLocation> implements ReadonlyCornerCubical {
-
-	static fromInitialLocation(initialLocation: CornerCubicalLocation): CornerCubical {
-		return new CornerCubical(initialLocation.spec, initialLocation, initialLocation, CubicalOrientation.IDENTITY);
-	}
-
-}
-
-export class EdgeCubical extends AbstractCubical<EdgeCubicalLocation> implements ReadonlyEdgeCubical {
-
-	static fromInitialLocation(initialLocation: EdgeCubicalLocation): EdgeCubical {
-		return new EdgeCubical(initialLocation.spec, initialLocation, initialLocation, CubicalOrientation.IDENTITY);
-	}
-
-}
-
-export class FaceCubical extends AbstractCubical<FaceCubicalLocation> implements ReadonlyFaceCubical {
-
-	static fromInitialLocation(initialLocation: FaceCubicalLocation): FaceCubical {
-		return new FaceCubical(initialLocation.spec, initialLocation, initialLocation, CubicalOrientation.IDENTITY);
 	}
 
 }

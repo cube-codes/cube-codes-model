@@ -1,4 +1,4 @@
-import { EventData, Event, EventListener } from "../src/Event";
+import { EventData, Event } from "../src/Utilities/Event";
 
 interface ClickData extends EventData {
 	readonly text1: string
@@ -28,8 +28,8 @@ test('Click & DblClick once', () => {
 	let b = new Button();
 	let clickResult = null;
 	let dblclickResult = null;
-	b.clickEvent.on(function(e) { clickResult = e.text1; });
-	b.dblclickEvent.on(function(e) { dblclickResult = e.text2; });
+	b.clickEvent.on(e => clickResult = e.text1);
+	b.dblclickEvent.on(e => dblclickResult = e.text2);
 	b.click();
 	b.dblclick();
 

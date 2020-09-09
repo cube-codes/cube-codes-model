@@ -1,11 +1,10 @@
 import { Matrix, matrix, multiply, inv } from "mathjs";
-var deepEqual = require('deep-equal');
 
 export class CubeSpecification {
 
 	constructor(
 		readonly edgeLength: number,
-		readonly colored: boolean) {
+		readonly coloredFaces: boolean) {
 		if (!Number.isInteger(edgeLength) || edgeLength < 2 || edgeLength > 8) throw new Error(`Invalid edge length: ${edgeLength}`);
 	}
 
@@ -98,6 +97,10 @@ export class CubeCoordinates {
 		}
 	}
 
+	matches(dimension: CubeDimension, value: number): boolean {
+		return this.getComponent(dimension) === value;
+	}
+
 	withValue(dimension: CubeDimension, value: number): CubeCoordinates {
 		switch (dimension) {
 			case CubeDimension.X:
@@ -176,8 +179,7 @@ export class CubeCoordinates {
 
 }
 
-//TODO Refactor
-export class Matrices {
+export abstract class Matrices {
 
 	static readonly IDENTITY: Matrix = matrix([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
 
@@ -208,7 +210,7 @@ export class Matrices {
 		return Matrices.getTransitivityMatrix(from1, from2, from3, to1, to2, to3);
 	}
 
-	private static guessLinearlyIndependentAxisDirectionToAxisDirection(value: CubeCoordinates): CubeCoordinates {
+	static guessLinearlyIndependentAxisDirectionToAxisDirection(value: CubeCoordinates): CubeCoordinates {
 		if (value.x == 0) return CubeCoordinates.E_X;
 		if (value.y == 0) return CubeCoordinates.E_Y;
 		if (value.z == 0) return CubeCoordinates.E_Z;

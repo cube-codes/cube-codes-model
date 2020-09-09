@@ -1,7 +1,7 @@
-import { Cube } from "./Cube";
-import { Event, EventData } from "./Event";
-import { CubeMove } from "./CubeMove";
-import { CubeState } from "./CubeState";
+import { Cube } from "../Cube/Cube";
+import { Event, EventData } from "../Utilities/Event";
+import { CubeMove } from "../Cube/CubeMove";
+import { CubeState } from "../Cube/CubeState";
 
 /**
  * Change of a {@link Cube}'s {@link CubeState} possibly through a {@link CubeMove} that is recorded by the {@link CubeHistory}
@@ -164,10 +164,10 @@ export class CubeHistory {
 		this.cube.stateChanged.on(function (e) {
 
 			// If the change was triggered by the history, do not record but move only
-			if (e.source && typeof e.source['history'] === 'number') {
+			if (e.source && typeof e.source.history === 'number') {
 				const oldChangeIndex = me.currentPosition;
-				me.currentPosition += e.source['history'];
-				me.moved.trigger({ from: oldChangeIndex, by: e.source['history'], to: me.currentPosition });
+				me.currentPosition += e.source.history;
+				me.moved.trigger({ from: oldChangeIndex, by: e.source.history, to: me.currentPosition });
 				return;
 			}
 

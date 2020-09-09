@@ -1,7 +1,7 @@
 /**
  * Provides utility functions for arrays
  */
-export namespace Arrays {
+export abstract class Arrays {
 
 	/**
 	 * Generates an ordered array containing all integers (each once) in the range of [from, toExclusivly)
@@ -9,7 +9,7 @@ export namespace Arrays {
 	 * @param toExclusivly - Right boundary
 	 * @returns Generated array
 	 */
-	export function integerRangeFromToExclusivly(from: number, toExclusivly: number) {
+	static integerRangeFromToExclusivly(from: number, toExclusivly: number) {
 		if(!Number.isInteger(from)) throw new Error(`Left boundary is no integer: ${from}`);
 		if(!Number.isInteger(toExclusivly)) throw new Error(`Right boundary is no integer: ${toExclusivly}`);
 		const length = toExclusivly - from;
@@ -21,7 +21,7 @@ export namespace Arrays {
 	 * @param toExclusivly - Right boundary
 	 * @returns Generated array
 	 */
-	export function integerRangeToExclusivly(toExclusivly: number) {
+	static integerRangeToExclusivly(toExclusivly: number) {
 		return Arrays.integerRangeFromToExclusivly(0, toExclusivly);
 	}
 
@@ -31,7 +31,7 @@ export namespace Arrays {
 	 * @param toInclusivly - Right boundary
 	 * @returns Generated array
 	 */
-	export function integerRangeFromToInclusivly(from: number, toInclusivly: number) {
+	static integerRangeFromToInclusivly(from: number, toInclusivly: number) {
 		return Arrays.integerRangeFromToExclusivly(from, toInclusivly + 1);
 	}
 
@@ -40,7 +40,7 @@ export namespace Arrays {
 	 * @param toInclusivly - Right boundary
 	 * @returns Generated array
 	 */
-	export function integerRangeToInclusivly(toInclusivly: number) {
+	static integerRangeToInclusivly(toInclusivly: number) {
 		return Arrays.integerRangeFromToExclusivly(0, toInclusivly + 1);
 	}
 	

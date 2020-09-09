@@ -1,12 +1,15 @@
-export * from './Event';
-export * from './CubeHistory';
-export * from './Cube';
-export * from './CubeMoveLanguage';
-export * from './Arrays';
-export * from './CubeGeometry';
-export * from './CubeMove';
-export * from './CubePart';
-export * from './CubeState';
-export * from './CubeStateLanguage';
-export * from './Cubical';
-export * from './Random';
+export * from './Cube/Cube';
+export * from './Cube/CubeGeometry';
+export * from './Cube/CubeMove';
+export * from './Cube/CubeMoveLanguage';
+export * from './Cube/CubePart';
+export * from './Cube/CubeState';
+export * from './Cube/CubeStateLanguage';
+export * from './Cube/Cubical';
+export * from './Cube/CubicalInspector';
+
+export * from './Cube History/CubeHistory';
+
+export * from './Utilities/Arrays';
+export * from './Utilities/Event';
+export * from './Utilities/Random';

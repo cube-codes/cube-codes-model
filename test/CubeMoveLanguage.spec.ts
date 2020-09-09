@@ -1,7 +1,7 @@
-import { CubeMoveLanguage } from "../src/CubeMoveLanguage";
-import { CubeSpecification } from "../src/CubeGeometry";
-import { CubeMove } from "../src/CubeMove";
-import { CubeFace } from "../src/CubePart";
+import { CubeMoveLanguage } from "../src/Cube/CubeMoveLanguage";
+import { CubeSpecification } from "../src/Cube/CubeGeometry";
+import { CubeMove } from "../src/Cube/CubeMove";
+import { CubeFace } from "../src/Cube/CubePart";
 
 let s3 = new CubeSpecification(3, true);
 let s8 = new CubeSpecification(8, true);
