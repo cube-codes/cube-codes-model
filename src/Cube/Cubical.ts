@@ -17,8 +17,8 @@ export class CubicalOrientation {
 
 }
 
-type CUBE_PART<T extends CubePartType> = AbstractCubePart<T> & (T extends CubePartType.CORNER ? CubeCorner : (T extends CubePartType.EDGE ? CubeEdge : (T extends CubePartType.FACE ? CubeFace : AbstractCubePart<T>)));
-type CUBICAL_LOCATION<T extends CubePartType> = AbstractCubicalLocation<T> & (T extends CubePartType.CORNER ? CornerCubicalLocation : (T extends CubePartType.EDGE ? EdgeCubicalLocation : (T extends CubePartType.FACE ? FaceCubicalLocation : AbstractCubicalLocation<T>)));
+export type CUBE_PART<T extends CubePartType> = AbstractCubePart<T> & (T extends CubePartType.CORNER ? CubeCorner : (T extends CubePartType.EDGE ? CubeEdge : (T extends CubePartType.FACE ? CubeFace : AbstractCubePart<T>)));
+export type CUBICAL_LOCATION<T extends CubePartType> = AbstractCubicalLocation<T> & (T extends CubePartType.CORNER ? CornerCubicalLocation : (T extends CubePartType.EDGE ? EdgeCubicalLocation : (T extends CubePartType.FACE ? FaceCubicalLocation : AbstractCubicalLocation<T>)));
 
 //TODO: Simon fragen wozu index???
 //TODO: Hier gibt es 2 große Fälle:

@@ -1,9 +1,9 @@
 {
 	"compilerOptions": {
-		"target": "ES2016",
+		"target": "ES2015",
 		"outDir": "dist/package",
 		"moduleResolution": "node",
-		"lib": ["es2016"],
+		"lib": ["es2015"],
 		"inlineSourceMap": true,
 		"strict": true,
 		"forceConsistentCasingInFileNames": true,
