@@ -131,7 +131,7 @@ export class CubicalInspector<T extends CubePartType> {
 		const me = this;
 		return this.cubicals.filter((cubical) => {
 			for (let filter of me.#predicates) {
-				if (!filter.call(null, cubical)) return false;
+				if (!filter.call(undefined, cubical)) return false;
 			}
 			return true;
 		}).map((cubical) => cubical as ReadonlyCubical<T>);
@@ -142,7 +142,7 @@ export class CubicalInspector<T extends CubePartType> {
 		const me = this;
 		const result = this.cubicals.find((cubical) => {
 			for (let filter of me.#predicates) {
-				if (!filter.call(null, cubical)) return false;
+				if (!filter.call(undefined, cubical)) return false;
 			}
 			return true;
 		});

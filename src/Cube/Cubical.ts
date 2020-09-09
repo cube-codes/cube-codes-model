@@ -142,8 +142,8 @@ export class EdgeCubicalLocation extends AbstractCubicalLocation<CubePartType.ED
 
 	static fromCoordinates(spec: CubeSpecification, coordinates: CubeCoordinates): EdgeCubicalLocation {
 		//console.log(coordinates.toString());
-		let dimension: CubeDimension | null = null;
-		let lastCoordinate: number | null = null;
+		let dimension: CubeDimension | undefined = undefined;
+		let lastCoordinate: number | undefined = undefined;
 		let edgeCoordinates = coordinates;
 		if (coordinates.x < 0 || coordinates.x > spec.edgeLength - 1) throw new Error('Coordinate outside of cube');
 		if (coordinates.x > 0 && coordinates.x < spec.edgeLength - 1) {
@@ -153,23 +153,23 @@ export class EdgeCubicalLocation extends AbstractCubicalLocation<CubePartType.ED
 		}
 		if (coordinates.y < 0 || coordinates.y > spec.edgeLength - 1) throw new Error('Coordinate outside of cube');
 		if (coordinates.y > 0 && coordinates.y < spec.edgeLength - 1) {
-			if (dimension !== null) throw new Error('Coordinate of MidCubicle or inside cube');
+			if (dimension !== undefined) throw new Error('Coordinate of MidCubicle or inside cube');
 			dimension = CubeDimension.Y;
 			lastCoordinate = coordinates.y;
 			edgeCoordinates = edgeCoordinates.withValue(CubeDimension.Y, 0);
 		}
 		if (coordinates.z < 0 || coordinates.z > spec.edgeLength - 1) throw new Error('Coordinate outside of cube');
 		if (coordinates.z > 0 && coordinates.z < spec.edgeLength - 1) {
-			if (dimension !== null) throw new Error('Coordinate of MidCubicle or inside cube');
+			if (dimension !== undefined) throw new Error('Coordinate of MidCubicle or inside cube');
 			dimension = CubeDimension.Z;
 			lastCoordinate = coordinates.z;
 			edgeCoordinates = edgeCoordinates.withValue(CubeDimension.Z, 0);
 		}
-		if (dimension === null) throw new Error('Coordinate of CornerCubicle');
+		if (dimension === undefined) throw new Error('Coordinate of CornerCubicle');
 		const cubeEdge = CubeEdge.fromCoordinates(dimension, edgeCoordinates.divide(spec.edgeLength - 1));
 		//console.log(cubeEdge.index);
 		//console.log(lastCoordinate);
-		if (lastCoordinate === null) throw new Error('Should not happen'); //TODO: Mit Simon besprechen
+		if (lastCoordinate === undefined) throw new Error('Should not happen'); //TODO: Mit Simon besprechen
 		return EdgeCubicalLocation.fromEdgeAndCoordinate(spec, cubeEdge, lastCoordinate);
 	}
 
@@ -213,10 +213,10 @@ export class FaceCubicalLocation extends AbstractCubicalLocation<CubePartType.FA
 	}
 
 	static fromCoordinates(spec: CubeSpecification, coordinates: CubeCoordinates): FaceCubicalLocation {
-		let dimension1: CubeDimension | null = null;
-		let dimension2: CubeDimension | null = null;
-		let coordinate1: number | null = null;
-		let coordinate2: number | null = null;
+		let dimension1: CubeDimension | undefined = undefined;
+		let dimension2: CubeDimension | undefined = undefined;
+		let coordinate1: number | undefined = undefined;
+		let coordinate2: number | undefined = undefined;
 		let faceCoordinates = coordinates;
 		if (coordinates.x < 0 || coordinates.x > spec.edgeLength - 1) throw new Error('Coordinate outside of cube');
 		if (coordinates.x > 0 && coordinates.x < spec.edgeLength - 1) {
@@ -226,7 +226,7 @@ export class FaceCubicalLocation extends AbstractCubicalLocation<CubePartType.FA
 		}
 		if (coordinates.y < 0 || coordinates.y > spec.edgeLength - 1) throw new Error('Coordinate outside of cube');
 		if (coordinates.y > 0 && coordinates.y < spec.edgeLength - 1) {
-			if (dimension1 !== null) {
+			if (dimension1 !== undefined) {
 				dimension2 = CubeDimension.Y;
 				coordinate2 = coordinates.y;
 				faceCoordinates = faceCoordinates.withValue(CubeDimension.Y, 0);
@@ -238,8 +238,8 @@ export class FaceCubicalLocation extends AbstractCubicalLocation<CubePartType.FA
 		}
 		if (coordinates.z < 0 || coordinates.z > spec.edgeLength - 1) throw new Error('Coordinate outside of cube');
 		if (coordinates.z > 0 && coordinates.z < spec.edgeLength - 1) {
-			if (dimension2 !== null) throw 'Coordinate  inside cube';
-			if (dimension1 !== null) {
+			if (dimension2 !== undefined) throw 'Coordinate  inside cube';
+			if (dimension1 !== undefined) {
 				dimension2 = CubeDimension.Z;
 				coordinate2 = coordinates.z;
 				faceCoordinates = faceCoordinates.withValue(CubeDimension.Z, 0);
@@ -249,11 +249,11 @@ export class FaceCubicalLocation extends AbstractCubicalLocation<CubePartType.FA
 				faceCoordinates = faceCoordinates.withValue(CubeDimension.Z, 0);
 			}
 		}
-		if (dimension2 === null) throw new Error('Coordinate of CornerCubicle or EdgeCubical');
-		if (dimension1 === null) throw new Error('Should not happen'); //TODO: Mit Simon besprechen
+		if (dimension2 === undefined) throw new Error('Coordinate of CornerCubicle or EdgeCubical');
+		if (dimension1 === undefined) throw new Error('Should not happen'); //TODO: Mit Simon besprechen
 		const cubeFace = CubeFace.fromCoordinates(dimension1, dimension2, faceCoordinates.divide(spec.edgeLength - 1));
-		if (coordinate1 === null) throw new Error('Should not happen'); //TODO: Mit Simon besprechen
-		if (coordinate2 === null) throw new Error('Should not happen'); //TODO: Mit Simon besprechen
+		if (coordinate1 === undefined) throw new Error('Should not happen'); //TODO: Mit Simon besprechen
+		if (coordinate2 === undefined) throw new Error('Should not happen'); //TODO: Mit Simon besprechen
 		return FaceCubicalLocation.fromFaceAndCoordinate(spec, cubeFace, coordinate1, coordinate2);
 	}
 
@@ -330,7 +330,7 @@ export class Cubical<T extends CubePartType> implements ReadonlyCubical<T> {
 
 	isSolved(customCondition?: CubicalSolvedCondition): boolean {
 		const condition: CubicalSolvedCondition = customCondition ?? this.cube.solvedCondition;
-		return condition.call(null, this);
+		return condition.call(undefined, this);
 	}
 
 	rotate(dimension: CubeDimension): void {

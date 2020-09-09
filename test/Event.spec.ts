@@ -26,8 +26,8 @@ class Button {
 test('Click & DblClick once', () => {
 
 	let b = new Button();
-	let clickResult = null;
-	let dblclickResult = null;
+	let clickResult = undefined;
+	let dblclickResult = undefined;
 	b.clickEvent.on(e => clickResult = e.text1);
 	b.dblclickEvent.on(e => dblclickResult = e.text2);
 	b.click();
