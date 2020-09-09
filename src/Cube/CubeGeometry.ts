@@ -1,4 +1,4 @@
-import { Matrix, matrix, multiply, inv } from "mathjs";
+import { Matrix, matrix, multiply } from "mathjs";
 import { Matrices } from "../Utilities/Matrices";
 
 export class CubeSpecification {

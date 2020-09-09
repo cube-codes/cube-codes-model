@@ -1,9 +1,10 @@
-import { CubeSpecification, CubeCoordinates, CubeDimension, Matrices } from "./CubeGeometry";
+import { CubeSpecification, CubeCoordinates, CubeDimension } from "./CubeGeometry";
 import { Arrays } from "../Utilities/Arrays";
 import { Matrix } from "mathjs";
 import { AbstractCubePart, CubePartType, CubeFace, CubeCorner, CubeEdge } from "./CubePart";
 import { Cube } from "./Cube";
 import deepEqual from "deep-equal";
+import { Matrices } from "../Utilities/Matrices";
 
 export class CubicalOrientation {
 
