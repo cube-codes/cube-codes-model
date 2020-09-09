@@ -1,1 +1,1 @@
-# cube-codes-model
+# Cube Codes Model
