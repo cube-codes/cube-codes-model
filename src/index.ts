@@ -12,4 +12,5 @@ export * from './Cube History/CubeHistory';
 
 export * from './Utilities/Arrays';
 export * from './Utilities/Event';
+export * from './Utilities/Matrices';
 export * from './Utilities/Random';
