@@ -78,10 +78,7 @@ export abstract class AbstractCubicalLocation<T extends CubePartType> {
 		throw new Error('Implement');
 	}
 
-	isAlong(dimension: CubeDimension): boolean {
-		//TODO: Implement: Corners are along every dimension
-		throw new Error('Implement');
-	}
+	abstract isAlong(dimension: CubeDimension): boolean;
 
 	isANormalVector(normalVector: CubeCoordinates): boolean {
 		return this.neighbouringFaces.some(function (f) { return deepEqual(f.getNormalVector(), normalVector); });
@@ -112,6 +109,10 @@ export class CornerCubicalLocation extends AbstractCubicalLocation<CubePartType.
 
 	fromCoordinates(coordinates: CubeCoordinates): CornerCubicalLocation {
 		return CornerCubicalLocation.fromCoordinates(this.spec, coordinates);
+	}
+
+	isAlong(dimension: CubeDimension): boolean {
+		return true;
 	}
 
 	//TODO: Simon fragen wozu
@@ -174,6 +175,10 @@ export class EdgeCubicalLocation extends AbstractCubicalLocation<CubePartType.ED
 
 	fromCoordinates(coordinates: CubeCoordinates): EdgeCubicalLocation {
 		return EdgeCubicalLocation.fromCoordinates(this.spec, coordinates);
+	}
+
+	isAlong(dimension: CubeDimension): boolean {
+		return dimension === this.cubePart.dimension;
 	}
 
 	//TODO: Simon fragen wozu
@@ -254,6 +259,10 @@ export class FaceCubicalLocation extends AbstractCubicalLocation<CubePartType.FA
 
 	fromCoordinates(coordinates: CubeCoordinates): FaceCubicalLocation {
 		return FaceCubicalLocation.fromCoordinates(this.spec, coordinates);
+	}
+
+	isAlong(dimension: CubeDimension): boolean {
+		return dimension === this.cubePart.dimension1 || dimension === this.cubePart.dimension2;
 	}
 
 	//TODO: Simon fragen wozu
