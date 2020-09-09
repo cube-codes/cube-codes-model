@@ -8,9 +8,8 @@ export class CubeMoveLanguage {
 
 	parse(movesString: string): ReadonlyArray<CubeMove> {
 		const me = this;
-		// Split by everything that is not command character
-		// TODO: Use clear definied seperators like Whitespace, Minus and Period
-		return movesString.split(/[^1-9FRUBLDw'xyz]+/).map(function (moveString) {
+		// Split by seperators
+		return movesString.split(/[\s_]+/).map(function (moveString) {
 
 			let slices: number;
 			let faceLetterPosition: number;

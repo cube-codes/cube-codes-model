@@ -151,7 +151,7 @@ test('Single Rotation Move Parse Test', () => {
 
 test('Multi Move Parse Test', () => {
 
-	expect(cml3.parse('2Fw\'.Fw;U2-U|U')).toEqual([new CubeMove(s3, CubeFace.FRONT, 2, -1), new CubeMove(s3, CubeFace.FRONT, 2, 1), new CubeMove(s3, CubeFace.UP, 1, 2), new CubeMove(s3, CubeFace.UP, 1, 1), new CubeMove(s3, CubeFace.UP, 1, 1)]);
+	expect(cml3.parse('2Fw\'_Fw U2_U_U')).toEqual([new CubeMove(s3, CubeFace.FRONT, 2, -1), new CubeMove(s3, CubeFace.FRONT, 2, 1), new CubeMove(s3, CubeFace.UP, 1, 2), new CubeMove(s3, CubeFace.UP, 1, 1), new CubeMove(s3, CubeFace.UP, 1, 1)]);
 
 });
 
