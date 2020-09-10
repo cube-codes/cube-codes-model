@@ -62,29 +62,29 @@ export interface CubeHistoryRecorded extends EventData {
 /**
  * Data describing the event of cleaning some past of {@link CubeHistoryChange}s within the {@link CubeHistory}
  * 
- * The initial state was set to the final state after this past and was marked as the current position if the former was removed.
+ * The initial state was set to the final state of "before" and was marked as the current position if the former was removed.
  */
 export interface CubeHistoryPastCleaned extends EventData {
 
 	/**
-	 * Index of the {@link CubeHistoryChange}s within the {@link CubeHistory} that the cleaning ends with (this and all previous changes were removed)
+	 * Index of the {@link CubeHistoryChange}s within the {@link CubeHistory} that the cleaning ends with (all previous changes were removed)
 	 */
-	readonly to: number
+	readonly before: number
 }
 
 /**
  * Data describing the event of cleaning some future of {@link CubeHistoryChange}s within the {@link CubeHistory}
  * 
- * The state before this future was marked as the current position if the former was removed.
+ * The state of "after" was marked as the current position if the former was removed.
  * 
  * This can happen when a new {@link CubeHistoryChange} is recorded while the current position of the {@link CubeHistory} is not at its end. As the history cannot hold multiple branches the old one has to be removed.
  */
 export interface CubeHistoryFutureCleaned extends EventData {
 
 	/**
-	 * Index of the {@link CubeHistoryChange}s within the {@link CubeHistory} that the cleaning starts from (this and all further changes were removed)
+	 * Index of the {@link CubeHistoryChange}s within the {@link CubeHistory} that the cleaning starts from (all further changes were removed)
 	 */
-	readonly from: number
+	readonly after: number
 }
 
 /**
@@ -173,7 +173,7 @@ export class CubeHistory {
 			
 			// If we are currently not at the end, clean/remove the history ahead of us
 			if(me.changes.length !== newChangeIndex) {
-				me.cleanFutureFrom(newChangeIndex);
+				me.cleanFutureAfter(me.currentPosition);
 			}
 			
 			// Record change and move
@@ -234,44 +234,44 @@ export class CubeHistory {
 	}
 
 	/**
-	 * Removes the {@link CubeHistoryChange}s up until inclusivly a specified position
+	 * Removes the {@link CubeHistoryChange}s up until exclusivly a specified position
 	 * 
-	 * The initial state is set to the final state after this past and is marked as the current position if the former was removed.
-	 * @param position - Position up until inclusivly the history is removed
+	 * The initial state is set to the final state of "position" and is marked as the current position if the former was removed.
+	 * @param position - Position up until exclusivly the history is removed
 	 */
-	cleanPastTo(position: number) {
+	cleanPastBefore(position: number) {
 
-		if(!Number.isInteger(position) || position < 0 || position > this.changes.length - 1) throw 'Invalid position';
+		if(!Number.isInteger(position) || position < -1 || position > this.changes.length - 1) throw 'Invalid position';
 
 		this.initialState = this.getChangeByPosition(position).newState;
 
-		this.changes.splice(0, position + 1);
+		this.changes.splice(0, position);
 
-		if(this.currentPosition <= position) {
+		if(this.currentPosition < position) {
 			this.currentPosition = -1;
 		}
 
-		this.pastCleaned.trigger({to: position});
+		this.pastCleaned.trigger({before: position});
 
 	}
 
 	/**
-	 * Removes the {@link CubeHistoryChange}s from down inclusivly a specified position
+	 * Removes the {@link CubeHistoryChange}s from down exclusivly a specified position
 	 * 
-	 * The position before that future is marked as the current position if the former was removed.
-	 * @param position - Position from down inclusivly the history is removed
+	 * "positon" is marked as the current position if the former was removed.
+	 * @param position - Position from down exclusivly the history is removed
 	 */
-	cleanFutureFrom(position: number) {
+	cleanFutureAfter(position: number) {
 
-		if(!Number.isInteger(position) || position < 0 || position > this.changes.length - 1) throw 'Invalid position';
+		if(!Number.isInteger(position) || position < -1 || position > this.changes.length - 1) throw 'Invalid position';
 
-		this.changes.splice(position, this.changes.length - position);
+		this.changes.splice(position + 1, this.changes.length - position - 1);
 
-		if(this.currentPosition >= position) {
-			this.currentPosition = position - 1;
+		if(this.currentPosition > position) {
+			this.currentPosition = position;
 		}
 
-		this.futureCleaned.trigger({from: position});
+		this.futureCleaned.trigger({after: position});
 
 	}
 
