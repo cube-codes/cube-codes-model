@@ -245,9 +245,9 @@ export class CubeHistory {
 
 		this.initialState = this.getChangeByPosition(position).newState;
 
-		this.changes.splice(0, position);
+		this.changes.splice(0, position + 1);
 
-		if(this.currentPosition < position) {
+		if(this.currentPosition <= position) {
 			this.currentPosition = -1;
 		}
 
