@@ -160,31 +160,30 @@ export class CubeHistory {
 		this.changes = new Array();
 		this.currentPosition = -1;
 
-		const me = this;
-		this.cube.stateChanged.on(function (e) {
+		this.cube.stateChanged.on(e => {
 
 			// If the change was triggered by the history, do not record but move only
 			if (e.source && typeof e.source.history === 'number') {
-				const oldChangeIndex = me.currentPosition;
-				me.currentPosition += e.source.history;
-				me.moved.trigger({ from: oldChangeIndex, by: e.source.history, to: me.currentPosition });
+				const oldChangeIndex = this.currentPosition;
+				this.currentPosition += e.source.history;
+				this.moved.trigger({ from: oldChangeIndex, by: e.source.history, to: this.currentPosition });
 				return;
 			}
 
-			const newChangeIndex = me.currentPosition + 1;
+			const newChangeIndex = this.currentPosition + 1;
 
 			// If we are currently not at the end, clean/remove the history ahead of us
-			if (me.changes.length !== newChangeIndex) {
-				me.cleanFutureFrom(newChangeIndex);
+			if (this.changes.length !== newChangeIndex) {
+				this.cleanFutureFrom(newChangeIndex);
 			}
 
 			// Record change and move
 			const newChange: CubeHistoryChange = { oldState: e.oldState, newState: e.newState, move: e.move };
-			me.changes.push(newChange);
-			me.recorded.trigger({ change: newChange, position: newChangeIndex });
-			const oldChangeIndex = me.currentPosition;
-			me.currentPosition = newChangeIndex;
-			me.moved.trigger({ from: oldChangeIndex, by: 1, to: me.currentPosition });
+			this.changes.push(newChange);
+			this.recorded.trigger({ change: newChange, position: newChangeIndex });
+			const oldChangeIndex = this.currentPosition;
+			this.currentPosition = newChangeIndex;
+			this.moved.trigger({ from: oldChangeIndex, by: 1, to: this.currentPosition });
 
 		});
 

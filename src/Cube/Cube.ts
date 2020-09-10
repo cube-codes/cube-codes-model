@@ -200,10 +200,7 @@ export class Cube {
 	}
 
 	ml(movesString: string, source?: object): Cube {
-		const me = this;
-		this.getMoveLanguage().parse(movesString).forEach(function (move) {
-			me.move(move, source);
-		});
+		this.getMoveLanguage().parse(movesString).forEach(move => this.move(move, source));
 		return this;
 	}
 

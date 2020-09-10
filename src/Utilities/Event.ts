@@ -52,9 +52,7 @@ export class Event<E extends EventData> {
 	 * @param eventData - Data of the triggered event
 	 */
 	trigger(eventData: E): void {
-		this.#listeners.forEach(function (listener) {
-			listener.apply({}, [eventData]);
-		});
+		this.#listeners.forEach(listener => listener.apply({}, [eventData]));
 	}
 
 	/**
