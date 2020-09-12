@@ -242,6 +242,8 @@ export class CubeHistory {
 	cleanPastBefore(position: number) {
 
 		if(!Number.isInteger(position) || position < -1 || position > this.changes.length - 1) throw 'Invalid position';
+	
+		if(this.position <= -1) return;
 
 		this.initialState = this.getChangeByPosition(position).newState;
 
