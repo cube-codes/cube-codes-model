@@ -11,205 +11,157 @@ export abstract class CubePartTypes {
 	
 	static readonly ALL: ReadonlyArray<CubePartType> = [CubePartType.CORNER, CubePartType.EDGE, CubePartType.FACE];
 
+	static countNormalVectors(type:CubePartType) {
+		return 3-type;
+		/*switch(type) {
+			case CubePartType.CORNER: return 3;
+			case CubePartType.EDGE: return 2;
+			case CubePartType.FACE: return 1;
+			default: throw new Error('Invalid type');
+		}*/
+	}
+
+	static toString(type:CubePartType) {
+		switch(type) {
+			case CubePartType.CORNER: return 'CORNER';
+			case CubePartType.EDGE: return 'EDGE';
+			case CubePartType.FACE: return 'FACE';
+			default: throw new Error('Invalid type');
+		}
+	}
 }
 
-//TODO: Wofür brauchen wir hier indices???
-export abstract class AbstractCubePart<T extends CubePartType> {
+/** 
+ * CubeFaces are directions in which normal vectors point, in which cubicals show different stickers. Of course CubeFaces can be identified with CubeParts of type Face, but they have different roles.
+ */
+export class CubeFace {
 
-	protected constructor(readonly type: T, readonly index: number, readonly name: string, readonly neigbouringFaces: ReadonlyArray<CubeFace>, readonly coordinates: CubeCoordinates) { }
+	static readonly FRONT: CubeFace = new CubeFace(CubeDimension.Z, false);
+	static readonly RIGHT: CubeFace = new CubeFace(CubeDimension.X, false);
+	static readonly UP: CubeFace = new CubeFace(CubeDimension.Y, false);
+	static readonly BACK: CubeFace = new CubeFace(CubeDimension.Z, true);
+	static readonly LEFT: CubeFace = new CubeFace(CubeDimension.X, true);
+	static readonly DOWN: CubeFace = new CubeFace(CubeDimension.Y, true);
+
+	static readonly ALL:Array<CubeFace>= [CubeFace.FRONT,CubeFace.RIGHT,CubeFace.UP, CubeFace.BACK,CubeFace.LEFT, CubeFace.DOWN];
+
+	protected constructor(readonly dimension:CubeDimension,readonly backside:boolean) { 
+
+	}
+
+	/** The normal vector pointing outwards this face in coordinates */
+	getNormalVector():CubeCoordinates {
+		if (!this.backside) return new CubeCoordinates(0,0,0).addAt(this.dimension,-1);
+		else return new CubeCoordinates(0,0,0).addAt(this.dimension,+1);
+	}
+
+	static fromNormalVector(normalVector:CubeCoordinates):CubeFace {
+		if (normalVector.x==0 && normalVector.y==0 && normalVector.z==-1) return CubeFace.FRONT;
+		if (normalVector.x==-1 && normalVector.y==0 && normalVector.z==0) return CubeFace.RIGHT;
+		if (normalVector.x==0 && normalVector.y==-1 && normalVector.z==0) return CubeFace.UP;
+		if (normalVector.x==0 && normalVector.y==0 && normalVector.z==+1) return CubeFace.BACK;
+		if (normalVector.x==+1 && normalVector.y==0 && normalVector.z==0) return CubeFace.LEFT;
+		if (normalVector.x==0 && normalVector.y==+1 && normalVector.z==0) return CubeFace.DOWN;
+		throw new Error ('Not a valid normal vector appearing in a cube');
+
+	}
+}
+
+/**
+ * A cube part is some starting point plus remaining (running) coordinates. They come in types CORNER, EDGE, FACE and have an associated string and index as alternative description.
+ * The normal vectors are counterclockwise ordered, with some arbitrary initial direction (used in computing ReorientationNumbers in CubeState). Face has 4 instead of 1 normal vector to account for the internal orientation of a FaceCubical (Picture on the cube)... 
+ * In this class we define all 8 Corners, 12 Edges, 6 Faces explicitly.
+ */
+export class CubePart {
+
+	protected constructor(readonly type: CubePartType, readonly index: number, readonly name: string, 
+		readonly neighbouringFaces: ReadonlyArray<CubeFace>, //in some fixed ordering 
+		readonly additionalFaces: ReadonlyArray<CubeFace>, //to fix orientation or Face
+		readonly remainingDimensions:ReadonlyArray<CubeDimension>, readonly startingPoint: CubeCoordinates) { }
+
+
+	static readonly F: CubePart = new CubePart(CubePartType.FACE, 0, 'F', [CubeFace.FRONT], [CubeFace.RIGHT],  [CubeDimension.X, CubeDimension.Y], CubeCoordinates.ZERO)
+	static readonly R: CubePart = new CubePart(CubePartType.FACE, 1, 'R', [CubeFace.RIGHT], [CubeFace.FRONT], [CubeDimension.Y, CubeDimension.Z], CubeCoordinates.ZERO)
+	static readonly U: CubePart = new CubePart(CubePartType.FACE, 2, 'U', [CubeFace.UP], [CubeFace.FRONT], [CubeDimension.X, CubeDimension.Z], CubeCoordinates.ZERO)
+	static readonly B: CubePart = new CubePart(CubePartType.FACE, 3, 'B', [CubeFace.BACK], [CubeFace.RIGHT], [CubeDimension.X, CubeDimension.Y], CubeCoordinates.E_Z)
+	static readonly L: CubePart = new CubePart(CubePartType.FACE, 4, 'L', [CubeFace.LEFT], [CubeFace.FRONT], [CubeDimension.Y, CubeDimension.Z], CubeCoordinates.E_X)
+	static readonly D: CubePart = new CubePart(CubePartType.FACE, 5, 'D', [CubeFace.DOWN], [CubeFace.FRONT], [CubeDimension.X, CubeDimension.Z], CubeCoordinates.E_Y)
+
+	static readonly ALL_FACES: ReadonlyArray<CubePart> = [CubePart.F, CubePart.R, CubePart.U, CubePart.B, CubePart.L, CubePart.D]
+
+	static readonly UF: CubePart = new CubePart(CubePartType.EDGE, 0, 'UF', [CubeFace.UP, CubeFace.FRONT], [], [CubeDimension.X], CubeCoordinates.ZERO)
+	static readonly UR: CubePart = new CubePart(CubePartType.EDGE, 1, 'UR', [CubeFace.UP, CubeFace.RIGHT], [], [CubeDimension.Z], CubeCoordinates.ZERO)
+	static readonly BU: CubePart = new CubePart(CubePartType.EDGE, 2, 'BU', [CubeFace.BACK, CubeFace.UP], [], [CubeDimension.X], CubeCoordinates.E_Z)
+	static readonly LU: CubePart = new CubePart(CubePartType.EDGE, 3, 'LU', [CubeFace.LEFT, CubeFace.UP], [],[CubeDimension.Z], CubeCoordinates.E_X)
+	static readonly LF: CubePart = new CubePart(CubePartType.EDGE, 4, 'LF', [CubeFace.LEFT, CubeFace.FRONT], [],[CubeDimension.Y], CubeCoordinates.E_X)
+	static readonly FR: CubePart = new CubePart(CubePartType.EDGE, 5, 'FR', [CubeFace.FRONT, CubeFace.RIGHT], [], [CubeDimension.Y], CubeCoordinates.ZERO)
+	static readonly RB: CubePart = new CubePart(CubePartType.EDGE, 6, 'RB', [CubeFace.RIGHT, CubeFace.BACK], [], [CubeDimension.Y], CubeCoordinates.E_Z)
+	static readonly BL: CubePart = new CubePart(CubePartType.EDGE, 7, 'BL', [CubeFace.BACK, CubeFace.LEFT], [], [CubeDimension.Y], CubeCoordinates.E_XZ)
+	static readonly FD: CubePart = new CubePart(CubePartType.EDGE, 8, 'FD', [CubeFace.FRONT, CubeFace.DOWN], [], [CubeDimension.X], CubeCoordinates.E_Y)
+	static readonly RD: CubePart = new CubePart(CubePartType.EDGE, 9, 'RD', [CubeFace.RIGHT, CubeFace.DOWN], [], [CubeDimension.Z], CubeCoordinates.E_Y)
+	static readonly DB: CubePart = new CubePart(CubePartType.EDGE, 10, 'DB', [CubeFace.DOWN, CubeFace.BACK], [], [CubeDimension.X], CubeCoordinates.E_YZ)
+	static readonly DL: CubePart = new CubePart(CubePartType.EDGE, 11, 'DL', [CubeFace.DOWN, CubeFace.LEFT], [], [CubeDimension.Z], CubeCoordinates.E_XY)
+
+	static readonly ALL_EDGES: ReadonlyArray<CubePart> = [CubePart.UF, CubePart.UR, CubePart.BU, CubePart.LU, CubePart.LF, CubePart.FR, CubePart.RB, CubePart.BL, CubePart.FD, CubePart.RD, CubePart.DB, CubePart.DL]
+
+
+	static readonly DRF: CubePart = new CubePart(CubePartType.CORNER, 0, 'DRF', [CubeFace.DOWN, CubeFace.RIGHT, CubeFace.FRONT], [], [], CubeCoordinates.E_Y)
+	static readonly DBR: CubePart = new CubePart(CubePartType.CORNER, 1, 'DBR', [CubeFace.DOWN, CubeFace.BACK, CubeFace.RIGHT], [], [], CubeCoordinates.E_YZ)
+	static readonly UFR: CubePart = new CubePart(CubePartType.CORNER, 2, 'UFR', [CubeFace.UP, CubeFace.FRONT, CubeFace.RIGHT], [], [], CubeCoordinates.ZERO)
+	static readonly URB: CubePart = new CubePart(CubePartType.CORNER, 3, 'URB', [CubeFace.UP, CubeFace.RIGHT, CubeFace.BACK], [], [], CubeCoordinates.E_Z)
+	static readonly ULF: CubePart = new CubePart(CubePartType.CORNER, 4, 'ULF', [CubeFace.UP, CubeFace.LEFT, CubeFace.FRONT], [], [], CubeCoordinates.E_X)
+	static readonly UBL: CubePart = new CubePart(CubePartType.CORNER, 5, 'UBL', [CubeFace.UP, CubeFace.BACK, CubeFace.LEFT], [], [], CubeCoordinates.E_XZ)
+	static readonly DLB: CubePart = new CubePart(CubePartType.CORNER, 6, 'DLB', [CubeFace.DOWN, CubeFace.LEFT, CubeFace.BACK], [], [], CubeCoordinates.E_XYZ)
+	static readonly DFL: CubePart = new CubePart(CubePartType.CORNER, 7, 'DFL', [CubeFace.DOWN, CubeFace.FRONT, CubeFace.LEFT], [], [], CubeCoordinates.E_XY)
+
+	static readonly ALL_CORNERS: ReadonlyArray<CubePart> = [CubePart.DRF, CubePart.DBR, CubePart.UFR, CubePart.URB, CubePart.ULF, CubePart.UBL, CubePart.DLB, CubePart.DFL]
+
+	static readonly ALL:ReadonlyArray<ReadonlyArray<CubePart>>=[CubePart.ALL_CORNERS,CubePart.ALL_EDGES,CubePart.ALL_FACES];
+
+	static fromCoordinates(remainingDimensions:ReadonlyArray<CubeDimension>, startingPoint: CubeCoordinates) {
+		//console.log(remainingDimensions.length.toString()+":"+startingPoint.toString());
+		let dimensionality=remainingDimensions.length;
+		if (dimensionality>2) throw new Error ('Wrong Dimensionality (coordinates inside the cube?)');
+		for (var cubePart of CubePart.ALL[dimensionality]) {
+			if (deepEqual(cubePart.remainingDimensions,remainingDimensions) && deepEqual(cubePart.startingPoint,startingPoint)) return cubePart;
+		}
+		throw new Error ('CubePart not found');
+	}
+
+
+//TODO: Wofür brauchen wir hier [bei CubePart] indices???
+//ANSWER: Weil wenn irgendwas später nummeriert werden soll, müssen CubeParts durchnummeriert werden (6,12,8), ebenso wie sie ein name:string haben müssen, wenn sie später serialisiert werden sollen.
+// Mathematisch wären der Index von CubeParts eine Nummerierung aller (k aus n)*(2^k), wovon erstere auch nur recht künstlich funktioniert. 
+
+	static fromIndexByType(index:number, type:CubePartType) {
+		for (var cubePart of CubePart.ALL[type]) {
+			if (cubePart.index==index) return cubePart;
+		}
+		throw new Error ('CubePart not found');
+	}
+
+	getNeighbouringAndAdditionalFaces():Array<CubeFace> {
+		return this.neighbouringFaces.concat(this.additionalFaces);
+	}
+
+	/*//Should be put into some utility class
+	static shiftToTheLeft(array:Array<CubeCoordinates>, times:number):Array<CubeCoordinates> {
+		return array.concat(array.splice(0,times));
+	}*/
+
+	/**
+	 * Returns an error if cubeFace is not a containing face, otherwise returns the index in the random ordering of the containingFaces fixed above.
+	 * @param cubeFace 
+	 */
+	isContainedInFace(cubeFace:CubeFace):number {
+		for (let i=0;i<this.neighbouringFaces.length;i++) {
+			if (this.neighbouringFaces[i]==cubeFace) return i;
+		}
+		throw new Error('The cube part does not show this face (wrong normal vector for this location?)')
+	}
 
 	toString(): string {
 		return this.name;
 	}
-
 }
 
-export class CubeFace extends AbstractCubePart<CubePartType.FACE> {
-
-	static readonly FRONT: CubeFace = new CubeFace(0, 'F', [], CubeDimension.X, CubeDimension.Y, CubeCoordinates.ZERO)
-	static readonly RIGHT: CubeFace = new CubeFace(1, 'R', [], CubeDimension.Y, CubeDimension.Z, CubeCoordinates.ZERO)
-	static readonly UP: CubeFace = new CubeFace(2, 'U', [], CubeDimension.X, CubeDimension.Z, CubeCoordinates.ZERO)
-	static readonly BACK: CubeFace = new CubeFace(3, 'B', [], CubeDimension.X, CubeDimension.Y, CubeCoordinates.E_Z)
-	static readonly LEFT: CubeFace = new CubeFace(4, 'L', [], CubeDimension.Y, CubeDimension.Z, CubeCoordinates.E_X)
-	static readonly DOWN: CubeFace = new CubeFace(5, 'D', [], CubeDimension.X, CubeDimension.Z, CubeCoordinates.E_Y)
-
-	static readonly ALL: ReadonlyArray<CubeFace> = [CubeFace.FRONT, CubeFace.RIGHT, CubeFace.UP, CubeFace.BACK, CubeFace.LEFT, CubeFace.DOWN]
-
-	private constructor(index: number, name: string, neigbouringFaces: ReadonlyArray<CubeFace>, readonly dimension1: CubeDimension, readonly dimension2: CubeDimension, coordinates: CubeCoordinates) {
-		super(CubePartType.FACE, index, name, neigbouringFaces, coordinates);
-		(<{ neigbouringFaces: ReadonlyArray<CubeFace> }>this).neigbouringFaces = [this]; // Dirty trick to set the readonly property to '[this]'
-	}
-
-	static fromIndex(index: number): CubeFace {
-		switch (index) {
-			case 0: return CubeFace.FRONT;
-			case 1: return CubeFace.RIGHT;
-			case 2: return CubeFace.UP;
-			case 3: return CubeFace.BACK;
-			case 4: return CubeFace.LEFT;
-			case 5: return CubeFace.DOWN;
-			default: throw new Error(`Invalid index: ${index}`);
-		}
-	}
-
-	static fromCoordinates(dimension1: CubeDimension, dimension2: CubeDimension, coordinates: CubeCoordinates): CubeFace {
-		if (dimension1 === CubeDimension.X && dimension2 === CubeDimension.Y && deepEqual(coordinates, CubeCoordinates.ZERO)) {
-			return CubeFace.FRONT;
-		} else if (dimension1 === CubeDimension.Y && dimension2 === CubeDimension.Z && deepEqual(coordinates, CubeCoordinates.ZERO)) {
-			return CubeFace.RIGHT;
-		} else if (dimension1 === CubeDimension.X && dimension2 === CubeDimension.Z && deepEqual(coordinates, CubeCoordinates.ZERO)) {
-			return CubeFace.UP;
-		} else if (dimension1 === CubeDimension.X && dimension2 === CubeDimension.Y && deepEqual(coordinates, CubeCoordinates.E_Z)) {
-			return CubeFace.BACK;
-		} else if (dimension1 === CubeDimension.Y && dimension2 === CubeDimension.Z && deepEqual(coordinates, CubeCoordinates.E_X)) {
-			return CubeFace.LEFT;
-		} else if (dimension1 === CubeDimension.X && dimension2 === CubeDimension.Z && deepEqual(coordinates, CubeCoordinates.E_Y)) {
-			return CubeFace.DOWN;
-		} else {
-			throw new Error(`Invalid input: ${dimension1}, ${dimension2}, ${coordinates}`);
-		}
-	}
-
-	getOrthogonalDimension(): CubeDimension {
-		return this.dimension1.getOrthogonal(this.dimension2);
-	}
-
-	isBackside(): boolean {
-		return !deepEqual(this.coordinates, CubeCoordinates.ZERO);
-	}
-
-	getNormalVector(): CubeCoordinates {
-		if (this.isBackside()) {
-			return CubeCoordinates.fromDimension(this.getOrthogonalDimension(), +1);
-		} else {
-			return CubeCoordinates.fromDimension(this.getOrthogonalDimension(), -1);
-		}
-	}
-
-}
-
-export class CubeCorner extends AbstractCubePart<CubePartType.CORNER> {
-
-	static readonly DRF: CubeCorner = new CubeCorner(0, 'DRF', [CubeFace.DOWN, CubeFace.RIGHT, CubeFace.FRONT], CubeCoordinates.E_Y)
-	static readonly DBR: CubeCorner = new CubeCorner(1, 'DBR', [CubeFace.DOWN, CubeFace.BACK, CubeFace.RIGHT], CubeCoordinates.E_YZ)
-	static readonly UFR: CubeCorner = new CubeCorner(2, 'UFR', [CubeFace.UP, CubeFace.FRONT, CubeFace.RIGHT], CubeCoordinates.ZERO)
-	static readonly URB: CubeCorner = new CubeCorner(3, 'URB', [CubeFace.UP, CubeFace.RIGHT, CubeFace.BACK], CubeCoordinates.E_Z)
-	static readonly ULF: CubeCorner = new CubeCorner(4, 'ULF', [CubeFace.UP, CubeFace.LEFT, CubeFace.FRONT], CubeCoordinates.E_X)
-	static readonly UBL: CubeCorner = new CubeCorner(5, 'UBL', [CubeFace.UP, CubeFace.BACK, CubeFace.LEFT], CubeCoordinates.E_XZ)
-	static readonly DLB: CubeCorner = new CubeCorner(6, 'DLB', [CubeFace.DOWN, CubeFace.LEFT, CubeFace.BACK], CubeCoordinates.E_XYZ)
-	static readonly DFL: CubeCorner = new CubeCorner(7, 'DFL', [CubeFace.DOWN, CubeFace.FRONT, CubeFace.LEFT], CubeCoordinates.E_XY)
-
-	static readonly ALL: ReadonlyArray<CubeCorner> = [CubeCorner.DRF, CubeCorner.DBR, CubeCorner.UFR, CubeCorner.URB, CubeCorner.ULF, CubeCorner.UBL, CubeCorner.DLB, CubeCorner.DFL]
-
-	private constructor(index: number, name: string, neigbouringFaces: ReadonlyArray<CubeFace>, coordinates: CubeCoordinates) {
-		super(CubePartType.CORNER, index, name, neigbouringFaces, coordinates);
-	}
-
-	static fromIndex(index: number): CubeCorner {
-		switch (index) {
-			case 0: return CubeCorner.DRF;
-			case 1: return CubeCorner.DBR;
-			case 2: return CubeCorner.UFR;
-			case 3: return CubeCorner.URB;
-			case 4: return CubeCorner.ULF;
-			case 5: return CubeCorner.UBL;
-			case 6: return CubeCorner.DLB;
-			case 7: return CubeCorner.DFL;
-			default: throw new Error(`Invalid index: ${index}`);
-		}
-	}
-
-	static fromCoordinates(coordinates: CubeCoordinates): CubeCorner {
-		if (deepEqual(coordinates, CubeCoordinates.E_Y)) {
-			return CubeCorner.DRF;
-		} else if (deepEqual(coordinates, CubeCoordinates.E_YZ)) {
-			return CubeCorner.DBR;
-		} else if (deepEqual(coordinates, CubeCoordinates.ZERO)) {
-			return CubeCorner.UFR;
-		} else if (deepEqual(coordinates, CubeCoordinates.E_Z)) {
-			return CubeCorner.URB;
-		} else if (deepEqual(coordinates, CubeCoordinates.E_X)) {
-			return CubeCorner.ULF;
-		} else if (deepEqual(coordinates, CubeCoordinates.E_XZ)) {
-			return CubeCorner.UBL;
-		} else if (deepEqual(coordinates, CubeCoordinates.E_XYZ)) {
-			return CubeCorner.DLB;
-		} else if (deepEqual(coordinates, CubeCoordinates.E_XY)) {
-			return CubeCorner.DFL;
-		} else {
-			throw new Error(`Invalid input: ${coordinates}`);
-		}
-	}
-
-}
-
-export class CubeEdge extends AbstractCubePart<CubePartType.EDGE> {
-
-	static readonly UF: CubeEdge = new CubeEdge(0, 'UF', [CubeFace.UP, CubeFace.FRONT], CubeDimension.X, CubeCoordinates.ZERO)
-	static readonly UR: CubeEdge = new CubeEdge(1, 'UR', [CubeFace.UP, CubeFace.RIGHT], CubeDimension.Z, CubeCoordinates.ZERO)
-	static readonly BU: CubeEdge = new CubeEdge(2, 'BU', [CubeFace.BACK, CubeFace.UP], CubeDimension.X, CubeCoordinates.E_Z)
-	static readonly LU: CubeEdge = new CubeEdge(3, 'LU', [CubeFace.LEFT, CubeFace.UP], CubeDimension.Z, CubeCoordinates.E_X)
-	static readonly LF: CubeEdge = new CubeEdge(4, 'LF', [CubeFace.LEFT, CubeFace.FRONT], CubeDimension.Y, CubeCoordinates.E_X)
-	static readonly FR: CubeEdge = new CubeEdge(5, 'FR', [CubeFace.FRONT, CubeFace.RIGHT], CubeDimension.Y, CubeCoordinates.ZERO)
-	static readonly RB: CubeEdge = new CubeEdge(6, 'RB', [CubeFace.RIGHT, CubeFace.BACK], CubeDimension.Y, CubeCoordinates.E_Z)
-	static readonly BL: CubeEdge = new CubeEdge(7, 'BL', [CubeFace.BACK, CubeFace.LEFT], CubeDimension.Y, CubeCoordinates.E_XZ)
-	static readonly FD: CubeEdge = new CubeEdge(8, 'FD', [CubeFace.FRONT, CubeFace.DOWN], CubeDimension.X, CubeCoordinates.E_Y)
-	static readonly RD: CubeEdge = new CubeEdge(9, 'RD', [CubeFace.RIGHT, CubeFace.DOWN], CubeDimension.Z, CubeCoordinates.E_Y)
-	static readonly DB: CubeEdge = new CubeEdge(10, 'DB', [CubeFace.DOWN, CubeFace.BACK], CubeDimension.X, CubeCoordinates.E_YZ)
-	static readonly DL: CubeEdge = new CubeEdge(11, 'DL', [CubeFace.DOWN, CubeFace.LEFT], CubeDimension.Z, CubeCoordinates.E_XY)
-
-	static readonly ALL: ReadonlyArray<CubeEdge> = [CubeEdge.UF, CubeEdge.UR, CubeEdge.BU, CubeEdge.LU, CubeEdge.LF, CubeEdge.FR, CubeEdge.RB, CubeEdge.BL, CubeEdge.FD, CubeEdge.RD, CubeEdge.DB, CubeEdge.DL]
-
-	private constructor(index: number, name: string, neigbouringFaces: ReadonlyArray<CubeFace>, readonly dimension: CubeDimension, coordinates: CubeCoordinates) {
-		super(CubePartType.EDGE, index, name, neigbouringFaces, coordinates);
-	}
-
-	static fromIndex(index: number): CubeEdge {
-		switch (index) {
-			case 0: return CubeEdge.UF;
-			case 1: return CubeEdge.UR;
-			case 2: return CubeEdge.BU;
-			case 3: return CubeEdge.LU;
-			case 4: return CubeEdge.LF;
-			case 5: return CubeEdge.FR;
-			case 6: return CubeEdge.RB;
-			case 7: return CubeEdge.BL;
-			case 8: return CubeEdge.FD;
-			case 9: return CubeEdge.RD;
-			case 10: return CubeEdge.DB;
-			case 11: return CubeEdge.DL;
-			default: throw new Error(`Invalid index: ${index}`);
-		}
-	}
-
-	static fromCoordinates(dimension: CubeDimension, coordinates: CubeCoordinates): CubeEdge {
-		if (dimension === CubeDimension.X && deepEqual(coordinates, CubeCoordinates.ZERO)) {
-			return CubeEdge.UF
-		} else if (dimension === CubeDimension.Z && deepEqual(coordinates, CubeCoordinates.ZERO)) {
-			return CubeEdge.UR;
-		} else if (dimension === CubeDimension.X && deepEqual(coordinates, CubeCoordinates.E_Z)) {
-			return CubeEdge.BU;
-		} else if (dimension === CubeDimension.Z && deepEqual(coordinates, CubeCoordinates.E_X)) {
-			return CubeEdge.LU;
-		} else if (dimension === CubeDimension.Y && deepEqual(coordinates, CubeCoordinates.E_X)) {
-			return CubeEdge.LF;
-		} else if (dimension === CubeDimension.Y && deepEqual(coordinates, CubeCoordinates.ZERO)) {
-			return CubeEdge.FR;
-		} else if (dimension === CubeDimension.Y && deepEqual(coordinates, CubeCoordinates.E_Z)) {
-			return CubeEdge.RB;
-		} else if (dimension === CubeDimension.Y && deepEqual(coordinates, CubeCoordinates.E_XZ)) {
-			return CubeEdge.BL;
-		} else if (dimension === CubeDimension.X && deepEqual(coordinates, CubeCoordinates.E_Y)) {
-			return CubeEdge.FD;
-		} else if (dimension === CubeDimension.Z && deepEqual(coordinates, CubeCoordinates.E_Y)) {
-			return CubeEdge.RD;
-		} else if (dimension === CubeDimension.X && deepEqual(coordinates, CubeCoordinates.E_YZ)) {
-			return CubeEdge.DB;
-		} else if (dimension === CubeDimension.Z && deepEqual(coordinates, CubeCoordinates.E_XY)) {
-			return CubeEdge.DL;
-		} else {
-			throw new Error(`Invalid input: ${dimension}, ${coordinates}`);
-		}
-	}
-
-}

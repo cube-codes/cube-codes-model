@@ -1,14 +1,15 @@
 import { EventData, Event } from "../Utilities/Event"
 import { CubeMoveLanguage } from "./CubeMoveLanguage";
-import { CubeSpecification, CubeDimension } from './CubeGeometry';
+import { CubeSpecification, CubeDimension, CubeCoordinates } from './CubeGeometry';
 import { CubeStateLanguage } from './CubeStateLanguage';
 import { CubeMoveAngle, CubeMove } from './CubeMove';
 import { CubeState } from './CubeState';
-import { Cubical, CubicalSolvedCondition, AbstractCubicalLocation } from './Cubical';
+import { Cubical, CubicalSolvedCondition, CubicalLocation } from './Cubical';
 import { Random } from '../Utilities/Random';
-import { CubeFace, CubePartTypes } from './CubePart';
-import { CubicalInspector } from "./CubicalInspector";
+import { CubeFace, CubePart, CubePartTypes } from './CubePart';
+//TODO SORRY import { CubicalInspector } from "./CubicalInspector";
 import deepEqual from "deep-equal";
+
 
 export interface CubeStateChanged extends EventData {
 	readonly oldState: CubeState
@@ -32,17 +33,20 @@ export class Cube {
 
 	readonly solvedCondition: CubicalSolvedCondition
 
-	readonly #cubicals: ReadonlyArray<Cubical<any>>
+	readonly #cubicals: ReadonlyArray<Cubical>
 
+	/** Generates a Solved Cube */
 	constructor(
 		readonly spec: CubeSpecification, customSolvedCondition?: CubicalSolvedCondition, state?: CubeState) {
 
 		this.solvedCondition = customSolvedCondition ?? Cube.defaultSolvedCondition(this.spec);
 		
-		const cubicals = new Array<Cubical<any>>();
-		for(const type of CubePartTypes.ALL) {
-			for (let cubicalIndex = 0; cubicalIndex < AbstractCubicalLocation.countByType(spec, type); cubicalIndex++) {
-				cubicals.push(Cubical.fromInitialIndex(this, type, cubicalIndex));
+		const cubicals = new Array<Cubical>();
+		for(const cubePartType of CubePartTypes.ALL) {
+			for(const cubePart of CubePart.ALL[cubePartType]) {
+				for(const cubicalLocation of CubicalLocation.getAll(spec,cubePart)) {
+					cubicals.push(new Cubical(this, cubicalLocation)); //new Cubical in initial location and orientation
+				}
 			}
 		}
 		this.#cubicals = cubicals;
@@ -56,43 +60,77 @@ export class Cube {
 		return new Cube(this.spec, this.solvedCondition, this.getState());
 	}
 
+	/** TODO SORRY
 	get cubicals(): CubicalInspector<any> {
 		return new CubicalInspector(this.#cubicals);
-	}
+	}*/
 
 	getStateLanguage(): CubeStateLanguage {
-		return new CubeStateLanguage();
+		return new CubeStateLanguage(this.spec);
 	}
 
 	getMoveLanguage(): CubeMoveLanguage {
 		return new CubeMoveLanguage(this.spec);
 	}
 
+	/** TODO SORRY
 	isSolved(customCondition?: CubicalSolvedCondition): boolean {
 		return this.cubicals.areSolved(customCondition);
-	}
+	}*/
 
 	getState(): CubeState {
-		//TODO: Implement
-		throw new Error('Implement');
+		let permutations = [new Array<number>(),new Array<number>(),new Array<number>()];
+		let orientations = [new Array<number>(),new Array<number>(),new Array<number>()];
+		let logstring='getState: ';
+		for(let cubical of this.#cubicals) {
+			permutations[cubical.getType()][CubeState.indexFromLocation(this.spec,cubical.initialLocation)]=CubeState.indexFromLocation(this.spec,cubical.location)
+			orientations[cubical.getType()][CubeState.indexFromLocation(this.spec,cubical.initialLocation)]=CubeState.reorientationNumberFromMatrix(cubical.initialLocation.cubePart,cubical.location.cubePart,cubical.orientation);
+			logstring=logstring+' At['+CubeState.indexFromLocation(this.spec,cubical.initialLocation).toString()+']'+cubical.toString()+" ";
+		}
+		logstring=logstring+permutations.toString()+orientations.toString();
+		//console.log(logstring);
+		return new CubeState(this.spec,permutations, orientations);
 	}
 
+	getCubicalAt(location:CubeCoordinates):Cubical {
+		for(let cubical of this.#cubicals) {
+			if (deepEqual(cubical.location.coordinates, location)) return cubical;
+		}
+		throw new Error('No cubical at coordinates '+location.toString());
+	}
+
+	
+	getCubicalFrom(initialLocation:CubeCoordinates):Cubical {
+		for(let cubical of this.#cubicals) {
+			if (deepEqual(cubical.initialLocation.coordinates, initialLocation)) return cubical;
+		}
+		throw new Error('No cubical from coordinates '+initialLocation.toString());
+	}
+
+	/** Generates new cubicals */
 	setState(newState: CubeState, source?: object): Cube {
 
 		if (!deepEqual(this.spec, newState.spec)) throw new Error(`Invalid spec of new state: ${newState.spec}`);
 		
 		const oldState = this.getState();
 		
-		//TODO: Implement
-		throw new Error('Implement');
+		//Set position and orientation of all cubicals
+		for(let cubical of this.#cubicals) {
+			let type=cubical.getType();
+			let index=CubeState.indexFromLocation(this.spec,cubical.initialLocation);
+			cubical.location=CubeState.indexToLocation(this.spec,newState.permutations[type][index],type); 
+			cubical.orientation=CubeState.reorientationNumberToMatrix(cubical.initialLocation.cubePart,cubical.location.cubePart,newState.reorientations[type][index]);
+		}
 		
+		//Inform 
+
 		this.stateChanged.trigger({ oldState: oldState, newState: newState, source: source });
 		
 		return this;
 	
 	}
 
-	private rotateSlice(dimension: CubeDimension, sliceCoordinate: number): void {
+	rotateSlice(dimension: CubeDimension, sliceCoordinate: number): void {
 
 		for (let cubical of this.#cubicals) {
 			if (sliceCoordinate === cubical.location.coordinates.getComponent(dimension)) {
@@ -110,10 +148,10 @@ export class Cube {
 		
 		const oldState = this.getState();
 		
-		const dimension = move.face.getOrthogonalDimension();
-		const firstSliceCoordinate = move.face.isBackside() ? 0 : this.spec.edgeLength - move.slices;
-		const lastSliceCoordinate = move.face.isBackside() ? move.slices - 1 : this.spec.edgeLength - 1;
-		const angle = (((move.face.isBackside() ? move.angle : -move.angle) % 4) + 4) % 4;
+		const dimension = move.face.dimension;
+		const firstSliceCoordinate = move.face.backside ? 0 : this.spec.edgeLength - move.slices;
+		const lastSliceCoordinate = move.face.backside ? move.slices - 1 : this.spec.edgeLength - 1;
+		const angle = (((move.face.backside ? move.angle : -move.angle) % 4) + 4) % 4;
 
 		for (let sliceCoordinate = firstSliceCoordinate; sliceCoordinate <= lastSliceCoordinate; sliceCoordinate++) {
 			for (let angleIndex = 0; angleIndex < angle; angleIndex++) {
@@ -205,13 +243,30 @@ export class Cube {
 	}
 
 	shuffleByExplosion(source?: object): Cube {
-		//TODO: Implement
-		throw new Error('Not yet implemented (orientation somewhat tricky)');
+		let permutations=[new Array<number>(),new Array<number>(),new Array<number>()];
+		let orientations=[new Array<number>(),new Array<number>(),new Array<number>()];
+
+		for(let type of CubePartTypes.ALL) {
+			let n=CubeState.countLocations(this.spec,type);
+			//RandomPermutation of 1...n
+			//Make a pool of all indices, choose a random one, then delete it from the pool etc
+			let indexPool=Array<number>();
+			for (let index=0;index<n;index++) {indexPool.push(index);}
+			for (let initialindex=0;initialindex<n;initialindex++) { //Until indexPool is empty
+				let indexindex= Random.randomIntegerFromToInclusivly(0, indexPool.length - 1);
+				permutations[type][initialindex]=indexPool[indexindex];
+				indexPool.splice(indexindex, 1);
+				//Also random orientation
+				orientations[type][initialindex]= Random.randomIntegerFromToInclusivly(0, CubePartTypes.countNormalVectors(type)-1);
+			}
+		}
+		this.setState(new CubeState(this.spec, permutations,orientations));
+		return this;
 	}
 	
 	shuffleByMove(moveLength: number = 100, source?: object): Cube {
 		for (let moveIndex = 0; moveIndex < moveLength; moveIndex++) {
-			const face = CubeFace.fromIndex(Random.randomIntegerToInclusivly(5));
+			const face = CubeFace.ALL[Random.randomIntegerToInclusivly(5)];
 			const slices = Random.randomIntegerFromToInclusivly(1, this.spec.edgeLength - 1);
 			const angle = Random.randomIntegerFromToInclusivly(1, 3);
 			this.mw(face, slices, angle, source);
@@ -222,5 +277,17 @@ export class Cube {
 	shuffle(moveLength: number = 100, source?: object): Cube {
 		return this.shuffleByMove(moveLength, source);
 	}
+
+	/** Outputs the data of a CubeState. Used for debug and lesson "permutation" and "orbit"
+	 * 
+	 */
+	public toFormattedString(): string {
+		let result:string='All Cubicals:\n ';
+		for(let cubical of this.#cubicals) {
+			result=result+ cubical.toString()+'\n';
+		}
+		return result;
+	}
+
 
 }

@@ -104,7 +104,7 @@ export class CubeMoveLanguage {
 				moveString += me.stringifyRotationFace(move.face);
 				
 				// Change angle orientation if face has different orientation as rotation letter (e.g. "z" aligns with "F", but counteraligns with "B")
-				if(move.face.isBackside()) {
+				if(move.face.backside) {
 					angleOrientation = -1;
 				}
 

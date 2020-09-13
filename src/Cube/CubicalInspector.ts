@@ -1,6 +1,7 @@
-import { CubicalSolvedCondition, ReadonlyCubical } from "./Cubical";
+/**import { CubicalSolvedCondition, ReadonlyCubical } from "./Cubical";
 import { CubeDimension } from "./CubeGeometry";
 import { AbstractCubePart, CubePartType } from "./CubePart";
+
 
 export class CubicalInspector<T extends CubePartType> {
 
@@ -182,4 +183,4 @@ export class CubicalInspector<T extends CubePartType> {
 		return this.findAll().every(cubical => !cubical.isSolved(customCondition));
 	}
 
-}
+} */

@@ -28,6 +28,7 @@ export class CubeDimension {
 	static readonly X = new CubeDimension(0, 'X')
 	static readonly Y = new CubeDimension(1, 'Y')
 	static readonly Z = new CubeDimension(2, 'Z')
+	static readonly ALL: ReadonlyArray<CubeDimension> = [CubeDimension.X,CubeDimension.Y,CubeDimension.Z];
 
 	private constructor(readonly index: number, readonly name: string) {}
 	
@@ -40,12 +41,12 @@ export class CubeDimension {
 		}
 	}
 
+	/*getOrthogonal(dimension2: CubeDimension): CubeDimension {
+		return CubeDimension.fromIndex(3 - this.index - dimension2.index);
+	}*/
+
 	toString(): string {
 		return this.name;
-	}
-
-	getOrthogonal(dimension2: CubeDimension): CubeDimension {
-		return CubeDimension.fromIndex(3 - this.index - dimension2.index);
 	}
 
 }
@@ -67,9 +68,10 @@ export class CubeCoordinates {
 	constructor(readonly x: number,
 		readonly y: number,
 		readonly z: number) {
+		/* SL: In transformations around center is necessary to have intermediate non-integral coordinates.
 		if (!Number.isInteger(x)) throw new Error(`Invalid x: ${x}`);
 		if (!Number.isInteger(y)) throw new Error(`Invalid y: ${y}`);
-		if (!Number.isInteger(z)) throw new Error(`Invalid z: ${z}`);
+		if (!Number.isInteger(z)) throw new Error(`Invalid z: ${z}`);*/
 	}
 
 	static fromDimension(dimension: CubeDimension, value: number): CubeCoordinates {
@@ -163,12 +165,20 @@ export class CubeCoordinates {
 		return new CubeCoordinates(this.y * factor2.z - this.z * factor2.y, this.z * factor2.x - this.x * factor2.z, this.x * factor2.y - this.y * factor2.x);
 	}
 
+	/**
+	 * Applies a matrix to the coordinates. Used to rotate the cubical normal vectors around themselves
+	 * @param transformation A matrix, typically orthogonal.
+	 */
 	transformAroundZero(transformation: Matrix): CubeCoordinates {
 		const thisVector: Matrix = matrix([[this.x], [this.y], [this.z]]);
 		const transformedVector: Matrix = multiply(transformation, thisVector);
 		return new CubeCoordinates(transformedVector.get([0, 0]), transformedVector.get([1, 0]), transformedVector.get([2, 0]))
 	}
 
+	/**
+	 * Applies a matrix to the coordinates, relative to the center of the cube. Used to rotate the cubical locations.
+	 * @param transformation A matrix, typically orthogonal.
+	 */
 	transformAroundCenter(spec: CubeSpecification, transformation: Matrix): CubeCoordinates {
 		const shift: number = (spec.edgeLength - 1) / 2;
 		return this.substract(shift).transformAroundZero(transformation).add(shift);

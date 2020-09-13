@@ -45,4 +45,8 @@ export abstract class Matrices {
 		return Matrices.getTransitivityOrthogonalMatrix(from1, from2, to1, to2);
 	}
 
+	static getInverse(m:Matrix):Matrix {
+		return inv(m);
+	}
+
 }
