@@ -144,20 +144,12 @@ export class CubicalLocation implements Identifiable, Printable {
 		return this.part.type;
 	}
 
-	isIn(part: CubePart): boolean {
-		return this.part.hasAdjactedPart(part);
+	isAdjectedTo(part: CubePart): boolean {
+		return this.part.isAdjectedTo(part);
 	}
 
 	isAlong(dimension: CubeDimension): boolean {
-		if (this.part.type == CubePartType.CORNER) {
-			return true;
-		} else if (this.part.type == CubePartType.EDGE) {
-			return dimension === this.part.directions[0];
-		} else if (this.part.type == CubePartType.FACE) {
-			return dimension === this.part.directions[0] || dimension === this.part.directions[1];
-		} else {
-			throw new Error(`Invalid type: ${this.part.type}`);
-		}
+		return this.part.directions.some(d => d === dimension);
 	}
 
 	rotate(dimension: CubeDimension): CubicalLocation {

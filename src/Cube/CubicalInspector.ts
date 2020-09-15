@@ -47,8 +47,12 @@ export class CubicalInspector {
 		return this.withType(CubePartType.FACE);
 	}
 
+	inPart(part: CubePart): CubicalInspector {
+		return this.withPredicate(cubical => cubical.location.part === part);
+	}
+
 	adjectedTo(part: CubePart): CubicalInspector {
-		return this.withPredicate(cubical => cubical.location.isIn(part));
+		return this.withPredicate(cubical => cubical.location.isAdjectedTo(part));
 	}
 
 	atCoordinates(coordinates: CubeCoordinates): CubicalInspector {
@@ -87,8 +91,12 @@ export class CubicalInspector {
 		return this.along(CubeDimension.Z);
 	}
 
+	initiallyInPart(part: CubePart): CubicalInspector {
+		return this.withPredicate(cubical => cubical.initialLocation.part === part);
+	}
+
 	initiallyAdjectedTo(part: CubePart): CubicalInspector {
-		return this.withPredicate(cubical => cubical.initialLocation.isIn(part));
+		return this.withPredicate(cubical => cubical.initialLocation.isAdjectedTo(part));
 	}
 
 	initiallyAtCoordinates(coordinates: CubeCoordinates): CubicalInspector {
