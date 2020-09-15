@@ -1,20 +1,23 @@
-/**import { CubicalSolvedCondition, ReadonlyCubical } from "./Cubical";
-import { CubeDimension } from "./CubeGeometry";
-import { AbstractCubePart, CubePartType } from "./CubePart";
+import { CubicalSolvedCondition, ReadonlyCubical, Cubical } from "./Cubical";
+import { CubeDimension, CubeCoordinates } from "./CubeGeometry";
+import { CubePartType, CubePart } from "./CubePart";
 
 
-export class CubicalInspector<T extends CubePartType> {
+export class CubicalInspector {
 
-	readonly #predicates: Array<(cubicle: ReadonlyCubical<any>) => boolean>
+	readonly #cubicals: ReadonlyArray<Cubical>
+
+	readonly #predicates: Array<(cubicle: ReadonlyCubical) => boolean>
 
 	#negateNext: boolean
 
-	constructor(readonly cubicals: ReadonlyArray<ReadonlyCubical<any>>, predicates: ReadonlyArray<(cubicle: ReadonlyCubical<any>) => boolean> = [], negateNext: boolean = false) {
-		this.#predicates = [...predicates];
-		this.#negateNext = negateNext;
+	constructor(cubicals: ReadonlyArray<Cubical>) {
+		this.#cubicals = cubicals;
+		this.#predicates = [];
+		this.#negateNext = false;
 	}
 
-	withPredicate(predicate: (cubicle: ReadonlyCubical<any>) => boolean) {
+	withPredicate(predicate: (cubicle: ReadonlyCubical) => boolean) {
 		if (this.#negateNext) {
 			predicate = cubical => !predicate.call(this, cubical);
 			this.#negateNext = false;
@@ -23,101 +26,108 @@ export class CubicalInspector<T extends CubePartType> {
 		return this;
 	}
 
-	not(): CubicalInspector<T> {
+	not(): CubicalInspector {
 		this.#negateNext = true;
 		return this;
 	}
 
-	withType<NT extends CubePartType>(type: NT): CubicalInspector<NT> {
-		this.withPredicate(cubical => cubical.type === type);
-		return new CubicalInspector<NT>(this.cubicals, this.#predicates, this.#negateNext);
+	withType(type: CubePartType): CubicalInspector {
+		return this.withPredicate(cubical => cubical.type === type);
 	}
 
-	corners(): CubicalInspector<CubePartType.CORNER> {
+	corners(): CubicalInspector {
 		return this.withType(CubePartType.CORNER);
 	}
 
-	edges(): CubicalInspector<CubePartType.EDGE> {
+	edges(): CubicalInspector {
 		return this.withType(CubePartType.EDGE);
 	}
 
-	faces(): CubicalInspector<CubePartType.FACE> {
+	faces(): CubicalInspector {
 		return this.withType(CubePartType.FACE);
 	}
 
-	at(part: AbstractCubePart<any>): CubicalInspector<T> {
+	adjectedTo(part: CubePart): CubicalInspector {
 		return this.withPredicate(cubical => cubical.location.isIn(part));
 	}
 
-	atCoordinate(dimension: CubeDimension, value: number): CubicalInspector<T> {
-		return this.withPredicate(cubical => cubical.location.coordinates.matches(dimension, value));
+	atCoordinates(coordinates: CubeCoordinates): CubicalInspector {
+		return this.withPredicate(cubical => cubical.location.coordinates.equals(coordinates));
 	}
 
-	atX(value: number): CubicalInspector<T> {
+	atCoordinate(dimension: CubeDimension, value: number): CubicalInspector {
+		return this.withPredicate(cubical => cubical.location.coordinates.coordinateEquals(dimension, value));
+	}
+
+	atX(value: number): CubicalInspector {
 		return this.atCoordinate(CubeDimension.X, value);
 	}
 
-	atY(value: number): CubicalInspector<T> {
+	atY(value: number): CubicalInspector {
 		return this.atCoordinate(CubeDimension.Y, value);
 	}
 
-	atZ(value: number): CubicalInspector<T> {
+	atZ(value: number): CubicalInspector {
 		return this.atCoordinate(CubeDimension.Z, value);
 	}
 
-	along(dimension: CubeDimension) {
+	along(dimension: CubeDimension): CubicalInspector {
 		return this.withPredicate(cubical => cubical.location.isAlong(dimension));
 	}
 
-	alongX() {
+	alongX(): CubicalInspector {
 		return this.along(CubeDimension.X);
 	}
 
-	alongY() {
+	alongY(): CubicalInspector {
 		return this.along(CubeDimension.Y);
 	}
 
-	alongZ() {
+	alongZ(): CubicalInspector {
 		return this.along(CubeDimension.Z);
 	}
 
-	initiallyAt(part: AbstractCubePart<any>): CubicalInspector<T> {
+	initiallyAdjectedTo(part: CubePart): CubicalInspector {
 		return this.withPredicate(cubical => cubical.initialLocation.isIn(part));
 	}
 
-	initiallyAtCoordinate(dimension: CubeDimension, value: number): CubicalInspector<T> {
-		return this.withPredicate(cubical => cubical.initialLocation.coordinates.matches(dimension, value));
+	initiallyAtCoordinates(coordinates: CubeCoordinates): CubicalInspector {
+		return this.withPredicate(cubical => cubical.initialLocation.coordinates.equals(coordinates));
 	}
 
-	initiallyAtX(value: number): CubicalInspector<T> {
+	initiallyAtCoordinate(dimension: CubeDimension, value: number): CubicalInspector {
+		return this.withPredicate(cubical => cubical.initialLocation.coordinates.coordinateEquals(dimension, value));
+	}
+
+	initiallyAtX(value: number): CubicalInspector {
 		return this.initiallyAtCoordinate(CubeDimension.X, value);
 	}
 
-	initiallyAtY(value: number): CubicalInspector<T> {
+	initiallyAtY(value: number): CubicalInspector {
 		return this.initiallyAtCoordinate(CubeDimension.Y, value);
 	}
 
-	initiallyAtZ(value: number): CubicalInspector<T> {
+	initiallyAtZ(value: number): CubicalInspector {
 		return this.initiallyAtCoordinate(CubeDimension.Z, value);
 	}
 
-	initiallyAlong(dimension: CubeDimension) {
+	initiallyAlong(dimension: CubeDimension): CubicalInspector {
 		return this.withPredicate(cubical => cubical.initialLocation.isAlong(dimension));
 	}
 
-	initiallyAlongX() {
+	initiallyAlongX(): CubicalInspector {
 		return this.initiallyAlong(CubeDimension.X);
 	}
 
-	initiallyAlongY() {
+	initiallyAlongY(): CubicalInspector {
 		return this.initiallyAlong(CubeDimension.Y);
 	}
 
-	initiallyAlongZ() {
+	initiallyAlongZ(): CubicalInspector {
 		return this.initiallyAlong(CubeDimension.Z);
 	}
 
-	solved(customCondition?: CubicalSolvedCondition) {
+	solved(customCondition?: CubicalSolvedCondition): CubicalInspector {
 		return this.withPredicate(cubical => cubical.isSolved(customCondition));
 	}
 
@@ -127,31 +137,29 @@ export class CubicalInspector<T extends CubePartType> {
 		if (this.#negateNext) throw new Error('Cannot use not() before a terminator');
 	}
 
-	findAll(): ReadonlyArray<ReadonlyCubical<T>> {
+	findAll(): ReadonlyArray<ReadonlyCubical> {
 		this.checkTermination();
-		const me = this;
-		return this.cubicals.filter((cubical) => {
-			for (let filter of me.#predicates) {
+		return this.#cubicals.filter((cubical) => {
+			for (let filter of this.#predicates) {
 				if (!filter.call(undefined, cubical)) return false;
 			}
 			return true;
-		}).map((cubical) => cubical as ReadonlyCubical<T>);
+		});
 	}
 
-	findFirst(): ReadonlyCubical<T> | undefined {
+	findFirst(): ReadonlyCubical | undefined {
 		this.checkTermination();
-		const me = this;
-		const result = this.cubicals.find((cubical) => {
-			for (let filter of me.#predicates) {
+		const result = this.#cubicals.find((cubical) => {
+			for (let filter of this.#predicates) {
 				if (!filter.call(undefined, cubical)) return false;
 			}
 			return true;
 		});
 		if (result === undefined) return undefined;
-		return result as ReadonlyCubical<T>;
+		return result;
 	}
 
-	findOne(): ReadonlyCubical<T> {
+	findOne(): ReadonlyCubical {
 		this.checkTermination();
 		const result = this.findAll();
 		if (result.length !== 1) throw new Error(`Invalid result length: ${result.length}`);
@@ -183,4 +191,4 @@ export class CubicalInspector<T extends CubePartType> {
 		return this.findAll().every(cubical => !cubical.isSolved(customCondition));
 	}
 
-} */
+}

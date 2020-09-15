@@ -6,7 +6,7 @@ export * from './Cube/CubePart';
 export * from './Cube/CubeState';
 export * from './Cube/CubeStateLanguage';
 export * from './Cube/Cubical';
-//TODO SORRY export * from './Cube/CubicalInspector';
+export * from './Cube/CubicalInspector';
 
 export * from './Cube History/CubeHistory';
 

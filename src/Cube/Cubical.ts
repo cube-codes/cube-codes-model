@@ -1,14 +1,14 @@
-import { CubeSpecification, CubeCoordinates, CubeDimension } from "./CubeGeometry";
-import { Matrix, inv} from "mathjs";
-import { CubePartType, CubeFace, CubePart, CubePartTypes } from "./CubePart";
+import { CubeSpecification, CubeCoordinates, CubeDimension, Identifiable, Printable } from "./CubeGeometry";
+import { Matrix, inv } from "mathjs";
+import { CubePartType, CubeFace, CubePart } from "./CubePart";
 import { Cube } from "./Cube";
 import deepEqual from "deep-equal";
 import { Matrices } from "../Utilities/Matrices";
 
-  /**
-   * Wraps an orthogonal matrix that describes how the cubical is currently rotated around its center, in comparison to its standard location and orientation.
-   */
-export class CubicalOrientation {
+/**
+ * Wraps an orthogonal matrix that describes how the cubical is currently rotated around its center, in comparison to its standard location and orientation.
+ */
+export class CubicalOrientation implements Identifiable, Printable {
 
 	/** 
 	 * The standard orientation
@@ -17,10 +17,18 @@ export class CubicalOrientation {
 
 	constructor(readonly matrix: Matrix) {}
 
+	toId() {
+		return this.matrix.toJSON();
+	}
+
+	toString() {
+		return this.matrix.toString();
+	}
+
 	/**
 	 * Multiplies the current orientation this.matrix with a 90° rotation around the axis "dimension".
 	 * @param dimension 
-	 */ 
+	 */
 	rotate(dimension: CubeDimension): CubicalOrientation {
 		return new CubicalOrientation(Matrices.rotateMatrix(this.matrix, dimension));
 	}
@@ -30,16 +38,16 @@ export class CubicalOrientation {
 	 * 
 	 * @param permutation A permutation of the numbers {1,2,3,4}
 	 */
-	static fromS4Element(permutation:Array<number>):CubicalOrientation {
+	static fromS4Element(permutation: Array<number>): CubicalOrientation {
 		throw new Error('Not yet implemented');
 	}
-	
+
 	/** 
 	 * There are 24 rotations of the cube, these can be identified as group with the symmetric group S4, by observing how pairs of antipodal corners are permuted.
 	 * 
 	 * @param orientation An orientation 
 	 */
-	static toS4Element(orientation:CubicalOrientation):Array<number> {
+	static toS4Element(orientation: CubicalOrientation): Array<number> {
 		throw new Error('Not yet implemented');
 	}
 
@@ -49,88 +57,107 @@ export class CubicalOrientation {
  * Immutable. Wraps a CubeCoordinate in the cube, which has recognized the containing CubePart (Corner, Edge, Face) and local coordinates (or thrown an error).
  * 
  */
-export class CubicalLocation{
+export class CubicalLocation implements Identifiable, Printable {
 
-	cubePart:CubePart; 
-	remainingDimensions:Array<CubeDimension>;
-	remainingCoordinates:Array<number>;
+	readonly part: CubePart;
+
+	readonly coordinatesInPartDirections: ReadonlyArray<number>;
 
 	constructor(readonly spec: CubeSpecification, readonly coordinates: CubeCoordinates) {
-		//console.log(coordinates.toString());
-		this.coordinates=coordinates;
-		this.remainingDimensions= new Array<CubeDimension>();
-		this.remainingCoordinates=new Array<number>()
-		let cubePartStartingPoint= new CubeCoordinates(0,0,0);
-		
-		//Go through all dimensions and see if the result is sharp 0 resp. max or if it is some value in between.
-		const max=spec.edgeLength - 1;
-		for (const dimension of CubeDimension.ALL) {	
-			const coordinate=coordinates.getComponent(dimension);
-			if (coordinate == max) {
-				cubePartStartingPoint=cubePartStartingPoint.addAt(dimension,1);
-			}
-			else if  (coordinate == 0) {
-				cubePartStartingPoint=cubePartStartingPoint.addAt(dimension,0); //redundant, but for completeness
-			}
-			else if (coordinate > 0 && coordinate < max) {
-				this.remainingDimensions.push(dimension);
-				this.remainingCoordinates.push(coordinate);
-			}
-			else if (coordinate < 0 || coordinate > max) {
-				throw new Error('Coordinate outside of cube');
-			}
-		} 
 
-		if (this.remainingDimensions.length==3) throw new Error('Coordinate inside of cube');
-		this.cubePart=CubePart.fromCoordinates(this.remainingDimensions,cubePartStartingPoint);
+		let partOrigin = CubeCoordinates.ZERO;
+		const partDirections = new Array<CubeDimension>();
+		const coordinatesInPart = new Array<number>();
+
+		//Go through all dimensions and see if the result is sharp 0 resp. max or if it is some value in between.
+		const coordinateMaximum = spec.edgeLength - 1;
+		for (const dimension of CubeDimension.getAll()) {
+			const coordinate = coordinates.getComponent(dimension);
+			if (coordinate == coordinateMaximum) {
+				partOrigin = partOrigin.addAt(dimension, 1);
+			} else if (coordinate == 0) {
+				partOrigin = partOrigin.addAt(dimension, 0); //redundant, but for completeness
+			} else if (coordinate > 0 && coordinate < coordinateMaximum) {
+				partDirections.push(dimension);
+				coordinatesInPart.push(coordinate);
+			} else if (coordinate < 0 || coordinate > coordinateMaximum) {
+				throw new Error(`Coordinates outside of cube: ${coordinates}`);
+			}
+		}
+
+		if (partDirections.length == 3) throw new Error(`Coordinates inside of cube: ${coordinates}`);
+
+		this.part = CubePart.getByOriginAndDirections(partOrigin, partDirections);
+		this.coordinatesInPartDirections = coordinatesInPart;
+
 	}
 
 	/** Computes a CubicalLocation on given CubePart toghether with local coordinates. Used in CubicalLocation.getAll and IndexToLocation.fromIndex and possibly during cube inspection.
 	 * 
 	 */
-	static fromCubePartAndRemainingCoordinates(spec:CubeSpecification,cubePart:CubePart, remainingCoordinates:Array<number>):CubicalLocation {
-		if (cubePart.remainingDimensions.length!=remainingCoordinates.length) throw new Error('remainingCoordiantes have wrong length');
-		let coordinates:CubeCoordinates=cubePart.startingPoint.multiply(spec.edgeLength-1);;
-		for(let i=0; i<remainingCoordinates.length;i++) {
-			coordinates=coordinates.addAt(cubePart.remainingDimensions[i],remainingCoordinates[i]);
+	static fromPartAndCoordinatesInPart(spec: CubeSpecification, part: CubePart, coordinatesInPart: ReadonlyArray<number>): CubicalLocation {
+
+		if (part.directions.length != coordinatesInPart.length) throw new Error(`Coordinates in part have wrong length (expected: ${part.directions.length}): ${coordinatesInPart.length}`);
+
+		let coordinates: CubeCoordinates = part.origin.multiply(spec.edgeLength - 1);
+		for (let directionIndex = 0; directionIndex < part.directions.length; directionIndex++) {
+			coordinates = coordinates.addAt(part.directions[directionIndex], coordinatesInPart[directionIndex]);
 		}
-		//console.log(cubePart.toString()+coordinates.toString());
-		return new CubicalLocation(spec,coordinates);
+
+		return new CubicalLocation(spec, coordinates);
+
 	}
 
 
 	/**Constructs all cubical locations inside (i.e. ecluding lowerdimensional boundary) of a given Face/Edge/Corner
 	 * essentially by covering all possibilities in the if-tree in the constructor
-	 * 
-	 * TODO LL Loop over remainingCoordinate[] depending on cubePart.type
 	*/
-	static getAll(spec:CubeSpecification,cubePart:CubePart):Array<CubicalLocation> {
-		let result:Array<CubicalLocation>=new Array<CubicalLocation>();
-		if(cubePart.type==CubePartType.CORNER) {
-			let remainingCoordinates:Array<number>=[]; //only a single cubical for a given corner
-			result.push(CubicalLocation.fromCubePartAndRemainingCoordinates(spec,cubePart, remainingCoordinates));
-		} else if (cubePart.type==CubePartType.EDGE) {
-			for(let remainingCoordinate0=1;remainingCoordinate0<spec.edgeLength-1;remainingCoordinate0++) {
-				let remainingCoordinates:Array<number>=[remainingCoordinate0]; 
-				result.push(CubicalLocation.fromCubePartAndRemainingCoordinates(spec,cubePart, remainingCoordinates));
+	static fromPart(spec: CubeSpecification, part: CubePart): ReadonlyArray<CubicalLocation> {
+		const result: Array<CubicalLocation> = new Array<CubicalLocation>();
+		if (part.type == CubePartType.CORNER) {
+			result.push(CubicalLocation.fromPartAndCoordinatesInPart(spec, part, []));
+		} else if (part.type == CubePartType.EDGE) {
+			for (let remainingCoordinate = 1; remainingCoordinate < spec.edgeLength - 1; remainingCoordinate++) {
+				result.push(CubicalLocation.fromPartAndCoordinatesInPart(spec, part, [remainingCoordinate]));
 			}
-		} else if (cubePart.type==CubePartType.FACE) {
-			for(let remainingCoordinate0=1;remainingCoordinate0<spec.edgeLength-1;remainingCoordinate0++) {
-				for(let remainingCoordinate1=1;remainingCoordinate1<spec.edgeLength-1;remainingCoordinate1++) {
-					let remainingCoordinates:Array<number>=[remainingCoordinate0, remainingCoordinate1]; 
-					result.push(CubicalLocation.fromCubePartAndRemainingCoordinates(spec,cubePart, remainingCoordinates));				}
+		} else if (part.type == CubePartType.FACE) {
+			for (let remainingCoordinate0 = 1; remainingCoordinate0 < spec.edgeLength - 1; remainingCoordinate0++) {
+				for (let remainingCoordinate1 = 1; remainingCoordinate1 < spec.edgeLength - 1; remainingCoordinate1++) {
+					result.push(CubicalLocation.fromPartAndCoordinatesInPart(spec, part, [remainingCoordinate0, remainingCoordinate1]));
+				}
 			}
-		} 
+		} else {
+			throw new Error(`Invalid type: ${part.type}`);
+		}
 		return result;
 	}
 
-	isIn(cubePart: CubePart): boolean {
-		//TODO: Implement: ATTENTION: THIS IS NOT SIMPLY TO ASK WHETHER this.cubePart == cubePart. Because a EdgeCubical is Part of 2 faces but cubePart is a CubeEdge ...
-		throw new Error('Implement');
+	toId() {
+		return this.coordinates.toId();
+	}
+
+	toString() {
+		return this.coordinates.toString();
+	}
+
+	get type() {
+		return this.part.type;
+	}
+
+	isIn(part: CubePart): boolean {
+		return this.part.hasAdjactedPart(part);
 	}
 
 	isAlong(dimension: CubeDimension): boolean {
-	throw new Error('Implement');
+		if (this.part.type == CubePartType.CORNER) {
+			return true;
+		} else if (this.part.type == CubePartType.EDGE) {
+			return dimension === this.part.directions[0];
+		} else if (this.part.type == CubePartType.FACE) {
+			return dimension === this.part.directions[0] || dimension === this.part.directions[1];
+		} else {
+			throw new Error(`Invalid type: ${this.part.type}`);
+		}
 	}
 
 	rotate(dimension: CubeDimension): CubicalLocation {
@@ -138,14 +165,14 @@ export class CubicalLocation{
 	}
 
 
-}	
+}
 export interface CubicalSolvedCondition {
 
 	(cubical: ReadonlyCubical): boolean
 
 }
 
-export interface ReadonlyCubical {
+export interface ReadonlyCubical extends Identifiable, Printable {
 
 	readonly cube: Cube
 
@@ -155,11 +182,13 @@ export interface ReadonlyCubical {
 
 	readonly orientation: CubicalOrientation
 
-	isSolved(customCondition: CubicalSolvedCondition): boolean
+	readonly type: CubePartType
+
+	isSolved(customCondition?: CubicalSolvedCondition): boolean
 
 }
 
-export class Cubical implements ReadonlyCubical{
+export class Cubical implements ReadonlyCubical {
 
 	#location: CubicalLocation;
 
@@ -167,43 +196,39 @@ export class Cubical implements ReadonlyCubical{
 
 	constructor(
 		readonly cube: Cube,
-		readonly initialLocation:CubicalLocation,
+		readonly initialLocation: CubicalLocation,
 		location?: CubicalLocation,
 		orientation?: CubicalOrientation) {
-		
-		if(location) this.#location = location;
-		else this.#location=initialLocation;
-		
-		if(orientation) this.#orientation = orientation;
-		else this.#orientation=CubicalOrientation.IDENTITY;
 
-		if (!deepEqual(this.cube.spec, this.initialLocation.spec)) throw new Error(`Invalid spec of intial location: ${initialLocation.spec}`);
-		//TODO LL if (!deepEqual(this.cube.spec, this.#location.spec)) throw new Error(`Invalid spec of location: ${location.spec}`);
+		this.#location = location ?? initialLocation;
+		this.#orientation = orientation ?? CubicalOrientation.IDENTITY;
+
+		if (!deepEqual(this.cube.spec, this.initialLocation.spec)) throw new Error(`Invalid spec of intial location (expected: ${this.cube.spec}): ${this.initialLocation.spec}`);
+		if (!deepEqual(this.cube.spec, this.#location.spec)) throw new Error(`Invalid spec of location (expected: ${this.cube.spec}): ${this.#location.spec}`);
+		if (!deepEqual(this.initialLocation.type, this.#location.type)) throw new Error(`Invalid type of location (expected: ${this.initialLocation.type}): ${this.#location.type}`);
 	}
 
-	static fromInitialLocation(cube: Cube, initialLocation:CubicalLocation):Cubical {
-		return new Cubical(cube, initialLocation, initialLocation, CubicalOrientation.IDENTITY);
+	toId() {
+		return this.initialLocation.toId()
+	}
+
+	/** Outputs the data of a CubeState. Used for debug and lesson "permutation" and "orbit"
+	 * 
+	 */
+	toString(): string {
+		return this.type.toString() + '(' + this.initialLocation.toString() + '->' + this.location.toString() + '|' + this.orientation.toString() + ')';
 	}
 
 	get location(): CubicalLocation {
 		return this.#location;
 	}
 
-	set location(location:CubicalLocation) {
-		this.#location=location;
-	}
-
 	get orientation(): CubicalOrientation {
 		return this.#orientation;
 	}
 
-	set orientation(orientation:CubicalOrientation) {
-		this.#orientation=orientation;
-	}
-
-	getType():CubePartType {
-		if (this.initialLocation.cubePart.type!=this.#location.cubePart.type) throw new Error('locations have different cubeParts (something went wrong in moves)');
-		return this.initialLocation.cubePart.type; 
+	get type(): CubePartType {
+		return this.initialLocation.type;
 	}
 
 	isSolved(customCondition?: CubicalSolvedCondition): boolean {
@@ -215,21 +240,24 @@ export class Cubical implements ReadonlyCubical{
 		this.#location = this.#location.rotate(dimension);
 		this.#orientation = this.#orientation.rotate(dimension);
 	}
+	
+	beam(location: CubicalLocation, orientation: CubicalOrientation) {
+		this.#location = location;
+		if (!deepEqual(this.cube.spec, this.#location.spec)) throw new Error(`Invalid spec of location (expected: ${this.cube.spec}): ${this.#location.spec}`);
+		if (!deepEqual(this.initialLocation.type, this.#location.type)) throw new Error(`Invalid type of location (expected: ${this.initialLocation.type}): ${this.#location.type}`);
+		this.#orientation = orientation;
+	}
 
 	/** Computes, which initial face (color) is shown if one looks at the cube at the new location on some face.
 	 * 
 	 * @param cubeFace The face from which we look at the cubical
 	 */
-	getColorShownOnSomeFace(cubeFace:CubeFace):CubeFace {
-		this.location.cubePart.isContainedInFace(cubeFace); // just validates the request
-		let result:CubeFace=CubeFace.fromNormalVector(cubeFace.getNormalVector().transformAroundZero(inv(this.orientation.matrix)));
-		this.initialLocation.cubePart.isContainedInFace(result); // just validates the result
+	//TODO: Was macht das hier?
+	getColorShownOnSomeFace(cubeFace: CubeFace): CubeFace {
+		this.location.part.isContainedInFace(cubeFace); // just validates the request
+		let result: CubeFace = CubeFace.getByNormalVector(cubeFace.getNormalVector().transformAroundZero(inv(this.orientation.matrix)));
+		this.initialLocation.part.isContainedInFace(result); // just validates the result
 		return result;
 	}
-	/** Outputs the data of a CubeState. Used for debug and lesson "permutation" and "orbit"
-	 * 
-	 */
-	public toString(): string {
-		return CubePartTypes.toString(this.getType()) + '('+ this.initialLocation.coordinates.toString()+'->'+this.location.coordinates.toString()+'|'+this.orientation.matrix.toString()+')';
-	}
+
 }

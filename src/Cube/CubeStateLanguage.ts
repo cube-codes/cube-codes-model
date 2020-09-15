@@ -1,6 +1,6 @@
 import { CubeState } from "./CubeState";
 //import { CubicalLocation } from "./Cubical";
-import { CubeFace, CubePartTypes } from "./CubePart";
+import { CubeFace, CubePartType } from "./CubePart";
 import { CubeSpecification, CubeCoordinates} from "./CubeGeometry";
 import deepEqual from "deep-equal";
 
@@ -132,17 +132,17 @@ export class ColorCubeLanguage {
 		let permutations=[new Array<number>(),new Array<number>(),new Array<number>(),];
 		let reorientations=[new Array<number>(),new Array<number>(),new Array<number>(),];
 
-		for(let type of CubePartTypes.ALL) {
+		for(let type of CubePartType.getAll()) {
 			let initialLocationsPool=Array<number>();
-			for(let initialIndex=0;initialIndex<CubeState.countLocations(this.spec,type);initialIndex++) { initialLocationsPool.push(initialIndex); }
+			for(let initialIndex=0;initialIndex<type.countLocations(this.spec);initialIndex++) { initialLocationsPool.push(initialIndex); }
 			//go through all locations
-			for(let index=0;index<CubeState.countLocations(this.spec,type);index++) { 
+			for(let index=0;index<type.countLocations(this.spec);index++) { 
 				//memorize colors at this location
 				const cubicalLocation=CubeState.indexToLocation(this.spec,index, type);
 				let locationNormalVectors= new Array<CubeCoordinates>();
-				for(let face of cubicalLocation.cubePart.neighbouringFaces) locationNormalVectors.push(face.getNormalVector()); //in order to match orientation later
+				for(let face of cubicalLocation.part.neighbouringFaces) locationNormalVectors.push(face.getNormalVector()); //in order to match orientation later
 				let cubicalColors = new Array<CubeFace>();
-				for (let face of cubicalLocation.cubePart.neighbouringFaces) {
+				for (let face of cubicalLocation.part.neighbouringFaces) {
 					cubicalColors.push(ColorCubeLanguage.getColorAt(cubicalLocation.coordinates.add(face.getNormalVector()),colors,coordinates))
 					//console.log('('+location.coordinates.add(normalVector).toString()+':'+this.getColorAt(location.coordinates.add(normalVector)).toString());
 				}				
@@ -156,10 +156,10 @@ export class ColorCubeLanguage {
 				for(initialIndex of initialLocationsPool) {
 					let initiallocation = CubeState.indexToLocation(this.spec,initialIndex, type); 
 					let initialLocationNormalVectors =new Array<CubeCoordinates>();
-					for(let face of initiallocation.cubePart.neighbouringFaces) initialLocationNormalVectors.push(face.getNormalVector()); //in order to match orientation later
+					for(let face of initiallocation.part.neighbouringFaces) initialLocationNormalVectors.push(face.getNormalVector()); //in order to match orientation later
 
 					for (rotation = 0; rotation < 3; rotation++) {
-						if (deepEqual(cubicalColors,initiallocation.cubePart.neighbouringFaces)) {
+						if (deepEqual(cubicalColors,initiallocation.part.neighbouringFaces)) {
 							found = true;
 							initialLocationsPool.splice(initialLocationsPool.indexOf(initialIndex), 1); //Remove from List
 							break search;
@@ -169,8 +169,8 @@ export class ColorCubeLanguage {
 					}
 				}
 				if (!found) throw new Error('Not found cubical with color combination ' + cubicalColors[0].toString());
-				permutations[type][initialIndex]=index;
-				reorientations[type][initialIndex]=rotation;
+				permutations[type.dimensionsCount][initialIndex]=index;
+				reorientations[type.dimensionsCount][initialIndex]=rotation;
 			}
 		}
 		return new CubeState(this.spec,permutations,reorientations);
@@ -186,17 +186,17 @@ export class ColorCubeLanguage {
 		const coordinates: Array<CubeCoordinates> = new Array<CubeCoordinates>();
 		
 		//Go throgh all initianLocations
-		for(let type of CubePartTypes.ALL) {
-			for(let initialIndex=0;initialIndex<CubeState.countLocations(this.spec,type);initialIndex++) { 
+		for(let type of CubePartType.getAll()) {
+			for(let initialIndex=0;initialIndex<type.countLocations(this.spec);initialIndex++) { 
 
 				let initialLocation=CubeState.indexToLocation(this.spec,initialIndex, type);
-				let newLocation=CubeState.indexToLocation(this.spec,cubeState.permutations[type][initialIndex], type);
-				let reorientationNumber=cubeState.reorientations[type][initialIndex];
+				let newLocation=CubeState.indexToLocation(this.spec,cubeState.permutations[type.dimensionsCount][initialIndex], type);
+				let reorientationNumber=cubeState.reorientations[type.dimensionsCount][initialIndex];
 
-				for (let i=0;i<initialLocation.cubePart.neighbouringFaces.length;i++) {
+				for (let i=0;i<initialLocation.part.neighbouringFaces.length;i++) {
 					//rotate colors or coordinates?
-					colors.push(initialLocation.cubePart.neighbouringFaces[(i + reorientationNumber)%initialLocation.cubePart.neighbouringFaces.length]);
-					coordinates.push(newLocation.coordinates.add(newLocation.cubePart.neighbouringFaces[i].getNormalVector()));
+					colors.push(initialLocation.part.neighbouringFaces[(i + reorientationNumber)%initialLocation.part.neighbouringFaces.length]);
+					coordinates.push(newLocation.coordinates.add(newLocation.part.neighbouringFaces[i].getNormalVector()));
 
 				}
 			}
@@ -290,16 +290,3 @@ export class ColorCubeLanguage {
 		throw new Error('No color found at coordintes '+CubeCoordinates.toString());
 	}
 }
-
-
-
-
-
-
-
-
-
-
-
-
-

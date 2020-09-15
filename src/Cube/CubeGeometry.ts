@@ -1,6 +1,8 @@
 import { Matrix, matrix, multiply } from "mathjs";
 import { Matrices } from "../Utilities/Matrices";
+import deepEqual from "deep-equal";
 
+//TODO: Refactor
 export class CubeSpecification {
 
 	constructor(
@@ -23,35 +25,51 @@ export class CubeSpecification {
 
 }
 
-export class CubeDimension {
+export interface Identifiable {
+
+	toId(): string
+
+}
+
+export interface Printable {
+
+	toString(): string
+
+}
+
+export class CubeDimension implements Printable {
+
+	private static readonly _all: Array<CubeDimension> = new Array();
 
 	static readonly X = new CubeDimension(0, 'X')
 	static readonly Y = new CubeDimension(1, 'Y')
 	static readonly Z = new CubeDimension(2, 'Z')
-	static readonly ALL: ReadonlyArray<CubeDimension> = [CubeDimension.X,CubeDimension.Y,CubeDimension.Z];
 
-	private constructor(readonly index: number, readonly name: string) {}
-	
-	static fromIndex(index: number): CubeDimension {
-		switch (index) {
-			case 0: return CubeDimension.X;
-			case 1: return CubeDimension.Y;
-			case 2: return CubeDimension.Z;
-			default: throw new Error(`Invalid index: ${index}`);
-		}
+	static getAll(): ReadonlyArray<CubeDimension> {
+		return this._all;
 	}
 
-	/*getOrthogonal(dimension2: CubeDimension): CubeDimension {
-		return CubeDimension.fromIndex(3 - this.index - dimension2.index);
-	}*/
+	static getByIndex(index: number): CubeDimension {
+		const item = this._all[index];
+		if(item === undefined) throw new Error(`Invalid index: ${index}`);
+		return item;
+	}
+
+	private constructor(readonly index: number, readonly name: string) {
+		CubeDimension._all.push(this);
+	}
 
 	toString(): string {
 		return this.name;
 	}
 
+	getOrthogonal(dimension2: CubeDimension): CubeDimension {
+		return CubeDimension.getByIndex(3 - this.index - dimension2.index);
+	}
+
 }
 
-export class CubeCoordinates {
+export class CubeCoordinates implements Identifiable, Printable {
 
 	static readonly ZERO = new CubeCoordinates(0, 0, 0)
 
@@ -62,17 +80,10 @@ export class CubeCoordinates {
 	static readonly E_XY = new CubeCoordinates(1, 1, 0)
 	static readonly E_YZ = new CubeCoordinates(0, 1, 1)
 	static readonly E_XZ = new CubeCoordinates(1, 0, 1)
-	
+
 	static readonly E_XYZ = new CubeCoordinates(1, 1, 1)
 
-	constructor(readonly x: number,
-		readonly y: number,
-		readonly z: number) {
-		/* SL: In transformations around center is necessary to have intermediate non-integral coordinates.
-		if (!Number.isInteger(x)) throw new Error(`Invalid x: ${x}`);
-		if (!Number.isInteger(y)) throw new Error(`Invalid y: ${y}`);
-		if (!Number.isInteger(z)) throw new Error(`Invalid z: ${z}`);*/
-	}
+	constructor(readonly x: number, readonly y: number, readonly z: number) { }
 
 	static fromDimension(dimension: CubeDimension, value: number): CubeCoordinates {
 		switch (dimension) {
@@ -83,8 +94,18 @@ export class CubeCoordinates {
 		}
 	}
 
+	toId(): string {
+		return JSON.stringify(this);
+	}
+
 	toString(): string {
 		return `(${this.x},${this.y},${this.z})`;
+	}
+
+	ensureInteger(): void {
+		if (!Number.isInteger(this.x)) throw new Error(`Invalid x: ${this.x}`);
+		if (!Number.isInteger(this.y)) throw new Error(`Invalid y: ${this.y}`);
+		if (!Number.isInteger(this.z)) throw new Error(`Invalid z: ${this.z}`);
 	}
 
 	getComponent(dimension: CubeDimension): number {
@@ -100,7 +121,11 @@ export class CubeCoordinates {
 		}
 	}
 
-	matches(dimension: CubeDimension, value: number): boolean {
+	equals(coordinates: CubeCoordinates): boolean {
+		return deepEqual(this, coordinates);
+	}
+
+	coordinateEquals(dimension: CubeDimension, value: number): boolean {
 		return this.getComponent(dimension) === value;
 	}
 
