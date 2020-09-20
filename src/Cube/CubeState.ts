@@ -53,10 +53,11 @@ export class CubeState implements Printable {
 		for (const cubical of cubicals) {
 			const index = CubeState.indexFromLocation(this.spec, cubical.initialLocation);
 			const location = CubeState.indexToLocation(this.spec, this.permutations[cubical.type.dimensionsCount][index], cubical.type);
-			const orientation = CubeState.reorientationNumberToMatrix(cubical.initialLocation.part, cubical.location.part, this.reorientations[cubical.type.dimensionsCount][index]);
-			cubical.beam(location, orientation);
+			//ÄTSCH, da war der Fehler ;-) 
+			//const orientation = CubeState.reorientationNumberToMatrix(cubical.initialLocation.part, cubical.location.part, this.reorientations[cubical.type.dimensionsCount][index]);
+			const orientation = CubeState.reorientationNumberToMatrix(cubical.initialLocation.part, location.part, this.reorientations[cubical.type.dimensionsCount][index]);
+			cubical.beam(location, orientation);		
 		}
-
 	}
 
 	/** Index of a CubicalLocations by type. The format is cubePartIndex*(N-2)^d+(remainingCoordinate[0]-1)*(N-2)^(d-1)...
@@ -65,6 +66,7 @@ export class CubeState implements Printable {
 	 * @param CubicalLocation 
 	 */
 	//TODO: Why public?
+	//ANSWER: So in inspection I am free to switch between different address systems for locations (coordinate, index, on cubepart)
 	static indexFromLocation(spec: CubeSpecification, cubeLocation: CubicalLocation): number {
 		let result = cubeLocation.part.index;
 		//encodes the remainingCoordinates 0...(N-3)^d, since each remainingCoordinate is 1...N-2
@@ -118,7 +120,7 @@ export class CubeState implements Printable {
 				transformedNormalVectors = transformedNormalVectors.concat(transformedNormalVectors.splice(0, 1));
 			}
 		}
-		throw new Error('Cannot bring the sets of normal and tangent vectors to coincide (transformed initial location NormalVectors and new location NormalVectors are different sets?)');
+		throw new Error('Cannot bring the sets of normal and additional vectors to coincide (cube with illegal reorientations to start with?)');
 	}
 
 	/** Takes a number 0....CubePart.normalVectors.length-1 and finds a Matrix (mapping the normal vectors at initiallocation to normal vectors at newlocation) are shifted with respect to the fixed order of the normal vectors at both places

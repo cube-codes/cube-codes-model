@@ -64,9 +64,9 @@ test('Basic Test', () => {
 
 	///////////////////////////
 	// Rotation Cube
-
+	cube= new Cube(spec); 
 	cube.mRight();
-	//console.log(cube.toFormattedString());
+	//console.log(cube.toString());
 	expect(cube.cubicals.initiallyAtCoordinates(new CubeCoordinates(0, 3, 0)).findOne().location.coordinates).toEqual(new CubeCoordinates(0, 0, 0));
 	expect(cube.cubicals.initiallyAtCoordinates(new CubeCoordinates(0, 1, 0)).findOne().location.coordinates).toEqual(new CubeCoordinates(0, 0, 2));
 
@@ -75,14 +75,18 @@ test('Basic Test', () => {
 	// CubeState: Test if encoding give right result, and if decoding again gives the same as initially
 
 	let state: CubeState = cube.getState();
-	//console.log(state.toFormattedString());
+	//console.log(state.toString());
+	expect(state.permutations[0]).toEqual([2, 0, 3, 1, 4, 5, 6, 7]);
 	expect(state.permutations[1]).toEqual([0, 1, 12, 13, 4, 5, 6, 7, 8, 9, 3, 2, 19, 18, 14, 15, 16, 17, 10, 11, 20, 21, 22, 23]);  //(2 12 19 11)(3 13 18 10)
+	expect(state.permutations[2]).toEqual([0, 1, 2, 3, 5, 7, 4, 6, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]);
+	expect(state.reorientations[0]).toEqual([2, 1, 1, 2, 0, 0, 0, 0]);
 	expect(state.reorientations[1]).toEqual([0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0]);
 	expect(state.reorientations[2]).toEqual([0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+	//z.B. corner 0 = DRF geht auf FRU, das ist corner 2 = UFR um zwei rotiert
 
 	let cube2: Cube = new Cube(spec);
 	cube2.setState(state);
-	//console.log(cube2.toFormattedString());
+	//console.log(cube2.toString());
 	expect(cube.toString()).toEqual(cube2.toString());
 
 	////////////////////////////////////////////
@@ -114,4 +118,32 @@ test('Basic Test', () => {
 	expect(reexportedColorString).toEqual(colorString);
 
 
+
+	////////////////////////////////////////////////////
+	// Other tools
+	let spec3 = new CubeSpecification(3, true);
+	//let lang3 = new ColorCubeLanguage(spec3);
+
+	let cube3= new Cube(spec3); 
+	cube3.mRight();
+	//console.log(lang3.stringify(cube3.getState()));
+	//console.log(cube3.getState().toString());
+	//console.log(cube3.getOrbit());
+	expect(cube3.getOrbit()).toEqual("Orbit: Signums=1, CornerOrientations=0, EdgeOrientations=0");
+
+
+	cube3.shuffleByMove();
+	//console.log(lang3.stringify(cube3.getState()));
+	//console.log(cube3.getState().toString());
+	//console.log(cube3.getOrbit());
+	expect(cube3.getOrbit()).toEqual("Orbit: Signums=1, CornerOrientations=0, EdgeOrientations=0");
+
+
+
+	cube3= new Cube(spec3); 
+	cube3.shuffleByExplosion();
+	//console.log(lang3.stringify(cube3.getState()));
+	//console.log(cube3.getState().toString());
+	//console.log(cube3.getOrbit());
+	cube3.getOrbit(); //cannot test result because involves random numbers 
 });

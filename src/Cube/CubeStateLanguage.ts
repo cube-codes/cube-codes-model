@@ -178,6 +178,7 @@ export class ColorCubeLanguage {
 	
 
 	stringify(cubeState:CubeState):String {
+		if(this.spec!=cubeState.spec) throw new Error("Language and State have different Spec");
 
 		//1) BUILD A "COLOR CUBE" WITH COLORS INSERTED AT LOCATION+NORMALVECTOR
 
