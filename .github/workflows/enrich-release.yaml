@@ -18,7 +18,7 @@ jobs:
     - run: npm --no-git-tag-version version ${{ steps.get_release.outputs.tag_name }}
     - run: npm run release
       env:
-        NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
     - uses: actions/upload-release-asset@v1
       with:
         upload_url: ${{ steps.get_release.outputs.upload_url }}

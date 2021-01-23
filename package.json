@@ -1,5 +1,5 @@
 {
-	"name": "cube-codes-model",
+	"name": "@cube-codes/cube-codes-model",
 	"version": "1.0.0",
 	"description": "Model describing a Rubik cube and others",
 	"main": "dist/package/index.js",
@@ -16,9 +16,6 @@
 	"files": [
 		"dist/package"
 	],
-	"publishConfig": {
-		"registry": "https://npm.pkg.github.com/@cube-codes"
-	},
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/cube-codes/cube-codes-model.git"
