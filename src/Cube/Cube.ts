@@ -259,7 +259,7 @@ export class Cube implements Printable {
 	}
 
 	getOrbit():String {
-		if (this.spec.edgeLength!=3 || this.spec.coloredFaces!=true) throw new Error('Orbit problem only solved and implemented for SPEC (3, ColoredFaces)');
+		if (this.spec.edgeLength!=3 || this.spec.colored!=true) throw new Error('Orbit problem only solved and implemented for SPEC (3, ColoredFaces)');
 		let state:CubeState=this.getState();
 		//Careful, since the cube can be rotated in space, the face permutations also have to be encountered
 		let CornerPermutationsVsEdgePermutationsSignum=Cube.getSignum(state.permutations[0])*Cube.getSignum(state.permutations[1])*Cube.getSignum(state.permutations[2]);

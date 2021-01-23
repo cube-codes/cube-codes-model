@@ -173,8 +173,8 @@ export class CubeHistory {
 			const newChangeIndex = this.currentPosition + 1;
 
 			// If we are currently not at the end, clean/remove the history ahead of us
-			if(me.changes.length !== newChangeIndex) {
-				me.cleanFutureAfter(me.currentPosition);
+			if(this.changes.length !== newChangeIndex) {
+				this.cleanFutureAfter(this.currentPosition);
 			}
 
 			// Record change and move
