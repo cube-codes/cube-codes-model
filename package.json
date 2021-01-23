@@ -16,6 +16,9 @@
 	"files": [
 		"dist/package"
 	],
+	"publishConfig": {
+		"registry": "https://npm.pkg.github.com/@cube-codes"
+	},
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/cube-codes/cube-codes-model.git"
