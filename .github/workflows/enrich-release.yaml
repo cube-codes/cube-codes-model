@@ -16,7 +16,7 @@ jobs:
         node-version: '12.x'
         registry-url: 'https://npm.pkg.github.com'
     - run: npm --no-git-tag-version version ${{ steps.get_release.outputs.tag_name }}
-    - run: npm run full
+    - run: npm run release
     - uses: actions/upload-release-asset@v1
       with:
         upload_url: ${{ steps.get_release.outputs.upload_url }}

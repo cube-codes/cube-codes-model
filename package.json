@@ -8,18 +8,17 @@
 		"build": "tsc",
 		"test": "jest",
 		"browser": "rollup -c",
-		"docs": "typedoc && cd dist/docs && bestzip ../docs.zip * && cd ../..",
-		"full": "npm ci && npm run build && npm run test && npm run browser && npm run docs"
+		"docs": "typedoc",
+		"full": "npm ci && npm run build && npm run test && npm run browser && npm run docs",
+		"docs-zip": "cd dist/docs && bestzip ../docs.zip * && cd ../..",
+		"release": "npm run full && npm run docs-zip && npm publish"
 	},
 	"files": [
 		"dist/package"
 	],
-	"publishConfig": {
-		"registry": "https://npm.pkg.github.com/@lukaslentner"
-	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/lukaslentner/cube-codes-model.git"
+		"url": "git+https://github.com/cube-codes/cube-codes-model.git"
 	},
 	"keywords": [
 		"Rubik",
@@ -32,9 +31,9 @@
 	"author": "Lukas Lentner <kontakt@lukaslentner.de>",
 	"license": "GPL-3.0-only",
 	"bugs": {
-		"url": "https://github.com/lukaslentner/cube-codes-model/issues"
+		"url": "https://github.com/cube-codes/cube-codes-model/issues"
 	},
-	"homepage": "https://github.com/lukaslentner/cube-codes-model#readme",
+	"homepage": "https://github.com/cube-codes/cube-codes-model#readme",
 	"devDependencies": {
 		"@rollup/plugin-commonjs": "^15.0.0",
 		"@rollup/plugin-node-resolve": "^9.0.0",
