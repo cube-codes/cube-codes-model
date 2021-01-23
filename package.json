@@ -1,5 +1,5 @@
 {
-	"name": "cube-codes-model",
+	"name": "@cube-codes/cube-codes-model",
 	"version": "1.0.0",
 	"description": "Model describing a Rubik cube and others",
 	"main": "dist/package/index.js",
