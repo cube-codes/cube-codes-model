@@ -258,5 +258,39 @@ export class Cube implements Printable {
 		return this.shuffleByMove(moveLength, source);
 	}
 
+	getOrbit():String {
+		if (this.spec.edgeLength!=3 || this.spec.coloredFaces!=true) throw new Error('Orbit problem only solved and implemented for SPEC (3, ColoredFaces)');
+		let state:CubeState=this.getState();
+		//Careful, since the cube can be rotated in space, the face permutations also have to be encountered
+		let CornerPermutationsVsEdgePermutationsSignum=Cube.getSignum(state.permutations[0])*Cube.getSignum(state.permutations[1])*Cube.getSignum(state.permutations[2]);
+
+		let CornerReorientationsSum=0;
+		for(let index=0;index<CubePartType.CORNER.countLocations(this.spec);index++) {
+			CornerReorientationsSum+=state.reorientations[0][index];
+		}
+		let EdgeReorientationsSum=0;
+		for(let index=0;index<CubePartType.EDGE.countLocations(this.spec);index++) {
+			EdgeReorientationsSum+=state.reorientations[1][index];
+		}
+		return "Orbit: Signums="+CornerPermutationsVsEdgePermutationsSignum.toString()
+		+", CornerOrientations="+ (CornerReorientationsSum % 3).toString()
+		+", EdgeOrientations="+ (EdgeReorientationsSum %2) .toString();
+		
+	}
+
+	/** Computes the signum of a permutation, used in getOrbit
+	 * 
+	 */
+	private static getSignum(permutation:ReadonlyArray<number>):number  {
+		let signumCount=0;
+		for (let i:number=0;i<permutation.length;i++) {
+			for (let j:number=i+1;j<permutation.length;j++) {
+				if (permutation[i]>permutation[j]) signumCount++;
+			}
+		}
+		//console.log(permutation);
+		//console.log("SignumCount:"+signumCount);
+		return Math.pow(-1,signumCount);
+	}
 
 }
