@@ -4,10 +4,13 @@
 
 <meta charset="utf-8">
 
-<script src="https://github.com/lukaslentner/cube-codes-model/releases/download/0.0.6/cube-codes-model-0.0.6-browser.js"></script>
+<script src="../dist/browser/cube-codes-model.js"></script>
 <script type="text/javascript">
 
-console.log(CC.CubeMoveLanguage.parse('F 2Fw x U2'));
+let spec = new CCM.CubeSpecification(3, true);
+let cml = new CCM.CubeMoveLanguage(spec);
+
+console.log(cml.parse('F 2Fw x U2'));
 
 </script>
 

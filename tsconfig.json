@@ -1,11 +1,21 @@
 {
-  "compilerOptions": {
-  "outDir": "dist/package",
-    "lib": ["es2016"],
-    "inlineSourceMap": true
-  },
-  "include": [
-    "src/**/*.ts"
-  ],
-  "declaration": true
+	"compilerOptions": {
+		"target": "ES2015",
+		"outDir": "dist/package",
+		"moduleResolution": "node",
+		"lib": ["es2015"],
+		"inlineSourceMap": true,
+		"strict": true,
+		"forceConsistentCasingInFileNames": true,
+		"noImplicitReturns": true,
+		"noUnusedLocals": true,
+		"noFallthroughCasesInSwitch": true,
+		"noErrorTruncation": true,
+		"declaration": true,
+		"esModuleInterop": true,
+		"allowSyntheticDefaultImports": true
+	},
+	"include": [
+		"src/**/*.ts"
+	]
 }

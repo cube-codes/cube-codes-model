@@ -1,13 +1,15 @@
-import { CubeMove, CubeSpecification } from "./Cube";
+import { CubeSpecification } from "./CubeGeometry";
+import { CubeMove } from "./CubeMove";
+import { CubeFace } from "./CubePart";
 
 export class CubeMoveLanguage {
 
 	constructor(private readonly spec: CubeSpecification) {}
 
-	parse(movesString: string) {
-		let me = this;
-		// Split by everything that is not command character
-		return movesString.split(/[^1-9FRUBLDw'xyz]+/).map(function (moveString) {
+	parse(movesString: string): ReadonlyArray<CubeMove> {
+		const me = this;
+		// Split by seperators
+		return movesString.split(/[\s_]+/).map(function (moveString) {
 
 			let slices: number;
 			let faceLetterPosition: number;
@@ -30,39 +32,39 @@ export class CubeMoveLanguage {
 				faceLetterPosition = 0;
 				hasAngleSpecifier = moveString.length === 2;
 			} else {
-				throw 'Invalid CML string';
+				throw new Error(`Invalid CML string: ${moveString}`);
 			}
 
-			let face = me.parseFace(moveString.substr(faceLetterPosition, 1));
-			let angle = me.parseAngle(hasAngleSpecifier ? moveString.substr(-1, 1) : '');
+			const face = me.parseFace(moveString.substr(faceLetterPosition, 1));
+			const angle = me.parseAngle(hasAngleSpecifier ? moveString.substr(-1, 1) : '');
 
 			return new CubeMove(me.spec, face, slices, angle);
 		});
 	}
 
-	private parseFace(faceString: string) {
+	private parseFace(faceString: string): CubeFace {
 		switch (faceString) {
 			case 'F':
 			case 'z':
-				return 0;
+				return CubeFace.FRONT;
 			case 'R':
 			case 'x':
-				return 1;
+				return CubeFace.RIGHT;
 			case 'U':
 			case 'y':
-				return 2;
+				return CubeFace.UP;
 			case 'B':
-				return 3;
+				return CubeFace.BACK;
 			case 'L':
-				return 4;
+				return CubeFace.LEFT;
 			case 'D':
-				return 5;
+				return CubeFace.DOWN;
 			default:
-				throw 'Invalid CML face string';
+				throw new Error(`Invalid CML face string: ${faceString}`);
 		}
 	}
 
-	private parseAngle(angleString: string) {
+	private parseAngle(angleString: string): number {
 		switch (angleString) {
 			case '':
 				return 1;
@@ -71,18 +73,13 @@ export class CubeMoveLanguage {
 			case '\'':
 				return -1;
 			default:
-				throw 'Invalid CML angle string';
+				throw new Error(`Invalid CML angle string: ${angleString}`);
 		}
 	}
 
-	stringify(moves: CubeMove[]) {
-		let me = this;
-		return moves.filter(function(move) {
-
-			// Remove moves with 0 degree
-			return move.angle % 4 !== 0;
-
-		}).map(function (move) {
+	stringify(moves: ReadonlyArray<CubeMove>): string {
+		const me = this;
+		return moves.filter(move => move.angle % 4 !== 0).map(move => {
 
 			let moveString = '';
 			let angleOrientation = 1;
@@ -107,7 +104,7 @@ export class CubeMoveLanguage {
 				moveString += me.stringifyRotationFace(move.face);
 				
 				// Change angle orientation if face has different orientation as rotation letter (e.g. "z" aligns with "F", but counteraligns with "B")
-				if(move.face >= 3) {
+				if(move.face.backside) {
 					angleOrientation = -1;
 				}
 
@@ -121,42 +118,42 @@ export class CubeMoveLanguage {
 		}).join(' ');
 	}
 
-	private stringifyFace(face: number) {
+	private stringifyFace(face: CubeFace): string {
 		switch (face) {
-			case 0:
+			case CubeFace.FRONT:
 				return 'F';
-			case 1:
+			case CubeFace.RIGHT:
 				return 'R';
-			case 2:
+			case CubeFace.UP:
 				return 'U';
-			case 3:
+			case CubeFace.BACK:
 				return 'B';
-			case 4:
+			case CubeFace.LEFT:
 				return 'L';
-			case 5:
+			case CubeFace.DOWN:
 				return 'D';
 			default:
-				throw 'Invalid face';
+				throw new Error(`Invalid face: ${face}`);
 		}
 	}
 
-	private stringifyRotationFace(face: number) {
+	private stringifyRotationFace(face: CubeFace): string {
 		switch (face) {
-			case 0:
-			case 3:
+			case CubeFace.FRONT:
+			case CubeFace.BACK:
 				return 'z';
-			case 1:
-			case 4:
+			case CubeFace.RIGHT:
+			case CubeFace.LEFT:
 				return 'x';
-			case 2:
-			case 5:
+			case CubeFace.UP:
+			case CubeFace.DOWN:
 				return 'y';
 			default:
-				throw 'Invalid face';
+				throw new Error(`Invalid face: ${face}`);
 		}
 	}
 
-	private stringifyAngle(angle: number) {
+	private stringifyAngle(angle: number): string {
 		switch (((angle % 4) + 4) % 4) {
 			case 0:
 				throw 'No move';
@@ -167,7 +164,7 @@ export class CubeMoveLanguage {
 			case 3:
 				return '\'';
 			default:
-				throw 'Invalid angle';
+				throw new Error(`Invalid angle: ${angle}`);
 		}
 	}
 

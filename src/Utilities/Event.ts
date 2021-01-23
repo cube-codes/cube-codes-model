@@ -1,4 +1,16 @@
 /**
+ * Arbitrary information added by the triggerer
+ */
+export interface EventSource {
+
+	/**
+	 * Arbitrary information part
+	 */
+	readonly [key: string]: any;
+
+}
+
+/**
  * Data of a triggered {@link Event} and received by a {@link EventListener}
  */
 export interface EventData {
@@ -6,7 +18,8 @@ export interface EventData {
 	/**
 	 * Arbitrary information added by the triggerer
 	 */
-	readonly source?: object
+	readonly source?: EventSource
+
 }
 
 /**
@@ -32,24 +45,22 @@ export class Event<E extends EventData> {
 	/**
 	 * List of all registered listeners for this event
 	 */
-	private listeners = new Array<EventListener<E>>();
+	#listeners = new Array<EventListener<E>>();
 
 	/**
 	 * Fires an event and thus executes the callback function of all registered {@link EventListener}s
 	 * @param eventData - Data of the triggered event
 	 */
-	trigger(eventData: E) {
-		this.listeners.forEach(function (listener) {
-			listener.apply({}, [eventData]);
-		});
+	trigger(eventData: E): void {
+		this.#listeners.forEach(listener => listener.apply({}, [eventData]));
 	}
 
 	/**
 	 * Registeres a new {@link EventListener} to the event
 	 * @param listener - {@link EventListener} to be registered
 	 */
-	on(listener: EventListener<E>) {
-		this.listeners.push(listener);
+	on(listener: EventListener<E>): void {
+		this.#listeners.push(listener);
 	}
 
 }

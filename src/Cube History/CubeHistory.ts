@@ -1,5 +1,7 @@
-import { Cube, CubeState, CubeMove } from "./Cube";
-import { Event, EventData, EventListener } from "./Event";
+import { Cube } from "../Cube/Cube";
+import { Event, EventData } from "../Utilities/Event";
+import { CubeMove } from "../Cube/CubeMove";
+import { CubeState } from "../Cube/CubeState";
 
 /**
  * Change of a {@link Cube}'s {@link CubeState} possibly through a {@link CubeMove} that is recorded by the {@link CubeHistory}
@@ -107,19 +109,19 @@ export class CubeHistory {
 	 * @event
 	 */
 	readonly moved = new Event<CubeHistoryMoved>()
-	
+
 	/**
 	 * Event of recording a new {@link CubeHistoryChange} within the {@link CubeHistory}
 	 * @event
 	 */
 	readonly recorded = new Event<CubeHistoryRecorded>()
-	
+
 	/**
 	 * Event of cleaning the past of {@link CubeHistoryChange}s within the {@link CubeHistory}
 	 * @event
 	 */
 	readonly pastCleaned = new Event<CubeHistoryPastCleaned>()
-	
+
 	/**
 	 * Event of cleaning the future of {@link CubeHistoryChange}s within the {@link CubeHistory}
 	 * @event
@@ -152,47 +154,46 @@ export class CubeHistory {
 	 * @returns Newly created history
 	 */
 	constructor(cube: Cube) {
-		
+
 		this.cube = cube
 		this.initialState = this.cube.getState();
 		this.changes = new Array();
 		this.currentPosition = -1;
-		
-		let me = this;
-		this.cube.stateChanged.on(function(e) {
-		
+
+		this.cube.stateChanged.on(e => {
+
 			// If the change was triggered by the history, do not record but move only
-			if(e.source && typeof e.source['history'] === 'number') {
-				let oldChangeIndex = me.currentPosition;
-				me.currentPosition += e.source['history'];
-				me.moved.trigger({from: oldChangeIndex, by: e.source['history'], to: me.currentPosition});
+			if (e.source && typeof e.source.history === 'number') {
+				const oldChangeIndex = this.currentPosition;
+				this.currentPosition += e.source.history;
+				this.moved.trigger({ from: oldChangeIndex, by: e.source.history, to: this.currentPosition });
 				return;
 			}
-			
-			let newChangeIndex = me.currentPosition + 1;
-			
+
+			const newChangeIndex = this.currentPosition + 1;
+
 			// If we are currently not at the end, clean/remove the history ahead of us
 			if(me.changes.length !== newChangeIndex) {
 				me.cleanFutureAfter(me.currentPosition);
 			}
-			
+
 			// Record change and move
-			let newChange: CubeHistoryChange = {oldState: e.oldState, newState: e.newState, move: e.move};
-			me.changes.push(newChange);
-			me.recorded.trigger({change: newChange, position: newChangeIndex});
-			let oldChangeIndex = me.currentPosition;
-			me.currentPosition = newChangeIndex;
-			me.moved.trigger({from: oldChangeIndex, by: 1, to: me.currentPosition});
-			
+			const newChange: CubeHistoryChange = { oldState: e.oldState, newState: e.newState, move: e.move };
+			this.changes.push(newChange);
+			this.recorded.trigger({ change: newChange, position: newChangeIndex });
+			const oldChangeIndex = this.currentPosition;
+			this.currentPosition = newChangeIndex;
+			this.moved.trigger({ from: oldChangeIndex, by: 1, to: this.currentPosition });
+
 		});
-		
+
 	}
 
 	/**
 	 * Whether the current position is at the beginning of the history (= -1)
 	 * @returns (explanation above)
 	 */
-	isAtStart() {
+	isAtStart(): boolean {
 		return this.currentPosition <= -1;
 	}
 
@@ -200,7 +201,7 @@ export class CubeHistory {
 	 * Whether the current position is at the end of the history (= list length - 1)
 	 * @returns (explanation above)
 	 */
-	isAtEnd() {
+	isAtEnd(): boolean {
 		return this.currentPosition >= this.changes.length - 1;
 	}
 
@@ -208,7 +209,7 @@ export class CubeHistory {
 	 * Reads the current position within the history
 	 * @returns (explanation above)
 	 */
-	getCurrentPosition() {
+	getCurrentPosition(): number {
 		return this.currentPosition;
 	}
 
@@ -216,7 +217,7 @@ export class CubeHistory {
 	 * Reads the last {@link CubeHistoryChange} leading historically to the current {@link Cube}'s {@link CubeState}
 	 * @returns (explanation above)
 	 */
-	getLastChange() {
+	getLastChange(): CubeHistoryChange {
 		return this.changes[this.currentPosition];
 	}
 
@@ -225,12 +226,12 @@ export class CubeHistory {
 	 * @param position - Position of the {@link CubeState} whoose creating {@link CubeHistoryChange} is read
 	 * @returns (explanation above)
 	 */
-	getChangeByPosition(position: number) {
+	getChangeByPosition(position: number): CubeHistoryChange {
 
-		if(!Number.isInteger(position) || position < 0 || position > this.changes.length - 1) throw 'Invalid position';
-		
+		if (!Number.isInteger(position) || position < 0 || position > this.changes.length - 1) throw 'Invalid position';
+
 		return this.changes[position];
-	
+
 	}
 
 	/**
@@ -249,7 +250,7 @@ export class CubeHistory {
 
 		this.changes.splice(0, position + 1);
 
-		if(this.currentPosition <= position) {
+		if (this.currentPosition <= position) {
 			this.currentPosition = -1;
 		}
 
@@ -280,12 +281,12 @@ export class CubeHistory {
 	/**
 	 * Executes the inverse of the last {@link CubeHistoryChange} within the history with a {@link CubeMove}
 	 */
-	stepBack() {
-		
-		if(this.isAtStart()) throw 'Cannot go back further';
-		
-		let currentChange = this.changes[this.currentPosition];
-		if(currentChange.move) {
+	stepBack(): void {
+
+		if (this.isAtStart()) throw new Error('Cannot go back further');
+
+		const currentChange = this.changes[this.currentPosition];
+		if (currentChange.move) {
 			this.cube.move(currentChange.move.getInverse(), {
 				history: -1
 			});
@@ -294,18 +295,18 @@ export class CubeHistory {
 				history: -1
 			});
 		}
-		
+
 	}
 
 	/**
 	 * Executes the next {@link CubeHistoryChange} within the history with a {@link CubeMove}
 	 */
-	stepAhead() {
-		
-		if(this.isAtEnd()) throw 'Cannot go ahead further';
-		
-		let nextChange = this.changes[this.currentPosition + 1];
-		if(nextChange.move) {
+	stepAhead(): void {
+
+		if (this.isAtEnd()) throw new Error('Cannot go ahead further');
+
+		const nextChange = this.changes[this.currentPosition + 1];
+		if (nextChange.move) {
 			this.cube.move(nextChange.move, {
 				history: 1
 			});
@@ -314,56 +315,57 @@ export class CubeHistory {
 				history: 1
 			});
 		}
-		
+
 	}
 
 	/**
 	 * Jumps back the initial position (= -1) within the history and updates the {@link Cube}'s {@link CubeState} without a {@link CubeMove} (setState)
 	 */
-	jumpToStart() {
-	
-		if(this.currentPosition <= -1) return;
-	
+	jumpToStart(): void {
+
+		if (this.currentPosition <= -1) return;
+
 		this.cube.setState(this.initialState, {
 			history: -this.currentPosition - 1
 		});
-		
+
 	}
 
 	/**
 	 * Jumps ahead the final position (= list length - 1) within the history and updates the {@link Cube}'s {@link CubeState} without a {@link CubeMove} (setState)
 	 */
-	jumpToEnd() {
-	
-		if(this.currentPosition >= this.changes.length - 1) return;
-	
-		if(this.changes.length === 0) {
+	jumpToEnd(): void {
+
+		if (this.currentPosition >= this.changes.length - 1) return;
+
+		if (this.changes.length === 0) {
 			return;
 		}
-	
-		let lastChange = this.changes[this.changes.length - 1];
+
+		const lastChange = this.changes[this.changes.length - 1];
 		this.cube.setState(lastChange.newState, {
 			history: this.changes.length - 1 - this.currentPosition
 		});
-		
+
 	}
 
 	/**
 	 * Jumps to the specified position within the history and updates the {@link Cube}'s {@link CubeState} without a {@link CubeMove} (setState)
 	 */
-	jumpToIndex(newPosition: number) {
-		
-		if(!Number.isInteger(newPosition) || newPosition < -1 || newPosition > this.changes.length - 1) throw 'Invalid position';
-	
-		if(newPosition === -1) {
+	jumpToIndex(newPosition: number): void {
+
+		if (!Number.isInteger(newPosition) || newPosition < -1 || newPosition > this.changes.length - 1) throw new Error(`Invalid position: ${newPosition}`);
+
+		if (newPosition === -1) {
 			this.jumpToStart();
 			return;
 		}
-	
-		let newChange = this.changes[newPosition];
+
+		const newChange = this.changes[newPosition];
 		this.cube.setState(newChange.newState, {
 			history: newPosition - this.currentPosition
 		});
-		
+
 	}
+
 }
