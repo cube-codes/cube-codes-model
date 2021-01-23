@@ -7,7 +7,7 @@ export class CubeSpecification {
 
 	constructor(
 		readonly edgeLength: number,
-		readonly coloredFaces: boolean) {
+		readonly colored: boolean) {
 		if (!Number.isInteger(edgeLength) || edgeLength < 2 || edgeLength > 8) throw new Error(`Invalid edge length: ${edgeLength}`);
 	}
 

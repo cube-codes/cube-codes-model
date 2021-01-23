@@ -27,7 +27,7 @@ export class CubePartType implements Printable {
 	/** Numbering of the possible CubicalLocations of each type, depending on the cubes edgelength. To be used in CubeState and in random state generation and in strings
 	 * 
 	*/
-	countLocations(spec: CubeSpecification) {
+	countLocations(spec: CubeSpecification): number {
 		switch (this) {
 			case CubePartType.CORNER:
 				return 8;
