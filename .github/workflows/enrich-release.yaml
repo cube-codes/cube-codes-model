@@ -14,6 +14,7 @@ jobs:
     - uses: actions/setup-node@v1
       with:
         node-version: '12.x'
+        registry-url: 'https://registry.npmjs.org'
     - run: npm --no-git-tag-version version ${{ steps.get_release.outputs.tag_name }}
     - run: npm run release
       env:
