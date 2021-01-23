@@ -1,5 +1,5 @@
 {
-	"name": "@cube-codes/cube-codes-model",
+	"name": "cube-codes-model",
 	"version": "1.0.0",
 	"description": "Model describing a Rubik cube and others",
 	"main": "dist/package/index.js",
@@ -9,9 +9,9 @@
 		"test": "jest",
 		"browser": "rollup -c",
 		"docs": "typedoc",
-		"full": "npm ci && npm run build && npm run test && npm run browser && npm run docs",
+		"build-all": "npm ci && npm run build && npm run test && npm run browser && npm run docs",
 		"docs-zip": "cd dist/docs && bestzip ../docs.zip * && cd ../..",
-		"release": "npm run full && npm run docs-zip && npm publish"
+		"release": "npm run build-all && npm run docs-zip && npm publish --access public"
 	},
 	"files": [
 		"dist/package"

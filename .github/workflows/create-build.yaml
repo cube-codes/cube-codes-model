@@ -8,7 +8,7 @@ jobs:
     - uses: actions/setup-node@v1
       with:
         node-version: '12.x'
-    - run: npm run full
+    - run: npm run build-all
     - uses: actions/upload-artifact@v2
       with:
         name: Package
