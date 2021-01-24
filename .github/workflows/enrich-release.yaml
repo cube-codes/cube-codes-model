@@ -43,5 +43,6 @@ jobs:
         cd web
         git config --global user.name 'CI'
         git config --global user.email 'info@cube.codes'
+        git add .
         git commit -am "Add release ${{ steps.get_release.outputs.tag_name }}"
         git push
