@@ -2,16 +2,17 @@
 	"name": "@cube-codes/cube-codes-model",
 	"version": "1.0.0",
 	"description": "Model describing a Rubik cube and others",
+	"type": "commonjs",
 	"main": "dist/package/index.js",
 	"types": "dist/package/index.d.ts",
 	"scripts": {
 		"build": "tsc",
 		"test": "jest",
-		"browser": "rollup -c",
-		"docs": "typedoc",
-		"build-all": "npm ci && npm run build && npm run test && npm run browser && npm run docs",
-		"docs-zip": "cd dist/docs && bestzip ../docs.zip * && cd ../..",
-		"release": "npm run build-all && npm run docs-zip && npm publish --access public"
+		"build-browser": "rollup -c",
+		"build-docs": "typedoc",
+		"ci-build": "npm ci && npm run build && npm run test && npm run build-browser && npm run build-docs",
+		"build-docs-zip": "cd dist/docs && bestzip ../docs.zip * && cd ../..",
+		"ci-release": "npm run ci-build && npm run build-docs-zip && npm publish --access public"
 	},
 	"files": [
 		"dist/package"
@@ -33,7 +34,7 @@
 	"bugs": {
 		"url": "https://github.com/cube-codes/cube-codes-model/issues"
 	},
-	"homepage": "https://github.com/cube-codes/cube-codes-model#readme",
+	"homepage": "https://model.cube.codes",
 	"devDependencies": {
 		"@rollup/plugin-commonjs": "^15.0.0",
 		"@rollup/plugin-node-resolve": "^9.0.0",
