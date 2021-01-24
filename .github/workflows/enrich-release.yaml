@@ -35,10 +35,11 @@ jobs:
       with:
         ref: web
         path: web
-    - run: mkdir -p ./web/release/${{ steps.get_release.outputs.tag_name }}
-    - run: cp ./dist/docs.zip ./web/release/${{ steps.get_release.outputs.tag_name }}/cube-codes-model-${{ steps.get_release.outputs.tag_name }}-docs.zip
-    - run: cp ./dist/browser/cube-codes-model.js ./web/release/${{ steps.get_release.outputs.tag_name }}/cube-codes-model-${{ steps.get_release.outputs.tag_name }}-browser.js
-    - run: cp -R ./dist/docs ./web/release/${{ steps.get_release.outputs.tag_name }}/
+    - run: mkdir -p ./web/releases/${{ steps.get_release.outputs.tag_name }}
+    - run: cp ./dist/docs.zip ./web/releases/${{ steps.get_release.outputs.tag_name }}/cube-codes-model-${{ steps.get_release.outputs.tag_name }}-docs.zip
+    - run: cp ./dist/browser/cube-codes-model.js ./web/releases/${{ steps.get_release.outputs.tag_name }}/cube-codes-model-${{ steps.get_release.outputs.tag_name }}-browser.js
+    - run: cp ./dist/browser/cube-codes-model.js ./web/releases/${{ steps.get_release.outputs.tag_name }}/browser.js
+    - run: cp -R ./dist/docs ./web/releases/${{ steps.get_release.outputs.tag_name }}/
     - run: |
         cd web
         git config --global user.name 'CI'
