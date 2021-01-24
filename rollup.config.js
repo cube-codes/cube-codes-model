@@ -1,6 +1,5 @@
 import noderesolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
-//import pkg from './package.json';
 
 export default [{
 	input: 'dist/package/index.js',
