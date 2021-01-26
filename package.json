@@ -1,7 +1,7 @@
 {
 	"name": "@cube-codes/cube-codes-model",
 	"version": "1.0.0",
-	"description": "Model describing a Rubik cube and others",
+	"description": "Typescript model of a rubik cube",
 	"type": "commonjs",
 	"main": "dist/package/index.js",
 	"types": "dist/package/index.d.ts",
