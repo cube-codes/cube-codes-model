@@ -1,93 +1,11 @@
-import { Cube } from "../Cube/Cube";
-import { Event, EventData } from "../Utilities/Event";
-import { CubeMove } from "../Cube/CubeMove";
-import { CubeState } from "../Cube/CubeState";
-
-/**
- * Change of a {@link Cube}'s {@link CubeState} possibly through a {@link CubeMove} that is recorded by the {@link CubeHistory}
- */
-export interface CubeHistoryChange {
-
-	/**
-	 * {@link CubeState} before the change
-	 */
-	readonly oldState: CubeState
-
-	/**
-	 * {@link CubeState} after the change
-	 */
-	readonly newState: CubeState
-
-	/**
-	 * Possible {@link CubeMove} while changing the {@link CubeState}
-	 */
-	readonly move?: CubeMove
-}
-
-/**
- * Data describing the event of moving within the {@link CubeHistory}
- */
-export interface CubeHistoryMoved extends EventData {
-
-	/**
-	 * Current position within the {@link CubeHistory} before the move
-	 */
-	readonly from: number
-
-	/**
-	 * Signed count of {@link CubeHistoryChange}s within the {@link CubeHistory} that are stepped over by the move (= to - from)
-	 */
-	readonly by: number
-
-	/**
-	 * Current position within the {@link CubeHistory} after the move
-	 */
-	readonly to: number
-}
-
-/**
- * Data describing the event of recording a new {@link CubeHistoryChange} within the {@link CubeHistory}
- */
-export interface CubeHistoryRecorded extends EventData {
-
-	/**
-	 * {@link CubeHistoryChange} that was recorded 
-	 */
-	readonly change: CubeHistoryChange
-
-	/**
-	 * Index of the newly recorded {@link CubeHistoryChange} within the {@link CubeHistory} and the new current position
-	 */
-	readonly position: number
-}
-
-/**
- * Data describing the event of cleaning some past of {@link CubeHistoryChange}s within the {@link CubeHistory}
- * 
- * The initial state was set to the final state of "before" and was marked as the current position if the former was removed.
- */
-export interface CubeHistoryPastCleaned extends EventData {
-
-	/**
-	 * Index of the {@link CubeHistoryChange}s within the {@link CubeHistory} that the cleaning ends with (all previous changes were removed)
-	 */
-	readonly before: number
-}
-
-/**
- * Data describing the event of cleaning some future of {@link CubeHistoryChange}s within the {@link CubeHistory}
- * 
- * The state of "after" was marked as the current position if the former was removed.
- * 
- * This can happen when a new {@link CubeHistoryChange} is recorded while the current position of the {@link CubeHistory} is not at its end. As the history cannot hold multiple branches the old one has to be removed.
- */
-export interface CubeHistoryFutureCleaned extends EventData {
-
-	/**
-	 * Index of the {@link CubeHistoryChange}s within the {@link CubeHistory} that the cleaning starts from (all further changes were removed)
-	 */
-	readonly after: number
-}
+import { CubeState } from "../Cube State/CubeState"
+import { Cube } from "../Cube/Cube"
+import { Event } from "../Events/Event"
+import { CubeHistoryChange } from "./CubeHistoryChange"
+import { CubeHistoryFutureCleaned } from "./CubeHistoryFutureCleaned"
+import { CubeHistoryMoved } from "./CubeHistoryMoved"
+import { CubeHistoryPastCleaned } from "./CubeHistoryPastCleaned"
+import { CubeHistoryRecorded } from "./CubeHistoryRecorded"
 
 /**
  * History holding all changes to one specific {@link Cube}

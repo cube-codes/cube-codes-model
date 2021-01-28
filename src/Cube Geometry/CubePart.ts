@@ -1,95 +1,8 @@
-import { CubeCoordinates, CubeDimension, Printable, CubeSpecification } from "./CubeGeometry";
-
-export class CubePartType implements Printable {
-
-	private static readonly _all: Array<CubePartType> = new Array();
-
-	static readonly CORNER: CubePartType = new CubePartType(0, 'CORNER');
-	static readonly EDGE: CubePartType = new CubePartType(1, 'EDGE');
-	static readonly FACE: CubePartType = new CubePartType(2, 'FACE');
-
-	static getAll(): ReadonlyArray<CubePartType> {
-		return this._all;
-	}
-
-	private constructor(readonly dimensionsCount: number, readonly name: string) {
-		CubePartType._all.push(this);
-	}
-
-	toString(): string {
-		return this.name;
-	}
-
-	countNormalVectors() {
-		return 3 - this.dimensionsCount;
-	}
-
-	/** Numbering of the possible CubicalLocations of each type, depending on the cubes edgelength. To be used in CubeState and in random state generation and in strings
-	 * 
-	*/
-	countLocations(spec: CubeSpecification): number {
-		switch (this) {
-			case CubePartType.CORNER:
-				return 8;
-			case CubePartType.EDGE:
-				return 12 * (spec.edgeLength - 2);
-			case CubePartType.FACE:
-				return 6 * Math.pow(spec.edgeLength - 2, 2)
-			default:
-				throw new Error(`Invalid type: ${this}`);
-		}
-	}
-
-}
-
-/** 
- * CubeFaces are directions in which normal vectors point, in which cubicals show different stickers. Of course CubeFaces can be identified with CubeParts of type Face, but they have different roles.
- */
-export class CubeFace implements Printable {
-
-	private static readonly _all: Array<CubeFace> = new Array();
-	private static readonly _allByNormalVector: Map<string, CubeFace> = new Map();
-
-	static readonly FRONT: CubeFace = new CubeFace('FRONT', CubeDimension.Z, false);
-	static readonly RIGHT: CubeFace = new CubeFace('RIGHT', CubeDimension.X, false);
-	static readonly UP: CubeFace = new CubeFace('UP', CubeDimension.Y, false);
-	static readonly BACK: CubeFace = new CubeFace('BACK', CubeDimension.Z, true);
-	static readonly LEFT: CubeFace = new CubeFace('LEFT', CubeDimension.X, true);
-	static readonly DOWN: CubeFace = new CubeFace('DOWN', CubeDimension.Y, true);
-
-	static getAll(): ReadonlyArray<CubeFace> {
-		return this._all;
-	}
-
-	static getByNormalVector(normalVector: CubeCoordinates): CubeFace {
-		const item = this._allByNormalVector.get(normalVector.toId());
-		if(item === undefined) throw new Error(`Invalid normal vector: ${normalVector}`);
-		return item;
-	}
-
-	private constructor(readonly name: string, readonly dimension: CubeDimension, readonly backside: boolean) {
-		CubeFace._all.push(this);
-		CubeFace._allByNormalVector.set(this.getNormalVector().toId(), this);
-	}
-
-	get frontside(): boolean {
-		return !this.backside;
-	}
-
-	toString(): string {
-		return this.name;
-	}
-
-	/** The normal vector pointing outwards this face in coordinates */
-	getNormalVector(): CubeCoordinates {
-		if (!this.backside) {
-			return CubeCoordinates.fromDimension(this.dimension, -1);
-		} else {
-			return CubeCoordinates.fromDimension(this.dimension, +1);
-		}
-	}
-	
-}
+import { Equalizable } from "../Interfaces/Equalizable";
+import { Exportable } from "../Interfaces/Exportable";
+import { Printable } from "../Interfaces/Printable";
+import { CubeFace } from "./CubeFace";
+import { CubePartType } from "./CubePartType";
 
 /**
  * A cube part is some starting point plus remaining (running) coordinates. They come in types CORNER, EDGE, FACE and have an associated string and index as alternative description.
@@ -99,7 +12,24 @@ export class CubeFace implements Printable {
 //TODO: nextCorners, Edges, Faces find them automatically
 //TODO: Why here CubeFace?? What with Edge and Corner?
 //TODO: Why must the Corners/Edges/Faces be ordered and why this additional Neighbours
-export class CubePart implements Printable {
+
+/*
+
+Wie muss ich mir ein CubePart geometrisch vorstellen?
+Wie sind angrenzende Faces?
+Was sind beinhaltende oder beinhaltete Faces?
+Was sind beinhaltende oder beinhaltete Parts?
+Was sind angrenzende andere Parts?
+Was sind noch übrige Freiheitsgrade?
+Was sind Richtungsvektoren?
+Welche Cubelets beinhaltet ein Part?
+An welchen Cubelets grenzt ein part an?
+Welche Normalvektoren hat ein Part?
+Wie sollen wir sie indizieren?
+
+
+*/
+export class CubePart implements Exportable, Equalizable<CubePart>, Printable {
 
 	private static readonly _allByType: Map<CubePartType, Array<CubePart>> = new Map();
 	private static readonly _allByOriginAndDirection: Map<string, CubePart> = new Map();

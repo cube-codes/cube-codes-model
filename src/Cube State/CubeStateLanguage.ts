@@ -1,7 +1,7 @@
 import { CubeState } from "./CubeState";
 //import { CubicalLocation } from "./Cubical";
-import { CubeFace, CubePartType } from "./CubePart";
-import { CubeSpecification, CubeCoordinates} from "./CubeGeometry";
+import { CubeFace, CubePartType } from "../Cube Geometry/CubePart";
+import { CubeSpecification, CubeCoordinates} from "../Linear Algebra/Vector";
 import deepEqual from "deep-equal";
 
 

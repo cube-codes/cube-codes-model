@@ -1,21 +1,10 @@
 import { Matrix, matrix, multiply, inv } from "mathjs";
-import { CubeDimension, CubeCoordinates } from "../Cube/CubeGeometry";
 
+//TODO: Refactor
 export abstract class Matrices {
-
-	static readonly IDENTITY: Matrix = matrix([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
 
 	static rotateMatrix(matrix: Matrix, dimension: CubeDimension): Matrix {
 		return multiply(Matrices.getAxisRotation(dimension), matrix);
-	}
-
-	static getAxisRotation(dimension: CubeDimension): Matrix {
-		switch (dimension) {
-			case CubeDimension.X: return matrix([[1, 0, 0], [0, 0, 1], [0, -1, 0]]);
-			case CubeDimension.Y: return matrix([[0, 0, -1], [0, 1, 0], [1, 0, 0]]);
-			case CubeDimension.Z: return matrix([[0, 1, 0], [-1, 0, 0], [0, 0, 1]]);
-			default: throw new Error(`Invalid dimension: ${dimension}`);
-		}
 	}
 
 	static getFromColumns(col1: CubeCoordinates, col2: CubeCoordinates, col3: CubeCoordinates): Matrix {

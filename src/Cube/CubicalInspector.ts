@@ -1,6 +1,6 @@
 import { CubicalSolvedCondition, ReadonlyCubical, Cubical } from "./Cubical";
-import { CubeDimension, CubeCoordinates } from "./CubeGeometry";
-import { CubePartType, CubePart } from "./CubePart";
+import { CubeDimension, CubeCoordinates } from "../Linear Algebra/Vector";
+import { CubePartType, CubePart } from "../Cube Geometry/CubePart";
 
 
 export class CubicalInspector {

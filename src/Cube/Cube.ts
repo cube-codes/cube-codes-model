@@ -1,14 +1,20 @@
-import { EventData, Event } from "../Utilities/Event"
-import { CubeMoveLanguage } from "./CubeMoveLanguage";
-import { CubeSpecification, CubeDimension, Printable } from './CubeGeometry';
-import { CubeStateLanguage } from './CubeStateLanguage';
-import { CubeMoveAngle, CubeMove } from './CubeMove';
-import { CubeState } from './CubeState';
+import { CubeMoveLanguage } from "../Cube Move/CubeMoveLanguage";
+import { CubeStateLanguage } from '../Cube State/CubeStateLanguage';
+import { CubeState } from '../Cube State/CubeState';
 import { Cubical, CubicalSolvedCondition, CubicalLocation, ReadonlyCubical } from './Cubical';
 import { Random } from '../Utilities/Random';
-import { CubeFace, CubePart, CubePartType } from './CubePart';
 import deepEqual from "deep-equal";
 import { CubicalInspector } from "./CubicalInspector";
+import { EventData } from "../Events/EventData";
+import { CubeMove } from "../Cube Move/CubeMove";
+import { Printable } from "../Interfaces/Printable";
+import { CubeSpecification } from "../Cube Geometry/CubeSpecification";
+import { Event } from "../Events/Event";
+import { CubePartType } from "../Cube Geometry/CubePartType";
+import { CubePart } from "../Cube Geometry/CubePart";
+import { Dimension } from "../Linear Algebra/Dimension";
+import { CubeMoveAngle } from "../Cube Move/CubeMoveAngle";
+import { CubeFace } from "../Cube Geometry/CubeFace";
 
 
 export interface CubeStateChanged extends EventData {
@@ -89,7 +95,7 @@ export class Cube implements Printable {
 
 	setState(newState: CubeState, source?: object): Cube {
 
-		if (!deepEqual(this.spec, newState.spec)) throw new Error(`Invalid spec of new state: ${newState.spec}`);
+		if (!deepEqual(this.spec, newState.spec)) throw new Error(`Invalid spec of new state: ${newState.spec}`); //TODO: Only check for equality to allow worker messaging
 
 		const oldState = this.getState();
 
@@ -101,7 +107,7 @@ export class Cube implements Printable {
 
 	}
 
-	private rotateSlice(dimension: CubeDimension, sliceCoordinate: number): void {
+	private rotateSlice(dimension: Dimension, sliceCoordinate: number): void {
 
 		for (let cubical of this.#cubicals) {
 			if (sliceCoordinate === cubical.location.coordinates.getComponent(dimension)) {
@@ -113,7 +119,7 @@ export class Cube implements Printable {
 
 	move(move: CubeMove, source?: object): Cube {
 
-		if (!deepEqual(this.spec, move.spec)) throw new Error(`Invalid spec of move: ${move.spec}`);
+		if (!deepEqual(this.spec, move.spec)) throw new Error(`Invalid spec of move: ${move.spec}`); //TODO: Only check for equality to allow worker messaging
 
 		if (move.angle % 4 === 0) return this;
 

@@ -1,7 +1,7 @@
-import { CubeCoordinates, CubeSpecification, Printable } from "./CubeGeometry";
-import { CubePartType, CubePart } from "./CubePart";
-import { CubicalLocation, CubicalOrientation, ReadonlyCubical, Cubical } from "./Cubical";
-import { Matrices } from "../Utilities/Matrices";
+import { CubeCoordinates, CubeSpecification, Printable } from "../Linear Algebra/Vector";
+import { CubePartType, CubePart } from "../Cube Geometry/CubePart";
+import { CubicalLocation, CubicalOrientation, ReadonlyCubical, Cubical } from "../Cube/Cubical";
+import { Matrices } from "../Linear Algebra/Matrices";
 import deepEqual from "deep-equal";
 
 
@@ -10,6 +10,7 @@ import deepEqual from "deep-equal";
  * They are encoded by indices (corresponding to locations on any cubePart) and reorientation numbers (how the normal vectors are shifted with respect to a fixed standard ordering) - the class provides static methods to convert these indices
  * 
  */
+//TODO: Refactor
 export class CubeState implements Printable {
 
 	constructor(readonly spec: CubeSpecification,

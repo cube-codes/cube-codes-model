@@ -1,9 +1,9 @@
-import { CubeSpecification, CubeCoordinates, CubeDimension, Identifiable, Printable } from "./CubeGeometry";
+import { CubeSpecification, CubeCoordinates, CubeDimension, Identifiable, Printable } from "../Linear Algebra/Vector";
 import { Matrix, inv } from "mathjs";
-import { CubePartType, CubeFace, CubePart } from "./CubePart";
+import { CubePartType, CubeFace, CubePart } from "../Cube Geometry/CubePart";
 import { Cube } from "./Cube";
 import deepEqual from "deep-equal";
-import { Matrices } from "../Utilities/Matrices";
+import { Matrices } from "../Linear Algebra/Matrices";
 
 /**
  * Wraps an orthogonal matrix that describes how the cubical is currently rotated around its center, in comparison to its standard location and orientation.

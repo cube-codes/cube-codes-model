@@ -1,40 +1,5 @@
-/**
- * Arbitrary information added by the triggerer
- */
-export interface EventSource {
-
-	/**
-	 * Arbitrary information part
-	 */
-	readonly [key: string]: any;
-
-}
-
-/**
- * Data of a triggered {@link Event} and received by a {@link EventListener}
- */
-export interface EventData {
-
-	/**
-	 * Arbitrary information added by the triggerer
-	 */
-	readonly source?: EventSource
-
-}
-
-/**
- * Handler that receives {@link EventData} of a triggered {@link Event}
- * @typeParam E - {@link EventData} of the {@link Event} that is listened for
- */
-export interface EventListener<E extends EventData> {
-
-	/**
-	 * Function call
-	 * @param e - Event data that is worked on
-	 */
-	(e: E): void
-
-}
+import { EventData } from "./EventData";
+import { EventListener } from "./EventListener";
 
 /**
  * Gateway enabling to fire/trigger an event with {@link EventData} and holding registered {@link EventListener}s
