@@ -1,4 +1,4 @@
-import { EventData } from "../Events/EventData";
+import { EventData } from "../Event/EventData";
 import { CubeHistoryChange } from "./CubeHistoryChange";
 
 /**

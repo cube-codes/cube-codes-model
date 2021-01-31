@@ -1,6 +1,6 @@
-import { Equalizable } from "../Interfaces/Equalizable";
-import { Exportable } from "../Interfaces/Exportable";
-import { Printable } from "../Interfaces/Printable";
+import { Equalizable } from "../Interface/Equalizable";
+import { Exportable } from "../Interface/Exportable";
+import { Printable } from "../Interface/Printable";
 import { CubeSpecification } from "./CubeSpecification";
 
 export class CubePartType implements Exportable, Equalizable<CubePartType>, Printable {

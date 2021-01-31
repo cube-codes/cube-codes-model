@@ -1,3 +1,5 @@
+import { Equalizable } from "../Interface/Equalizable";
+
 /**
  * Provides utility functions for arrays
  */
@@ -42,6 +44,18 @@ export abstract class Arrays {
 	 */
 	static integerRangeToInclusivly(toInclusivly: number) {
 		return Arrays.integerRangeFromToExclusivly(0, toInclusivly + 1);
+	}
+
+	static equals<T extends Equalizable<any>>(value1: ReadonlyArray<T>, value2: ReadonlyArray<T>): boolean {
+		if(value1.length !== value2.length) {
+			return false;
+		}
+		for(let index = 0; index < value1.length; index++) {
+			if(!value1[index].equals(value2[index])) {
+				return false;
+			}
+		}
+		return true;
 	}
 	
 }

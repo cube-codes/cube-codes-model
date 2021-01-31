@@ -1,4 +1,4 @@
-import { EventData } from "../Events/EventData";
+import { EventData } from "../Event/EventData";
 
 /**
  * Data describing the event of moving within the {@link CubeHistory}

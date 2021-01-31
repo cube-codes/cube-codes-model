@@ -1,4 +1,4 @@
-import { EventData } from "../Events/EventData";
+import { EventData } from "../Event/EventData";
 
 /**
  * Data describing the event of cleaning some future of {@link CubeHistoryChange}s within the {@link CubeHistory}

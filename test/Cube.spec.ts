@@ -1,149 +1,62 @@
-import { CubeSpecification, CubeCoordinates, CubeDimension } from '../src/Cube/CubeGeometry';
-import { CubePart, CubePartType } from '../src/Cube/CubePart';
-import { Cubical, CubicalLocation } from '../src/Cube/Cubical';
-import { CubeState } from '../src/Cube/CubeState';
+import { CubeSpecification } from '../src/Cube Geometry/CubeSpecification';
+import { CubePart } from '../src/Cube Geometry/CubePart';
+import { CubeletLocation } from '../src/Cube/CubeletLocation';
 import { Cube } from '../src/Cube/Cube';
-import { ColorCubeLanguage } from '../src/Cube/CubeStateLanguage';
-import { Matrices } from "../src/Utilities/Matrices";
+import { Vector } from '../src/Linear Algebra/Vector';
+import { Dimension } from '../src/Linear Algebra/Dimension';
+import { Cubelet } from '../src/Cube/Cubelet';
+import { Matrix } from '../src/Linear Algebra/Matrix';
 
 test('Simple Move', () => {
 
-	const spec = new CubeSpecification(4, true);
+	const spec = new CubeSpecification(4);
 	const cube = new Cube(spec);
 	cube.mFront();
-	expect(cube.cubicals.initiallyAtCoordinates(new CubeCoordinates(0, 0, 0)).findOne().location.coordinates).toEqual(new CubeCoordinates(0, 3, 0));
+	expect(cube.cubelets.initiallyAtOrigin(Vector.fromComponents(1.5, 1.5, 1.5)).findOne().location.origin).toEqual(Vector.fromComponents(1.5, -1.5, 1.5));
+	expect(cube.cubelets.initiallyAtOrigin(Vector.fromComponents(1.5, 1.5, -1.5)).findOne().location.origin).toEqual(Vector.fromComponents(1.5, 1.5, -1.5));
 
 });
 
 test('Basic Test', () => {
 
-	let spec = new CubeSpecification(4, true);
+	const spec = new CubeSpecification(4);
+	const uf2 = CubeletLocation.fromPartAndOriginComponentsInPartDimensions(spec, CubePart.UF, [0.5]);
 
-	////////////////////////////
-	// Geometry 
+	// Is the cubelet location origin correctly calculated
+	expect(uf2.origin).toEqual(Vector.fromComponents(0.5, 1.5, 1.5));
 
-	//The second cubical on the edge UF. It has coordinate (2,0,0)
-	let uf2: CubicalLocation = CubicalLocation.fromPartAndCoordinatesInPart(spec, CubePart.UF, [2]);
-	expect(uf2.coordinates).toEqual(new CubeCoordinates(2, 0, 0));
-	expect(CubeState.indexFromLocation(spec, uf2)).toEqual(0 * (4 - 2) + 1);
-	expect(CubeState.indexToLocation(spec, 0 * (4 - 2) + 1, CubePartType.EDGE).coordinates).toEqual(new CubeCoordinates(2, 0, 0));
+	const uf2cubelet = new Cubelet(new Cube(spec), uf2);
 
-	//More.....Corner, Face
+	// Is the origin still vailable in the cubelet?
+	expect(uf2cubelet.initialLocation.origin).toEqual(Vector.fromComponents(0.5, 1.5, 1.5));
+	expect(uf2cubelet.location.origin).toEqual(Vector.fromComponents(0.5, 1.5, 1.5));
 
-	///////////////////////////
-	//Spatial Rotation Cubical on Single Cubical
+	uf2cubelet.rotate(Dimension.Y);
 
-	let cube: Cube = new Cube(spec); //Here only to pass along as a reference
-	let uf2cubical: Cubical = new Cubical(cube, uf2);
-	expect(uf2cubical.initialLocation.coordinates).toEqual(new CubeCoordinates(2, 0, 0));
-	expect(uf2cubical.location.coordinates).toEqual(new CubeCoordinates(2, 0, 0));
-	uf2cubical.rotate(CubeDimension.Y);
-	expect(uf2cubical.initialLocation.coordinates).toEqual(new CubeCoordinates(2, 0, 0));
-	expect(uf2cubical.location.coordinates).toEqual(new CubeCoordinates(3, 0, 2));
+	// Does it keep the initial location?
+	expect(uf2cubelet.initialLocation.origin).toEqual(Vector.fromComponents(0.5, 1.5, 1.5));
+	// Does it change the location correctly?
+	expect(uf2cubelet.location.origin).toEqual(Vector.fromComponents(1.5, 1.5, -0.5));
 
 
 	///////////////////////////
 	//Reorientation
 
 	//RotationAroundX
-	let LDB_to_LFD = Matrices.getTransitivityMatrix(new CubeCoordinates(1, 0, 0), new CubeCoordinates(0, 1, 0), new CubeCoordinates(0, 0, 1), new CubeCoordinates(1, 0, 0), new CubeCoordinates(0, 0, -1), new CubeCoordinates(0, 1, 0));
-	expect(LDB_to_LFD.toString()).toEqual('[[1, 0, 0], [0, 0, 1], [0, -1, 0]]');
-	let LFD_to_LUF = Matrices.getTransitivityMatrix(new CubeCoordinates(1, 0, 0), new CubeCoordinates(0, 0, -1), new CubeCoordinates(0, 1, 0), new CubeCoordinates(1, 0, 0), new CubeCoordinates(0, -1, 0), new CubeCoordinates(0, 0, -1));
-	expect(LFD_to_LUF.toString()).toEqual('[[1, 0, 0], [0, 0, 1], [0, -1, 0]]');
-	let LD_to_LF = Matrices.getTransitivityOrthogonalMatrix(new CubeCoordinates(1, 0, 0), new CubeCoordinates(0, 1, 0), new CubeCoordinates(1, 0, 0), new CubeCoordinates(0, 0, -1));
-	expect(LD_to_LF.toString()).toEqual('[[1, 0, 0], [0, 0, 1], [0, -1, 0]]');
-	let DB_to_FD = Matrices.getTransitivityOrthogonalMatrix(new CubeCoordinates(0, 1, 0), new CubeCoordinates(0, 0, 1), new CubeCoordinates(0, 0, -1), new CubeCoordinates(0, 1, 0));
-	expect(DB_to_FD.toString()).toEqual('[[1, 0, 0], [0, 0, 1], [0, -1, 0]]');
-	//OtherRotation
-	let FD_to_RF = Matrices.getTransitivityOrthogonalMatrix(new CubeCoordinates(0, 0, -1), new CubeCoordinates(0, 1, 0), new CubeCoordinates(-1, 0, 0), new CubeCoordinates(0, 0, -1));
-	expect(FD_to_RF.toString()).toEqual('[[0, 0, 1], [-1, 0, 0], [0, -1, 0]]');
-	//FaceCubical
-	let L_D = Matrices.getTransitivityGuessedOrthogonalMatrix(new CubeCoordinates(1, 0, 0), new CubeCoordinates(0, 1, 0));
-	expect(L_D.toString()).toEqual('[[0, 1, 0], [1, 0, 0], [0, 0, -1]]');
+	const LDB_to_LFD = Matrix.forBaseChange(Vector.fromComponents(1, 0, 0), Vector.fromComponents(0, 1, 0), Vector.fromComponents(0, 0, 1), Vector.fromComponents(1, 0, 0), Vector.fromComponents(0, 0, -1), Vector.fromComponents(0, 1, 0));
+	expect(LDB_to_LFD.toString()).toEqual('((1,0,0),(0,0,1),(0,-1,0))');
+	const LFD_to_LUF = Matrix.forBaseChange(Vector.fromComponents(1, 0, 0), Vector.fromComponents(0, 0, -1), Vector.fromComponents(0, 1, 0), Vector.fromComponents(1, 0, 0), Vector.fromComponents(0, -1, 0), Vector.fromComponents(0, 0, -1));
+	expect(LFD_to_LUF.toString()).toEqual('((1,0,0),(0,0,1),(0,-1,0))');
 
 
 	///////////////////////////
 	// Rotation Cube
-	cube= new Cube(spec); 
+	const cube = new Cube(spec);
 	cube.mRight();
 	//console.log(cube.toString());
-	expect(cube.cubicals.initiallyAtCoordinates(new CubeCoordinates(0, 3, 0)).findOne().location.coordinates).toEqual(new CubeCoordinates(0, 0, 0));
-	expect(cube.cubicals.initiallyAtCoordinates(new CubeCoordinates(0, 1, 0)).findOne().location.coordinates).toEqual(new CubeCoordinates(0, 0, 2));
-
-
-	//////////////////////////
-	// CubeState: Test if encoding give right result, and if decoding again gives the same as initially
-
-	let state: CubeState = cube.getState();
-	//console.log(state.toString());
-	expect(state.permutations[0]).toEqual([2, 0, 3, 1, 4, 5, 6, 7]);
-	expect(state.permutations[1]).toEqual([0, 1, 12, 13, 4, 5, 6, 7, 8, 9, 3, 2, 19, 18, 14, 15, 16, 17, 10, 11, 20, 21, 22, 23]);  //(2 12 19 11)(3 13 18 10)
-	expect(state.permutations[2]).toEqual([0, 1, 2, 3, 5, 7, 4, 6, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]);
-	expect(state.reorientations[0]).toEqual([2, 1, 1, 2, 0, 0, 0, 0]);
-	expect(state.reorientations[1]).toEqual([0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0]);
-	expect(state.reorientations[2]).toEqual([0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
-	//z.B. corner 0 = DRF geht auf FRU, das ist corner 2 = UFR um zwei rotiert
-
-	let cube2: Cube = new Cube(spec);
-	cube2.setState(state);
-	//console.log(cube2.toString());
-	expect(cube.toString()).toEqual(cube2.toString());
-
-	////////////////////////////////////////////
-	//Import Export to ColorCube
-
-
-	let lang = new ColorCubeLanguage(spec);
-	let colorString =
-		'        U U U U                 \n' +
-		'        U U U U                 \n' +
-		'        U U U U                 \n' +
-		'        U U U U                 \n' +
-		'B B B B L L L L F F F F R R R R \n' +
-		'L L L L F F F F R R R R B B B B \n' +
-		'L L L L F F F F R R R R B B B B \n' +
-		'L L L L F F F F R R R R B B B B \n' +
-		'        D D D D                 \n' +
-		'        D D D D                 \n' +
-		'        D D D D                 \n' +
-		'        D D D D                 \n';
-	//console.log(colorString);	
-	let importedCubeState: CubeState = lang.parse(colorString);
-	//console.log(importedCubeState.toFormattedString());
-	expect(importedCubeState.permutations[0]).toEqual([0, 1, 3, 5, 2, 4, 6, 7]); //DRF DBR URB UBL UFR ULF DLB DFL // (UFR, URB, UBL, ULF) 
-	//TODO Test and understand orientations better
-
-	let reexportedColorString = lang.stringify(importedCubeState)
-	//console.log(reexportedColorString);
-	expect(reexportedColorString).toEqual(colorString);
+	expect(cube.cubelets.initiallyAtOrigin(Vector.fromComponents(1.5, 1.5, 1.5)).findOne().location.origin).toEqual(Vector.fromComponents(1.5, 1.5, -1.5));
+	expect(cube.cubelets.initiallyAtOrigin(Vector.fromComponents(0.5, 1.5, 1.5)).findOne().location.origin).toEqual(Vector.fromComponents(0.5, 1.5, 1.5));
 
 
 
-	////////////////////////////////////////////////////
-	// Other tools
-	let spec3 = new CubeSpecification(3, true);
-	//let lang3 = new ColorCubeLanguage(spec3);
-
-	let cube3= new Cube(spec3); 
-	cube3.mRight();
-	//console.log(lang3.stringify(cube3.getState()));
-	//console.log(cube3.getState().toString());
-	//console.log(cube3.getOrbit());
-	expect(cube3.getOrbit()).toEqual("Orbit: Signums=1, CornerOrientations=0, EdgeOrientations=0");
-
-
-	cube3.shuffleByMove();
-	//console.log(lang3.stringify(cube3.getState()));
-	//console.log(cube3.getState().toString());
-	//console.log(cube3.getOrbit());
-	expect(cube3.getOrbit()).toEqual("Orbit: Signums=1, CornerOrientations=0, EdgeOrientations=0");
-
-
-
-	cube3= new Cube(spec3); 
-	cube3.shuffleByExplosion();
-	//console.log(lang3.stringify(cube3.getState()));
-	//console.log(cube3.getState().toString());
-	//console.log(cube3.getOrbit());
-	cube3.getOrbit(); //cannot test result because involves random numbers 
 });

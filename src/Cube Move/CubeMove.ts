@@ -1,8 +1,8 @@
 import { CubeFace } from "../Cube Geometry/CubeFace";
 import { CubeSpecification } from "../Cube Geometry/CubeSpecification";
-import { Equalizable } from "../Interfaces/Equalizable";
-import { Exportable } from "../Interfaces/Exportable";
-import { Printable } from "../Interfaces/Printable";
+import { Equalizable } from "../Interface/Equalizable";
+import { Exportable } from "../Interface/Exportable";
+import { Printable } from "../Interface/Printable";
 import { CubeMoveAngle } from "./CubeMoveAngle";
 import { CubeMoveLanguage } from "./CubeMoveLanguage";
 

@@ -1,4 +1,4 @@
-import { Printable } from "../Interfaces/Printable";
+import { Printable } from "../Interface/Printable";
 import { CubeState } from "./CubeState";
 
 export abstract class AbstractCubeSolvedPredicate implements Printable {

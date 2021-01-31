@@ -1,8 +1,8 @@
-import { add, multiply, deepEqual, subtract, divide, clone } from "mathjs";
+import { add, multiply, deepEqual, subtract, divide, clone, transpose, inv } from "mathjs";
 import { Dimension } from "./Dimension";
-import { Equalizable } from "../Interfaces/Equalizable";
-import { Exportable } from "../Interfaces/Exportable";
-import { Printable } from "../Interfaces/Printable";
+import { Equalizable } from "../Interface/Equalizable";
+import { Exportable } from "../Interface/Exportable";
+import { Printable } from "../Interface/Printable";
 import { Vector } from "./Vector";
 
 export class Matrix implements Exportable, Equalizable<Matrix>, Printable {
@@ -11,21 +11,27 @@ export class Matrix implements Exportable, Equalizable<Matrix>, Printable {
 	static readonly IDENTITY = new Matrix([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
 
 	/**
-	 * Outer array is a list of columns, inner arrays are the rows/entries of each column
+	 * Outer array is a list of rows, inner arrays are the columns/entries of each row
 	 */
 	readonly components: Array<Array<number>>
 
 	constructor(components: Array<Array<number>>) {
-		if (components.length !== 3) throw new Error(`Invalid column length: ${components.length}`);
-		components.forEach((componentColumn, columnIndex) => { if (componentColumn.length !== 3) throw new Error(`Invalid row length at column ${Dimension.getByIndex(columnIndex)}: ${componentColumn.length}`); });
-		this.components = [...components];
+		if (components.length !== 3) throw new Error(`Invalid row length: ${components.length}`);
+		components.forEach((componentRow, rowIndex) => { if (componentRow.length !== 3) throw new Error(`Invalid column length at row ${Dimension.getByIndex(rowIndex)}: ${componentRow.length}`); });
+		this.components = clone(components);
+	}
+
+	static forBaseChange(fromX: Vector, fromY: Vector, fromZ: Vector, toX: Vector, toY: Vector, toZ: Vector): Matrix {
+		const fromMatrix = transpose([fromX.components, fromY.components, fromZ.components]); // Matrix that sends the unit vectors to fromX, fromY, fromZ
+		const toMatrix = transpose([toX.components, toY.components, toZ.components]); // Matrix that sends the unit vectors to toX, toY, toZ
+		return new Matrix(multiply(toMatrix, inv(fromMatrix)));
 	}
 
 	static fromRotation(axis: Dimension): Matrix {
 		switch (axis) {
-			case Dimension.X: return new Matrix([[1, 0, 0], [0, 0, 1], [0, -1, 0]]);
-			case Dimension.Y: return new Matrix([[0, 0, -1], [0, 1, 0], [1, 0, 0]]);
-			case Dimension.Z: return new Matrix([[0, 1, 0], [-1, 0, 0], [0, 0, 1]]);
+			case Dimension.X: return new Matrix([[1, 0, 0], [0, 0, -1], [0, 1, 0]]);
+			case Dimension.Y: return new Matrix([[0, 0, 1], [0, 1, 0], [-1, 0, 0]]);
+			case Dimension.Z: return new Matrix([[0, -1, 0], [1, 0, 0], [0, 0, 1]]);
 			default: throw new Error(`Invalid axis: ${axis}`);
 		}
 	}
@@ -34,8 +40,8 @@ export class Matrix implements Exportable, Equalizable<Matrix>, Printable {
 		return new Matrix([[allComponents, allComponents, allComponents], [allComponents, allComponents, allComponents], [allComponents, allComponents, allComponents]]);
 	}
 
-	static fromComponent(columnDimension: Dimension, rowDimension: Dimension, component: number): Matrix {
-		return this.ZERO.withComponent(columnDimension, rowDimension, component);
+	static fromComponent(rowDimension: Dimension, columnDimension: Dimension, component: number): Matrix {
+		return this.ZERO.withComponent(rowDimension, columnDimension, component);
 	}
 
 	static import(value: string): Matrix {
@@ -55,37 +61,45 @@ export class Matrix implements Exportable, Equalizable<Matrix>, Printable {
 	}
 
 	ensureInteger(): void {
-		this.components.forEach((componentColumn, columnIndex) => { this.components[columnIndex].forEach((component, rowIndex) => { if (!Number.isInteger(component)) throw new Error(`Invalid component at column ${Dimension.getByIndex(columnIndex)} at row ${Dimension.getByIndex(rowIndex)}: ${component}`); }); });
+		this.components.forEach((componentRow, rowIndex) => { this.components[rowIndex].forEach((component, columnIndex) => { if (!Number.isInteger(component)) throw new Error(`Invalid component at row ${Dimension.getByIndex(rowIndex)} at column ${Dimension.getByIndex(columnIndex)}: ${component}`); }); });
 	}
 
-	getComponent(columnDimension: Dimension, rowDimension: Dimension): number {
-		return this.components[columnDimension.index][rowDimension.index];
+	getComponent(rowDimension: Dimension, columnDimension: Dimension): number {
+		return this.components[rowDimension.index][columnDimension.index];
 	}
 
-	componentEquals(columnDimension: Dimension, rowDimension: Dimension, otherComponent: number): boolean {
-		return this.getComponent(columnDimension, rowDimension) === otherComponent;
+	componentEquals(rowDimension: Dimension, columnDimension: Dimension, otherComponent: number): boolean {
+		return this.getComponent(rowDimension, columnDimension) === otherComponent;
 	}
 
-	withComponent(columnDimension: Dimension, rowDimension: Dimension, newComponent: number): Matrix {
+	withComponent(rowDimension: Dimension, columnDimension: Dimension, newComponent: number): Matrix {
 		const newComponents = clone(this.components);
-		newComponents[columnDimension.index][rowDimension.index] = newComponent;
+		newComponents[rowDimension.index][columnDimension.index] = newComponent;
 		return new Matrix(newComponents);
+	}
+
+	transpose(): Matrix {
+		return new Matrix(transpose(this.components));
+	}
+
+	inverse(): Matrix {
+		return new Matrix(inv(this.components));
 	}
 
 	add(summand2: Matrix): Matrix {
 		return new Matrix(add(this.components, summand2.components) as number[][]);
 	}
 
-	addAt(columnDimension: Dimension, rowDimension: Dimension, summand2: number): Matrix {
-		return this.add(Matrix.fromComponent(columnDimension, rowDimension, summand2));
+	addAt(rowDimension: Dimension, columnDimension: Dimension, summand2: number): Matrix {
+		return this.add(Matrix.fromComponent(rowDimension, columnDimension, summand2));
 	}
 
 	subtract(subtrahend: Matrix): Matrix {
 		return new Matrix(subtract(this.components, subtrahend.components) as number[][]);
 	}
 
-	subtractAt(columnDimension: Dimension, rowDimension: Dimension, subtrahend: number): Matrix {
-		return this.subtract(Matrix.fromComponent(columnDimension, rowDimension, subtrahend));
+	subtractAt(rowDimension: Dimension, columnDimension: Dimension, subtrahend: number): Matrix {
+		return this.subtract(Matrix.fromComponent(rowDimension, columnDimension, subtrahend));
 	}
 
 	scalarMultiply(factor2: number): Matrix {
@@ -97,13 +111,15 @@ export class Matrix implements Exportable, Equalizable<Matrix>, Printable {
 	}
 
 	multiply(factor2: Matrix): Matrix {
-		// MathJS's "multiply" takes the factors swapped!
-		return new Matrix(multiply(factor2.components, this.components));
+		return new Matrix(multiply(this.components, factor2.components));
 	}
 
 	vectorMultiply(factor2: Vector): Vector {
-		// MathJS's "multiply" takes the factors swapped!
-		return new Vector(multiply(factor2.components, this.components));
+		return new Vector(multiply(this.components, transpose(factor2.components)) as unknown as number[]);
+	}
+
+	rotate(axis: Dimension): Matrix {
+		return Matrix.fromRotation(axis).multiply(this);
 	}
 
 }

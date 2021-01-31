@@ -1,105 +1,91 @@
 import { CubeMoveLanguage } from "../Cube Move/CubeMoveLanguage";
-import { CubeStateLanguage } from '../Cube State/CubeStateLanguage';
 import { CubeState } from '../Cube State/CubeState';
-import { Cubical, CubicalSolvedCondition, CubicalLocation, ReadonlyCubical } from './Cubical';
+import { Cubelet } from './Cubelet';
 import { Random } from '../Utilities/Random';
-import deepEqual from "deep-equal";
-import { CubicalInspector } from "./CubicalInspector";
-import { EventData } from "../Events/EventData";
+import { CubeletInspector } from "./CubeletInspector";
 import { CubeMove } from "../Cube Move/CubeMove";
-import { Printable } from "../Interfaces/Printable";
+import { Printable } from "../Interface/Printable";
 import { CubeSpecification } from "../Cube Geometry/CubeSpecification";
-import { Event } from "../Events/Event";
+import { Event } from "../Event/Event";
 import { CubePartType } from "../Cube Geometry/CubePartType";
 import { CubePart } from "../Cube Geometry/CubePart";
 import { Dimension } from "../Linear Algebra/Dimension";
 import { CubeMoveAngle } from "../Cube Move/CubeMoveAngle";
 import { CubeFace } from "../Cube Geometry/CubeFace";
-
-
-export interface CubeStateChanged extends EventData {
-	readonly oldState: CubeState
-	readonly newState: CubeState
-	readonly move?: CubeMove
-}
+import { CubeStateChanged } from "./CubeStateChanged";
+import { CubeletLocation } from "./CubeletLocation";
+import { CubeSolutionCondition } from "./CubeSolutionCondition";
+import { CubeletState } from "../Cube State/CubeletState";
+import { CubeletOrientation } from "./CubeletOrientation";
 
 export class Cube implements Printable {
-
-	static defaultSolvedCondition(spec: CubeSpecification): CubicalSolvedCondition {
-		return cubical => {
-			//TODO: Implement
-			return false;
-		};
-	}
 
 	/**
 	 * @event
 	 */
 	readonly stateChanged = new Event<CubeStateChanged>();
 
-	readonly solvedCondition: CubicalSolvedCondition
+	readonly solutionCondition = new CubeSolutionCondition();
 
-	readonly #cubicals: ReadonlyArray<Cubical>
+	readonly #cubelets: ReadonlyArray<Cubelet>
 
 	constructor(
-		readonly spec: CubeSpecification, customSolvedCondition?: CubicalSolvedCondition, state?: CubeState) {
+		readonly spec: CubeSpecification, state?: CubeState) {
 
-		this.solvedCondition = customSolvedCondition ?? Cube.defaultSolvedCondition(this.spec);
-
-		const cubicals = new Array<Cubical>();
+		const cubelets = new Array<Cubelet>();
 		for (const cubePartType of CubePartType.getAll()) {
 			for (const cubePart of CubePart.getByType(cubePartType)) {
-				for (const cubicalLocation of CubicalLocation.fromPart(spec, cubePart)) {
-					cubicals.push(new Cubical(this, cubicalLocation)); //new Cubical in initial location and orientation
+				for (const cubeletLocation of CubeletLocation.fromPart(spec, cubePart)) {
+					cubelets.push(new Cubelet(this, cubeletLocation));
 				}
 			}
 		}
-		this.#cubicals = cubicals;
+		this.#cubelets = cubelets;
 
 		if (state) {
 			this.setState(state);
 		}
-	}
 
-	clone(): Cube {
-		return new Cube(this.spec, this.solvedCondition, this.getState());
 	}
 
 	toString(): string {
-		let result: string = 'All Cubicals:\n ';
-		for (let cubical of this.#cubicals) {
-			result = result + cubical.toString() + '\n';
-		}
-		return result;
+		//TODO: ???
+		return '';
 	}
 
-	get cubicals(): CubicalInspector {
-		return new CubicalInspector(this.#cubicals);
-	}
-
-	getStateLanguage(): CubeStateLanguage {
-		return new CubeStateLanguage(this.spec);
+	get cubelets(): CubeletInspector {
+		return new CubeletInspector(this.#cubelets);
 	}
 
 	getMoveLanguage(): CubeMoveLanguage {
 		return new CubeMoveLanguage(this.spec);
 	}
 
-	isSolved(customCondition?: CubicalSolvedCondition): boolean {
-		return this.cubicals.areSolved(customCondition);
+	isSolved(): boolean {
+		return this.solutionCondition.isCubeSolved(this);
 	}
 
 	getState(): CubeState {
-		return CubeState.snapshotFromCubicals(this.spec, this.#cubicals as ReadonlyArray<ReadonlyCubical>);
+		const cubelets = new Array<CubeletState>();
+		for (let cubelet of this.#cubelets) {
+			cubelets.push(new CubeletState(cubelet.initialLocation.origin, cubelet.location.origin, cubelet.orientation.matrix));
+		}
+		return new CubeState(this.spec, cubelets);
 	}
 
 	setState(newState: CubeState, source?: object): Cube {
 
-		if (!deepEqual(this.spec, newState.spec)) throw new Error(`Invalid spec of new state: ${newState.spec}`); //TODO: Only check for equality to allow worker messaging
+		if (!this.spec.equals(newState.spec)) throw new Error(`Invalid spec of new state: ${newState.spec}`);
 
 		const oldState = this.getState();
 
-		newState.restoreIntoCubicals(this.#cubicals);
+		for (let cubeletState of newState.cubelets) {
+			for (let cubelet of this.#cubelets) {
+				if (cubelet.initialLocation.origin.equals(cubeletState.initialLocation)) {
+					cubelet.beam(new CubeletLocation(this.spec, cubeletState.location), new CubeletOrientation(cubeletState.orientation));
+				}
+			}
+		}
 
 		this.stateChanged.trigger({ oldState: oldState, newState: newState, source: source });
 
@@ -107,11 +93,11 @@ export class Cube implements Printable {
 
 	}
 
-	private rotateSlice(dimension: Dimension, sliceCoordinate: number): void {
+	private rotateSlice(dimension: Dimension, sliceComponent: number): void {
 
-		for (let cubical of this.#cubicals) {
-			if (sliceCoordinate === cubical.location.coordinates.getComponent(dimension)) {
-				cubical.rotate(dimension);
+		for (let cubelet of this.#cubelets) {
+			if (cubelet.location.origin.componentEquals(dimension, sliceComponent)) {
+				cubelet.rotate(dimension);
 			}
 		}
 
@@ -119,20 +105,18 @@ export class Cube implements Printable {
 
 	move(move: CubeMove, source?: object): Cube {
 
-		if (!deepEqual(this.spec, move.spec)) throw new Error(`Invalid spec of move: ${move.spec}`); //TODO: Only check for equality to allow worker messaging
-
-		if (move.angle % 4 === 0) return this;
+		if (!this.spec.equals(move.spec)) throw new Error(`Invalid spec of move: ${move.spec}`);
 
 		const oldState = this.getState();
 
 		const dimension = move.face.dimension;
-		const firstSliceCoordinate = move.face.frontside ? 0 : this.spec.edgeLength - move.slices;
-		const lastSliceCoordinate = move.face.frontside ? move.slices - 1 : this.spec.edgeLength - 1;
-		const angle = (((move.face.frontside ? 1 : -1) * move.angle % 4) + 4) % 4;
+		const componentMaximum = (this.spec.edgeLength - 1) / 2;
+		const startSliceComponent = (componentMaximum - (move.sliceStart - 1)) * (move.face.positiveDirection ? 1 : -1); // sliceStart is one-based
+		const angle = (((move.angle * (move.face.positiveDirection ? 1 : -1) * -1) % 4) + 4) % 4; // rotateSlice rotates CCW
 
-		for (let sliceCoordinate = firstSliceCoordinate; sliceCoordinate <= lastSliceCoordinate; sliceCoordinate++) {
+		for (let sliceComponent = startSliceComponent; sliceComponent < startSliceComponent + move.sliceCount; sliceComponent++) {
 			for (let angleIndex = 0; angleIndex < angle; angleIndex++) {
-				this.rotateSlice(dimension, sliceCoordinate);
+				this.rotateSlice(dimension, sliceComponent);
 			}
 		}
 
@@ -142,161 +126,171 @@ export class Cube implements Printable {
 
 	}
 
-	mw(face: CubeFace, slices: number = 2, angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object): Cube {
-		return this.move(new CubeMove(this.spec, face, slices, angle), source);
+	// Generic Rotations
+
+	mRangeSlices(face: CubeFace, sliceStart: number = 2, sliceCount: number = 2, angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object): Cube {
+		return this.move(new CubeMove(this.spec, face, sliceStart, sliceCount, angle), source);
 	}
 
-	mwFront(slices: number = 2, angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object): Cube {
-		return this.mw(CubeFace.FRONT, slices, angle, source);
+	mBlockSlices(face: CubeFace, sliceCount: number = 2, angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object): Cube {
+		return this.mRangeSlices(face, 1, sliceCount, angle, source);
 	}
 
-	mwRight(slices: number = 2, angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object): Cube {
-		return this.mw(CubeFace.RIGHT, slices, angle, source);
+	mFaceSlice(face: CubeFace, angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object): Cube {
+		return this.mBlockSlices(face, 1, angle, source);
 	}
 
-	mwUp(slices: number = 2, angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object): Cube {
-		return this.mw(CubeFace.UP, slices, angle, source);
+	mCenterSlice(dimension: Dimension, angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object): Cube {
+		return this.mRangeSlices(CubeFace.getDimensionAndDirection(dimension, true), Math.floor((this.spec.edgeLength + 1) / 2), 1, angle, source);
 	}
 
-	mwBack(slices: number = 2, angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object): Cube {
-		return this.mw(CubeFace.BACK, slices, angle, source);
+	mInlaySlices(dimension: Dimension, angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object): Cube {
+		return this.mRangeSlices(CubeFace.getDimensionAndDirection(dimension, true), this.spec.edgeLength - 1, this.spec.edgeLength - 2, angle, source);
 	}
 
-	mwLeft(slices: number = 2, angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object): Cube {
-		return this.mw(CubeFace.LEFT, slices, angle, source);
+	mCube(dimension: Dimension, angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object): Cube {
+		return this.mRangeSlices(CubeFace.getDimensionAndDirection(dimension, true), 1, this.spec.edgeLength, angle, source);
 	}
 
-	mwDown(slices: number = 2, angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object): Cube {
-		return this.mw(CubeFace.DOWN, slices, angle, source);
+	// Specific Range Rotations
+
+	mRightRange(sliceStart: number = 2, sliceCount: number = 2, angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object) {
+		return this.mRangeSlices(CubeFace.RIGHT, sliceStart, sliceCount, angle, source);
 	}
 
-	m(face: CubeFace, angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object): Cube {
-		return this.mw(face, 1, angle, source);
+	mUpRange(sliceStart: number = 2, sliceCount: number = 2, angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object) {
+		return this.mRangeSlices(CubeFace.UP, sliceStart, sliceCount, angle, source);
 	}
 
-	mFront(angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object): Cube {
-		return this.m(CubeFace.FRONT, angle, source);
+	mFrontRange(sliceStart: number = 2, sliceCount: number = 2, angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object) {
+		return this.mRangeSlices(CubeFace.FRONT, sliceStart, sliceCount, angle, source);
 	}
 
-	mRight(angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object): Cube {
-		return this.m(CubeFace.RIGHT, angle, source);
+	mLeftRange(sliceStart: number = 2, sliceCount: number = 2, angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object) {
+		return this.mRangeSlices(CubeFace.LEFT, sliceStart, sliceCount, angle, source);
 	}
 
-	mUp(angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object): Cube {
-		return this.m(CubeFace.UP, angle, source);
+	mDownRange(sliceStart: number = 2, sliceCount: number = 2, angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object) {
+		return this.mRangeSlices(CubeFace.DOWN, sliceStart, sliceCount, angle, source);
 	}
 
-	mBack(angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object): Cube {
-		return this.m(CubeFace.BACK, angle, source);
+	mBackRange(sliceStart: number = 2, sliceCount: number = 2, angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object) {
+		return this.mRangeSlices(CubeFace.BACK, sliceStart, sliceCount, angle, source);
 	}
 
-	mLeft(angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object): Cube {
-		return this.m(CubeFace.LEFT, angle, source);
+	// Specific Block Rotations
+
+	mRightBlock(sliceCount: number = 2, angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object) {
+		return this.mBlockSlices(CubeFace.RIGHT, sliceCount, angle, source);
 	}
 
-	mDown(angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object): Cube {
-		return this.m(CubeFace.DOWN, angle, source);
+	mUpBlock(sliceCount: number = 2, angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object) {
+		return this.mBlockSlices(CubeFace.UP, sliceCount, angle, source);
 	}
 
-	r(face: CubeFace, angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object): Cube {
-		return this.mw(face, this.spec.edgeLength, angle, source);
+	mFrontBlock(sliceCount: number = 2, angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object) {
+		return this.mBlockSlices(CubeFace.FRONT, sliceCount, angle, source);
 	}
 
-	rZ(angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object): Cube {
-		return this.r(CubeFace.FRONT, angle, source);
+	mLeftBlock(sliceCount: number = 2, angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object) {
+		return this.mBlockSlices(CubeFace.LEFT, sliceCount, angle, source);
 	}
 
-	rX(angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object): Cube {
-		return this.r(CubeFace.RIGHT, angle, source);
+	mDownBlock(sliceCount: number = 2, angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object) {
+		return this.mBlockSlices(CubeFace.DOWN, sliceCount, angle, source);
 	}
 
-	rY(angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object): Cube {
-		return this.r(CubeFace.UP, angle, source);
+	mBackBlock(sliceCount: number = 2, angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object) {
+		return this.mBlockSlices(CubeFace.BACK, sliceCount, angle, source);
 	}
 
-	ml(movesString: string, source?: object): Cube {
+	// Specific Face Rotations
+
+	mRight(angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object) {
+		return this.mFaceSlice(CubeFace.RIGHT, angle, source);
+	}
+
+	mUp(angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object) {
+		return this.mFaceSlice(CubeFace.UP, angle, source);
+	}
+
+	mFront(angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object) {
+		return this.mFaceSlice(CubeFace.FRONT, angle, source);
+	}
+
+	mLeft(angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object) {
+		return this.mFaceSlice(CubeFace.LEFT, angle, source);
+	}
+
+	mDown(angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object) {
+		return this.mFaceSlice(CubeFace.DOWN, angle, source);
+	}
+
+	mBack(angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object) {
+		return this.mFaceSlice(CubeFace.BACK, angle, source);
+	}
+
+	// Specific Center Rotations
+
+	mMiddle(angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object) {
+		return this.mCenterSlice(Dimension.X, angle, source);
+	}
+
+	mEquator(angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object) {
+		return this.mCenterSlice(Dimension.Y, angle, source);
+	}
+
+	mStand(angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object) {
+		return this.mCenterSlice(Dimension.Z, angle, source);
+	}
+
+	// Specific Center Rotations
+
+	mMiddleInlay(angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object) {
+		return this.mInlaySlices(Dimension.X, angle, source);
+	}
+
+	mEquatorInlay(angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object) {
+		return this.mInlaySlices(Dimension.Y, angle, source);
+	}
+
+	mStandInlay(angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object) {
+		return this.mInlaySlices(Dimension.Z, angle, source);
+	}
+
+	// Specific Cube Rotations
+
+	mX(angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object) {
+		return this.mCube(Dimension.X, angle, source);
+	}
+
+	mY(angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object) {
+		return this.mCube(Dimension.Y, angle, source);
+	}
+
+	mZ(angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object) {
+		return this.mCube(Dimension.Z, angle, source);
+	}
+
+	// Others
+
+	mString(movesString: string, source?: object): Cube {
 		this.getMoveLanguage().parse(movesString).forEach(move => this.move(move, source));
 		return this;
 	}
 
-	shuffleByExplosion(source?: object): Cube {
+	shuffleByMove(movesLength: number = 100, source?: object): Cube {
 
-		const permutations = [new Array<number>(), new Array<number>(), new Array<number>()];
-		const orientations = [new Array<number>(), new Array<number>(), new Array<number>()];
-
-		for (const type of CubePartType.getAll()) {
-
-			const n = type.countLocations(this.spec);
-			//RandomPermutation of 1...n
-			//Make a pool of all indices, choose a random one, then delete it from the pool etc
-			const indexPool = Array<number>();
-			for (let index = 0; index < n; index++) { indexPool.push(index); }
-			for (let initialindex = 0; initialindex < n; initialindex++) { //Until indexPool is empty
-				let indexindex = Random.randomIntegerFromToInclusivly(0, indexPool.length - 1);
-				permutations[type.dimensionsCount][initialindex] = indexPool[indexindex];
-				indexPool.splice(indexindex, 1);
-				//Also random orientation
-				orientations[type.dimensionsCount][initialindex] = Random.randomIntegerFromToInclusivly(0, type.countNormalVectors() - 1);
-			}
-
-		}
-
-		this.setState(new CubeState(this.spec, permutations, orientations));
-		
-		return this;
-
-	}
-
-	shuffleByMove(moveLength: number = 100, source?: object): Cube {
-		
-		for (let moveIndex = 0; moveIndex < moveLength; moveIndex++) {
-			const face = CubeFace.getAll()[Random.randomIntegerToInclusivly(5)];
-			const slices = Random.randomIntegerFromToInclusivly(1, this.spec.edgeLength - 1);
+		for (let moveIndex = 0; moveIndex < movesLength; moveIndex++) {
+			const face = CubeFace.getByIndex(Random.randomIntegerToInclusivly(5));
+			const sliceStart = Random.randomIntegerFromToInclusivly(1, this.spec.edgeLength);
+			const sliceCount = Random.randomIntegerFromToInclusivly(1, this.spec.edgeLength - sliceStart + 1);
 			const angle = Random.randomIntegerFromToInclusivly(1, 3);
-			this.mw(face, slices, angle, source);
+			this.mRangeSlices(face, sliceStart, sliceCount, angle, source);
 		}
 
 		return this;
-	
-	}
 
-	shuffle(moveLength: number = 100, source?: object): Cube {
-		return this.shuffleByMove(moveLength, source);
-	}
-
-	getOrbit():String {
-		if (this.spec.edgeLength!=3 || this.spec.colored!=true) throw new Error('Orbit problem only solved and implemented for SPEC (3, ColoredFaces)');
-		let state:CubeState=this.getState();
-		//Careful, since the cube can be rotated in space, the face permutations also have to be encountered
-		let CornerPermutationsVsEdgePermutationsSignum=Cube.getSignum(state.permutations[0])*Cube.getSignum(state.permutations[1])*Cube.getSignum(state.permutations[2]);
-
-		let CornerReorientationsSum=0;
-		for(let index=0;index<CubePartType.CORNER.countLocations(this.spec);index++) {
-			CornerReorientationsSum+=state.reorientations[0][index];
-		}
-		let EdgeReorientationsSum=0;
-		for(let index=0;index<CubePartType.EDGE.countLocations(this.spec);index++) {
-			EdgeReorientationsSum+=state.reorientations[1][index];
-		}
-		return "Orbit: Signums="+CornerPermutationsVsEdgePermutationsSignum.toString()
-		+", CornerOrientations="+ (CornerReorientationsSum % 3).toString()
-		+", EdgeOrientations="+ (EdgeReorientationsSum %2) .toString();
-		
-	}
-
-	/** Computes the signum of a permutation, used in getOrbit
-	 * 
-	 */
-	private static getSignum(permutation:ReadonlyArray<number>):number  {
-		let signumCount=0;
-		for (let i:number=0;i<permutation.length;i++) {
-			for (let j:number=i+1;j<permutation.length;j++) {
-				if (permutation[i]>permutation[j]) signumCount++;
-			}
-		}
-		//console.log(permutation);
-		//console.log("SignumCount:"+signumCount);
-		return Math.pow(-1,signumCount);
 	}
 
 }

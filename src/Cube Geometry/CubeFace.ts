@@ -1,7 +1,7 @@
 import { Vector } from "../Linear Algebra/Vector";
-import { Equalizable } from "../Interfaces/Equalizable";
-import { Exportable } from "../Interfaces/Exportable";
-import { Printable } from "../Interfaces/Printable";
+import { Equalizable } from "../Interface/Equalizable";
+import { Exportable } from "../Interface/Exportable";
+import { Printable } from "../Interface/Printable";
 import { Dimension } from "../Linear Algebra/Dimension";
 
 /** 
@@ -35,6 +35,10 @@ export class CubeFace implements Exportable, Equalizable<CubeFace>, Printable {
 		return item;
 	}
 
+	static getDimensionAndDirection(dimension: Dimension, positiveDirection: boolean): CubeFace {
+		return this.getByNormalVector(Vector.fromComponent(dimension, positiveDirection ? 1 : -1));
+	}
+
 	private constructor(readonly index: number, readonly name: string, readonly dimension: Dimension, readonly positiveDirection: boolean) {
 		CubeFace._all.push(this);
 		CubeFace._allByNormalVectorExport.set(this.getNormalVector().export(), this);
@@ -56,17 +60,6 @@ export class CubeFace implements Exportable, Equalizable<CubeFace>, Printable {
 		return `${this.name}`;
 	}
 
-	/**
-	 * The normal vector pointing outwards this face
-	 */
-	//TODO: Refactor: Das war so geschrieben
-	/*getNormalVector(): CubeCoordinates {
-		if (!this.backside) {
-			return CubeCoordinates.fromDimension(this.dimension, -1);
-		} else {
-			return CubeCoordinates.fromDimension(this.dimension, +1);
-		}
-	}*/
 	getNormalVector(): Vector {
 		return Vector.fromComponent(this.dimension, this.positiveDirection ? 1 : -1);
 	}
