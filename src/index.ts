@@ -21,7 +21,7 @@ export * from './Cube History/CubeHistoryRecorded';
 
 export * from './Cube Move/CubeMove';
 export * from './Cube Move/CubeMoveAngle';
-export * from './Cube Move/CubeMoveLanguage';
+export * from './Cube Move/CubeMoveExporter';
 
 export * from './Cube State/CubeletState';
 export * from './Cube State/CubeState';
@@ -38,6 +38,10 @@ export * from './Interface/Printable';
 export * from './Linear Algebra/Dimension';
 export * from './Linear Algebra/Matrix';
 export * from './Linear Algebra/Vector';
+
+export * from './Simon Cube State/SimonCubeState';
+export * from './Simon Cube State/SimonCubeStateConverter';
+export * from './Simon Cube State/SimonCubeStateExporter';
 
 export * from './Utilities/Arrays';
 export * from './Utilities/Random';

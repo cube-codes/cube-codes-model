@@ -4,7 +4,7 @@ import { Equalizable } from "../Interface/Equalizable";
 import { Exportable } from "../Interface/Exportable";
 import { Printable } from "../Interface/Printable";
 import { CubeMoveAngle } from "./CubeMoveAngle";
-import { CubeMoveLanguage } from "./CubeMoveLanguage";
+import { CubeMoveExporter } from "./CubeMoveExporter";
 
 export class CubeMoveExport {
 
@@ -42,8 +42,8 @@ export class CubeMove implements Exportable, Equalizable<CubeMove>, Printable {
 	}
 
 	toString(): string {
-		const cml = new CubeMoveLanguage(this.spec);
-		return `${cml.stringify([this])}`;
+		const cubeMoveExporter = new CubeMoveExporter(this.spec);
+		return `${cubeMoveExporter.stringify([this])}`;
 	}
 
 	getInverse(): CubeMove {

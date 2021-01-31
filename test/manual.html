@@ -7,10 +7,10 @@
 <script src="../dist/browser/cube-codes-model.js"></script>
 <script type="text/javascript">
 
-let spec = new CCM.CubeSpecification(3, true);
-let cml = new CCM.CubeMoveLanguage(spec);
+let spec = new CCM.CubeSpecification(3);
+let cme = new CCM.CubeMoveExporter(spec);
 
-console.log(cml.parse('F 2Fw x U2'));
+console.log(cme.parse('F 2Fw x U2'));
 
 </script>
 

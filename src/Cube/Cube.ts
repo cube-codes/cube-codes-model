@@ -1,4 +1,4 @@
-import { CubeMoveLanguage } from "../Cube Move/CubeMoveLanguage";
+import { CubeMoveExporter } from "../Cube Move/CubeMoveExporter";
 import { CubeState } from '../Cube State/CubeState';
 import { Cubelet } from './Cubelet';
 import { Random } from '../Utilities/Random';
@@ -57,8 +57,8 @@ export class Cube implements Printable {
 		return new CubeletInspector(this.#cubelets);
 	}
 
-	getMoveLanguage(): CubeMoveLanguage {
-		return new CubeMoveLanguage(this.spec);
+	getCubeMoveExporter(): CubeMoveExporter {
+		return new CubeMoveExporter(this.spec);
 	}
 
 	isSolved(): boolean {
@@ -77,6 +77,8 @@ export class Cube implements Printable {
 
 		if (!this.spec.equals(newState.spec)) throw new Error(`Invalid spec of new state: ${newState.spec}`);
 
+		//TODO: More validation? Depends on validation in cubeState
+
 		const oldState = this.getState();
 
 		for (let cubeletState of newState.cubelets) {
@@ -93,16 +95,6 @@ export class Cube implements Printable {
 
 	}
 
-	private rotateSlice(dimension: Dimension, sliceComponent: number): void {
-
-		for (let cubelet of this.#cubelets) {
-			if (cubelet.location.origin.componentEquals(dimension, sliceComponent)) {
-				cubelet.rotate(dimension);
-			}
-		}
-
-	}
-
 	move(move: CubeMove, source?: object): Cube {
 
 		if (!this.spec.equals(move.spec)) throw new Error(`Invalid spec of move: ${move.spec}`);
@@ -116,7 +108,11 @@ export class Cube implements Printable {
 
 		for (let sliceComponent = startSliceComponent; sliceComponent < startSliceComponent + move.sliceCount; sliceComponent++) {
 			for (let angleIndex = 0; angleIndex < angle; angleIndex++) {
-				this.rotateSlice(dimension, sliceComponent);
+				for (let cubelet of this.#cubelets) {
+					if (cubelet.location.origin.componentEquals(dimension, sliceComponent)) {
+						cubelet.rotate(dimension);
+					}
+				}
 			}
 		}
 
@@ -275,7 +271,7 @@ export class Cube implements Printable {
 	// Others
 
 	mString(movesString: string, source?: object): Cube {
-		this.getMoveLanguage().parse(movesString).forEach(move => this.move(move, source));
+		this.getCubeMoveExporter().parse(movesString).forEach(move => this.move(move, source));
 		return this;
 	}
 
