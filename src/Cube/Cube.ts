@@ -73,7 +73,7 @@ export class Cube implements Printable {
 		return new CubeState(this.spec, cubelets);
 	}
 
-	setState(newState: CubeState, source?: object): Cube {
+	async setState(newState: CubeState, source?: object): Promise<Cube> {
 
 		if (!this.spec.equals(newState.spec)) throw new Error(`Invalid spec of new state: ${newState.spec}`);
 
@@ -89,13 +89,13 @@ export class Cube implements Printable {
 			}
 		}
 
-		this.stateChanged.trigger({ oldState: oldState, newState: newState, source: source });
+		await this.stateChanged.trigger({ oldState: oldState, newState: newState, source: source });
 
 		return this;
 
 	}
 
-	move(move: CubeMove, source?: object): Cube {
+	async move(move: CubeMove, source?: object): Promise<Cube> {
 
 		if (!this.spec.equals(move.spec)) throw new Error(`Invalid spec of move: ${move.spec}`);
 
@@ -106,7 +106,8 @@ export class Cube implements Printable {
 		const startSliceComponent = (componentMaximum - (move.sliceStart - 1)) * (move.face.positiveDirection ? 1 : -1); // sliceStart is one-based
 		const angle = (((move.angle * (move.face.positiveDirection ? 1 : -1) * -1) % 4) + 4) % 4; // rotateSlice rotates CCW
 
-		for (let sliceComponent = startSliceComponent; sliceComponent < startSliceComponent + move.sliceCount; sliceComponent++) {
+		let sliceComponent = startSliceComponent;
+		for (let sliceIndex = 0; sliceIndex < move.sliceCount; sliceIndex++) {
 			for (let angleIndex = 0; angleIndex < angle; angleIndex++) {
 				for (let cubelet of this.#cubelets) {
 					if (cubelet.location.origin.componentEquals(dimension, sliceComponent)) {
@@ -114,9 +115,10 @@ export class Cube implements Printable {
 					}
 				}
 			}
+			sliceComponent += move.face.positiveDirection ? -1 : 1;
 		}
 
-		this.stateChanged.trigger({ oldState: oldState, newState: this.getState(), move: move, source: source });
+		await this.stateChanged.trigger({ oldState: oldState, newState: this.getState(), move: move, source: source });
 
 		return this;
 
@@ -124,165 +126,167 @@ export class Cube implements Printable {
 
 	// Generic Rotations
 
-	mRangeSlices(face: CubeFace, sliceStart: number = 2, sliceCount: number = 2, angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object): Cube {
-		return this.move(new CubeMove(this.spec, face, sliceStart, sliceCount, angle), source);
+	async mRangeSlices(face: CubeFace, sliceStart: number = 2, sliceCount: number = 2, angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object): Promise<Cube> {
+		return await this.move(new CubeMove(this.spec, face, sliceStart, sliceCount, angle), source);
 	}
 
-	mBlockSlices(face: CubeFace, sliceCount: number = 2, angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object): Cube {
-		return this.mRangeSlices(face, 1, sliceCount, angle, source);
+	async mBlockSlices(face: CubeFace, sliceCount: number = 2, angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object): Promise<Cube> {
+		return await this.mRangeSlices(face, 1, sliceCount, angle, source);
 	}
 
-	mFaceSlice(face: CubeFace, angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object): Cube {
-		return this.mBlockSlices(face, 1, angle, source);
+	async mFaceSlice(face: CubeFace, angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object): Promise<Cube> {
+		return await this.mBlockSlices(face, 1, angle, source);
 	}
 
-	mCenterSlice(dimension: Dimension, angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object): Cube {
-		return this.mRangeSlices(CubeFace.getDimensionAndDirection(dimension, true), Math.floor((this.spec.edgeLength + 1) / 2), 1, angle, source);
+	async mCenterSlice(dimension: Dimension, angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object): Promise<Cube> {
+		return await this.mRangeSlices(CubeFace.getDimensionAndDirection(dimension, true), Math.floor((this.spec.edgeLength + 1) / 2), this.spec.edgeLength % 2, angle, source);
 	}
 
-	mInlaySlices(dimension: Dimension, angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object): Cube {
-		return this.mRangeSlices(CubeFace.getDimensionAndDirection(dimension, true), this.spec.edgeLength - 1, this.spec.edgeLength - 2, angle, source);
+	async mInlaySlices(dimension: Dimension, angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object): Promise<Cube> {
+		return await this.mRangeSlices(CubeFace.getDimensionAndDirection(dimension, true), 2, this.spec.edgeLength - 2, angle, source);
 	}
 
-	mCube(dimension: Dimension, angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object): Cube {
-		return this.mRangeSlices(CubeFace.getDimensionAndDirection(dimension, true), 1, this.spec.edgeLength, angle, source);
+	async mCube(dimension: Dimension, angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object): Promise<Cube> {
+		return await this.mRangeSlices(CubeFace.getDimensionAndDirection(dimension, true), 1, this.spec.edgeLength, angle, source);
 	}
 
 	// Specific Range Rotations
 
-	mRightRange(sliceStart: number = 2, sliceCount: number = 2, angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object) {
-		return this.mRangeSlices(CubeFace.RIGHT, sliceStart, sliceCount, angle, source);
+	async mRightRange(sliceStart: number = 2, sliceCount: number = 2, angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object): Promise<Cube> {
+		return await this.mRangeSlices(CubeFace.RIGHT, sliceStart, sliceCount, angle, source);
 	}
 
-	mUpRange(sliceStart: number = 2, sliceCount: number = 2, angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object) {
-		return this.mRangeSlices(CubeFace.UP, sliceStart, sliceCount, angle, source);
+	async mUpRange(sliceStart: number = 2, sliceCount: number = 2, angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object): Promise<Cube> {
+		return await this.mRangeSlices(CubeFace.UP, sliceStart, sliceCount, angle, source);
 	}
 
-	mFrontRange(sliceStart: number = 2, sliceCount: number = 2, angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object) {
-		return this.mRangeSlices(CubeFace.FRONT, sliceStart, sliceCount, angle, source);
+	async mFrontRange(sliceStart: number = 2, sliceCount: number = 2, angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object): Promise<Cube> {
+		return await this.mRangeSlices(CubeFace.FRONT, sliceStart, sliceCount, angle, source);
 	}
 
-	mLeftRange(sliceStart: number = 2, sliceCount: number = 2, angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object) {
-		return this.mRangeSlices(CubeFace.LEFT, sliceStart, sliceCount, angle, source);
+	async mLeftRange(sliceStart: number = 2, sliceCount: number = 2, angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object): Promise<Cube> {
+		return await this.mRangeSlices(CubeFace.LEFT, sliceStart, sliceCount, angle, source);
 	}
 
-	mDownRange(sliceStart: number = 2, sliceCount: number = 2, angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object) {
-		return this.mRangeSlices(CubeFace.DOWN, sliceStart, sliceCount, angle, source);
+	async mDownRange(sliceStart: number = 2, sliceCount: number = 2, angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object): Promise<Cube> {
+		return await this.mRangeSlices(CubeFace.DOWN, sliceStart, sliceCount, angle, source);
 	}
 
-	mBackRange(sliceStart: number = 2, sliceCount: number = 2, angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object) {
-		return this.mRangeSlices(CubeFace.BACK, sliceStart, sliceCount, angle, source);
+	async mBackRange(sliceStart: number = 2, sliceCount: number = 2, angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object): Promise<Cube> {
+		return await this.mRangeSlices(CubeFace.BACK, sliceStart, sliceCount, angle, source);
 	}
 
 	// Specific Block Rotations
 
-	mRightBlock(sliceCount: number = 2, angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object) {
-		return this.mBlockSlices(CubeFace.RIGHT, sliceCount, angle, source);
+	async mRightBlock(sliceCount: number = 2, angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object): Promise<Cube> {
+		return await this.mBlockSlices(CubeFace.RIGHT, sliceCount, angle, source);
 	}
 
-	mUpBlock(sliceCount: number = 2, angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object) {
-		return this.mBlockSlices(CubeFace.UP, sliceCount, angle, source);
+	async mUpBlock(sliceCount: number = 2, angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object): Promise<Cube> {
+		return await this.mBlockSlices(CubeFace.UP, sliceCount, angle, source);
 	}
 
-	mFrontBlock(sliceCount: number = 2, angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object) {
-		return this.mBlockSlices(CubeFace.FRONT, sliceCount, angle, source);
+	async mFrontBlock(sliceCount: number = 2, angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object): Promise<Cube> {
+		return await this.mBlockSlices(CubeFace.FRONT, sliceCount, angle, source);
 	}
 
-	mLeftBlock(sliceCount: number = 2, angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object) {
-		return this.mBlockSlices(CubeFace.LEFT, sliceCount, angle, source);
+	async mLeftBlock(sliceCount: number = 2, angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object): Promise<Cube> {
+		return await this.mBlockSlices(CubeFace.LEFT, sliceCount, angle, source);
 	}
 
-	mDownBlock(sliceCount: number = 2, angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object) {
-		return this.mBlockSlices(CubeFace.DOWN, sliceCount, angle, source);
+	async mDownBlock(sliceCount: number = 2, angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object): Promise<Cube> {
+		return await this.mBlockSlices(CubeFace.DOWN, sliceCount, angle, source);
 	}
 
-	mBackBlock(sliceCount: number = 2, angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object) {
-		return this.mBlockSlices(CubeFace.BACK, sliceCount, angle, source);
+	async mBackBlock(sliceCount: number = 2, angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object): Promise<Cube> {
+		return await this.mBlockSlices(CubeFace.BACK, sliceCount, angle, source);
 	}
 
 	// Specific Face Rotations
 
-	mRight(angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object) {
-		return this.mFaceSlice(CubeFace.RIGHT, angle, source);
+	async mRight(angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object): Promise<Cube> {
+		return await this.mFaceSlice(CubeFace.RIGHT, angle, source);
 	}
 
-	mUp(angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object) {
-		return this.mFaceSlice(CubeFace.UP, angle, source);
+	async mUp(angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object): Promise<Cube> {
+		return await this.mFaceSlice(CubeFace.UP, angle, source);
 	}
 
-	mFront(angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object) {
-		return this.mFaceSlice(CubeFace.FRONT, angle, source);
+	async mFront(angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object): Promise<Cube> {
+		return await this.mFaceSlice(CubeFace.FRONT, angle, source);
 	}
 
-	mLeft(angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object) {
-		return this.mFaceSlice(CubeFace.LEFT, angle, source);
+	async mLeft(angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object): Promise<Cube> {
+		return await this.mFaceSlice(CubeFace.LEFT, angle, source);
 	}
 
-	mDown(angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object) {
-		return this.mFaceSlice(CubeFace.DOWN, angle, source);
+	async mDown(angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object): Promise<Cube> {
+		return await this.mFaceSlice(CubeFace.DOWN, angle, source);
 	}
 
-	mBack(angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object) {
-		return this.mFaceSlice(CubeFace.BACK, angle, source);
-	}
-
-	// Specific Center Rotations
-
-	mMiddle(angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object) {
-		return this.mCenterSlice(Dimension.X, angle, source);
-	}
-
-	mEquator(angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object) {
-		return this.mCenterSlice(Dimension.Y, angle, source);
-	}
-
-	mStand(angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object) {
-		return this.mCenterSlice(Dimension.Z, angle, source);
+	async mBack(angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object): Promise<Cube> {
+		return await this.mFaceSlice(CubeFace.BACK, angle, source);
 	}
 
 	// Specific Center Rotations
 
-	mMiddleInlay(angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object) {
-		return this.mInlaySlices(Dimension.X, angle, source);
+	async mMiddle(angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object): Promise<Cube> {
+		return await this.mCenterSlice(Dimension.X, angle, source);
 	}
 
-	mEquatorInlay(angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object) {
-		return this.mInlaySlices(Dimension.Y, angle, source);
+	async mEquator(angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object): Promise<Cube> {
+		return await this.mCenterSlice(Dimension.Y, angle, source);
 	}
 
-	mStandInlay(angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object) {
-		return this.mInlaySlices(Dimension.Z, angle, source);
+	async mStand(angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object): Promise<Cube> {
+		return await this.mCenterSlice(Dimension.Z, angle, source);
+	}
+
+	// Specific Center Rotations
+
+	async mMiddleInlay(angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object): Promise<Cube> {
+		return await this.mInlaySlices(Dimension.X, angle, source);
+	}
+
+	async mEquatorInlay(angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object): Promise<Cube> {
+		return await this.mInlaySlices(Dimension.Y, angle, source);
+	}
+
+	async mStandInlay(angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object): Promise<Cube> {
+		return await this.mInlaySlices(Dimension.Z, angle, source);
 	}
 
 	// Specific Cube Rotations
 
-	mX(angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object) {
-		return this.mCube(Dimension.X, angle, source);
+	async mX(angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object): Promise<Cube> {
+		return await this.mCube(Dimension.X, angle, source);
 	}
 
-	mY(angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object) {
-		return this.mCube(Dimension.Y, angle, source);
+	async mY(angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object): Promise<Cube> {
+		return await this.mCube(Dimension.Y, angle, source);
 	}
 
-	mZ(angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object) {
-		return this.mCube(Dimension.Z, angle, source);
+	async mZ(angle: number | CubeMoveAngle = CubeMoveAngle.C90, source?: object): Promise<Cube> {
+		return await this.mCube(Dimension.Z, angle, source);
 	}
 
 	// Others
 
-	mString(movesString: string, source?: object): Cube {
-		this.getCubeMoveExporter().parse(movesString).forEach(move => this.move(move, source));
+	async mString(movesString: string, source?: object): Promise<Cube> {
+		for (let move of this.getCubeMoveExporter().parse(movesString)) {
+			await this.move(move, source)
+		}
 		return this;
 	}
 
-	shuffleByMove(movesLength: number = 100, source?: object): Cube {
+	async shuffleByMove(movesLength: number = 100, source?: object): Promise<Cube> {
 
 		for (let moveIndex = 0; moveIndex < movesLength; moveIndex++) {
 			const face = CubeFace.getByIndex(Random.randomIntegerToInclusivly(5));
 			const sliceStart = Random.randomIntegerFromToInclusivly(1, this.spec.edgeLength);
 			const sliceCount = Random.randomIntegerFromToInclusivly(1, this.spec.edgeLength - sliceStart + 1);
 			const angle = Random.randomIntegerFromToInclusivly(1, 3);
-			this.mRangeSlices(face, sliceStart, sliceCount, angle, source);
+			await this.mRangeSlices(face, sliceStart, sliceCount, angle, source);
 		}
 
 		return this;

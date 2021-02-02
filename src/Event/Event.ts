@@ -16,8 +16,10 @@ export class Event<E extends EventData> {
 	 * Fires an event and thus executes the callback function of all registered {@link EventListener}s
 	 * @param eventData - Data of the triggered event
 	 */
-	trigger(eventData: E): void {
-		this.#listeners.forEach(listener => listener.call({}, eventData));
+	async trigger(eventData: E): Promise<void> {
+		for(const listener of this.#listeners) {
+			await listener(eventData);
+		}
 	}
 
 	/**

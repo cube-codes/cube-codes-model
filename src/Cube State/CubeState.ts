@@ -23,7 +23,7 @@ export class CubeState implements Exportable, Equalizable<CubeState>, Printable 
 		//TODO: lots of validation
 	}
 
-	static fromSolved(spec: CubeSpecification) {
+	static fromSolved(spec: CubeSpecification): CubeState {
 		const cubelets = Array<CubeletState>();
 		for (const cubePartType of CubePartType.getAll()) {
 			for (const cubePart of CubePart.getByType(cubePartType)) {
@@ -32,6 +32,7 @@ export class CubeState implements Exportable, Equalizable<CubeState>, Printable 
 				}
 			}
 		}
+		return new CubeState(spec, cubelets);
 	}
 
 	static import(value: string): CubeState {
