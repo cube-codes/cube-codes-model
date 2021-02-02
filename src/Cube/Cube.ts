@@ -25,12 +25,10 @@ export class Cube implements Printable {
 	 */
 	readonly stateChanged = new Event<CubeStateChanged>();
 
-	readonly solutionCondition = new CubeSolutionCondition();
-
 	readonly #cubelets: ReadonlyArray<Cubelet>
 
 	constructor(
-		readonly spec: CubeSpecification, state?: CubeState) {
+		readonly spec: CubeSpecification, readonly solv:CubeSolutionCondition, state?: CubeState) {
 
 		const cubelets = new Array<Cubelet>();
 		for (const cubePartType of CubePartType.getAll()) {
@@ -62,7 +60,7 @@ export class Cube implements Printable {
 	}
 
 	isSolved(): boolean {
-		return this.solutionCondition.isCubeSolved(this);
+		return this.solv.isCubeSolved(this);
 	}
 
 	getState(): CubeState {
@@ -70,7 +68,7 @@ export class Cube implements Printable {
 		for (let cubelet of this.#cubelets) {
 			cubelets.push(new CubeletState(cubelet.initialLocation.origin, cubelet.location.origin, cubelet.orientation.matrix));
 		}
-		return new CubeState(this.spec, cubelets);
+		return new CubeState(this.spec,this.solv, cubelets);
 	}
 
 	setState(newState: CubeState, source?: object): Cube {

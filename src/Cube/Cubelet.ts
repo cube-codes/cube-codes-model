@@ -45,7 +45,7 @@ export class Cubelet implements ReadonlyCubelet {
 	}
 
 	isSolved(): boolean {
-		return this.cube.solutionCondition.isCubeletSolved(this);
+		return this.cube.solv.isCubeletSolved(this);
 	}
 
 	rotate(dimension: Dimension): void {

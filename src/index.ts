@@ -39,9 +39,9 @@ export * from './Linear Algebra/Dimension';
 export * from './Linear Algebra/Matrix';
 export * from './Linear Algebra/Vector';
 
-export * from './Simon Cube State/SimonCubeState';
-export * from './Simon Cube State/SimonCubeStateConverter';
-export * from './Simon Cube State/SimonCubeStateExporter';
+export * from './Permutation Cube State/PermutationCubeState';
+export * from './Permutation Cube State/PermutationCubeStateConverter';
+export * from './Permutation Cube State/FaceletsCubeStateExporter';
 
 export * from './Utilities/Arrays';
 export * from './Utilities/Random';

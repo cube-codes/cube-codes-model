@@ -1,14 +1,14 @@
 import { CubeSpecification } from "../Cube Geometry/CubeSpecification";
-import { SimonCubeState } from "./SimonCubeState";
+import { PermutationCubeState } from "./PermutationCubeState";
 
 export class SimonCubeMoveExporter {
 
 	constructor(private readonly spec: CubeSpecification) { }
 
-	parse(): SimonCubeState {
+	parse(): PermutationCubeState {
 		//TODO: Implement
 		this.spec.edgeLength;
-		return null as unknown as SimonCubeState;
+		return null as unknown as PermutationCubeState;
 	}
 
 	stringify(): string {
