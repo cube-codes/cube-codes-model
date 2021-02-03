@@ -110,7 +110,8 @@ export class CubePart implements Exportable, Equalizable<CubePart>, Printable {
 
 	readonly normalVectors: ReadonlyArray<CubeFace>
 
-	readonly directions: ReadonlyArray<CubeFace>
+	//SL: Changed directions to tangentVectors
+	readonly tangentVectors: ReadonlyArray<CubeFace>
 
 	readonly origin: Vector
 
@@ -126,9 +127,9 @@ export class CubePart implements Exportable, Equalizable<CubePart>, Printable {
 		if (!localBase[0].getNormalVector().crossProduct(localBase[1].getNormalVector()).equals(localBase[2].getNormalVector())) throw new Error(`Invalid local base as they are not orthoganl or right-handed: ${localBase}`);
 		
 		this.normalVectors = localBase.slice(0, type.countNormalVectors());
-		this.directions = localBase.slice(type.countNormalVectors(), 3);
+		this.tangentVectors = localBase.slice(type.countNormalVectors(), 3);
 		this.origin = this.normalVectors.reduce((origin, nv) => origin.withComponent(nv.dimension, nv.positiveDirection ? 1 : -1), Vector.ZERO);
-		this.dimensions = this.directions.map(d => d.dimension);
+		this.dimensions = this.tangentVectors.map(d => d.dimension);
 
 		if(!CubePart._allByType.has(type)) CubePart._allByType.set(type, new Array());
 		(CubePart._allByType.get(type) as Array<CubePart>).push(this);
