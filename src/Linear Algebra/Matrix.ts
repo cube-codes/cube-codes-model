@@ -21,18 +21,12 @@ export class Matrix implements Exportable, Equalizable<Matrix>, Printable {
 		this.components = clone(components);
 	}
 
-	//SL: Changed signature to two arrays, since now the respective routines are more uniformly for all parttypes.
 	static forBaseChange(from: Array<Vector>, to: Array<Vector>): Matrix {
-		if (from.length!=3 && to.length!=3) throw new Error(`Invalid number of base vectors length: ${from.length}, ${to.length}`);
+		if (from.length !== 3 && to.length !== 3) throw new Error(`Invalid number of base vectors length: ${from.length}, ${to.length}`);
 		const fromMatrix = transpose([from[0].components, from[1].components, from[2].components]); // Matrix that sends the unit vectors to fromX, fromY, fromZ
 		const toMatrix = transpose([to[0].components, to[1].components, to[2].components]); // Matrix that sends the unit vectors to toX, toY, toZ
 		return new Matrix(multiply(toMatrix, inv(fromMatrix)));
 	}
-	/*static forBaseChange(fromX: Vector, fromY: Vector, fromZ: Vector, toX: Vector, toY: Vector, toZ: Vector): Matrix {
-		const fromMatrix = transpose([fromX.components, fromY.components, fromZ.components]); // Matrix that sends the unit vectors to fromX, fromY, fromZ
-		const toMatrix = transpose([toX.components, toY.components, toZ.components]); // Matrix that sends the unit vectors to toX, toY, toZ
-		return new Matrix(multiply(toMatrix, inv(fromMatrix)));
-	}*/
 
 	static fromRotation(axis: Dimension): Matrix {
 		switch (axis) {

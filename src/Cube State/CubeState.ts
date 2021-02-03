@@ -13,7 +13,7 @@ import { CubeletState } from "./CubeletState";
 export class CubeStateExport {
 
 	constructor(readonly spec: string,
-		readonly solv:string,
+		readonly solutionCondition: string,
 		readonly cubelets: ReadonlyArray<string>) { }
 
 }
@@ -21,12 +21,12 @@ export class CubeStateExport {
 export class CubeState implements Exportable, Equalizable<CubeState>, Printable {
 
 	constructor(readonly spec: CubeSpecification,
-		readonly solv:CubeSolutionCondition,
+		readonly solutionCondition: CubeSolutionCondition,
 		readonly cubelets: ReadonlyArray<CubeletState>) {
 		//TODO: lots of validation
 	}
 
-	static fromSolved(spec: CubeSpecification): CubeState {
+	static fromSolved(spec: CubeSpecification, solutionCondition: CubeSolutionCondition): CubeState {
 		const cubelets = Array<CubeletState>();
 		for (const cubePartType of CubePartType.getAll()) {
 			for (const cubePart of CubePart.getByType(cubePartType)) {
@@ -35,20 +35,20 @@ export class CubeState implements Exportable, Equalizable<CubeState>, Printable 
 				}
 			}
 		}
-		return new CubeState(spec, cubelets);
+		return new CubeState(spec, solutionCondition, cubelets);
 	}
 
 	static import(value: string): CubeState {
 		const exportValue = JSON.parse(value) as CubeStateExport;
-		return new CubeState(CubeSpecification.import(exportValue.spec), CubeSolutionCondition.import(exportValue.solv), exportValue.cubelets.map(c => CubeletState.import(c)));
+		return new CubeState(CubeSpecification.import(exportValue.spec), CubeSolutionCondition.import(exportValue.solutionCondition), exportValue.cubelets.map(c => CubeletState.import(c)));
 	}
 
 	export(): string {
-		return JSON.stringify(new CubeStateExport(this.spec.export(),this.solv.export(), this.cubelets.map(c => c.export())));
+		return JSON.stringify(new CubeStateExport(this.spec.export(), this.solutionCondition.export(), this.cubelets.map(c => c.export())));
 	}
 
 	equals(other: CubeState): boolean {
-		return this.spec.equals(other.spec) && Arrays.equals(this.cubelets, other.cubelets);
+		return this.spec.equals(other.spec) && this.solutionCondition.equals(other.solutionCondition) && Arrays.equals(this.cubelets, other.cubelets);
 	}
 
 	toString(): string {

@@ -6,12 +6,12 @@ import { Vector } from '../src/Linear Algebra/Vector';
 import { Dimension } from '../src/Linear Algebra/Dimension';
 import { Cubelet } from '../src/Cube/Cubelet';
 import { Matrix } from '../src/Linear Algebra/Matrix';
-import { CubeSolutionCondition,CubeSolutionConditionType  } from '../src/Cube/CubeSolutionCondition';
+import { CubeSolutionCondition, CubeSolutionConditionType } from '../src/Cube/CubeSolutionCondition';
 
 test('Simple Move', () => {
 
 	const spec = new CubeSpecification(4);
-	const solv=new CubeSolutionCondition(CubeSolutionConditionType.STRICT);
+	const solv = new CubeSolutionCondition(CubeSolutionConditionType.STRICT);
 	const cube = new Cube(spec, solv);
 	cube.mFront();
 	expect(cube.cubelets.initiallyAtOrigin(Vector.fromComponents(1.5, 1.5, 1.5)).findOne().location.origin).toEqual(Vector.fromComponents(1.5, -1.5, 1.5));
@@ -22,7 +22,7 @@ test('Simple Move', () => {
 test('Basic Test', () => {
 
 	const spec = new CubeSpecification(4);
-	const solv=new CubeSolutionCondition(CubeSolutionConditionType.STRICT);
+	const solv = new CubeSolutionCondition(CubeSolutionConditionType.STRICT);
 	const uf2 = CubeletLocation.fromPartAndOriginComponentsInPartDimensions(spec, CubePart.UF, [0.5]);
 
 	// Is the cubelet location origin correctly calculated

@@ -1,9 +1,9 @@
-import { CubePartType } from "../Cube Geometry/CubePartType";
-import { PermutationCubeState } from "../Permutation Cube State/PermutationCubeState";
-import { CubeSolutionCondition, CubeSolutionConditionType } from "../Cube/CubeSolutionCondition"
-import { CubeSpecification } from "../Cube Geometry/CubeSpecification";
-import { Random } from '../Utilities/Random';
-import { Printable } from "../Interface/Printable";
+import { CubePartType } from "../../../src/Cube Geometry/CubePartType";
+import { PermutationCubeState } from "./PermutationCubeState";
+import { CubeSolutionCondition, CubeSolutionConditionType } from "../../../src/Cube/CubeSolutionCondition"
+import { CubeSpecification } from "../../../src/Cube Geometry/CubeSpecification";
+import { Random } from '../../../src/Utilities/Random';
+import { Printable } from "../../../src/Interface/Printable";
 
 
 export class PermutationCubeStateTools {

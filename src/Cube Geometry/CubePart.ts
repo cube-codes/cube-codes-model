@@ -51,7 +51,7 @@ Lassen wir so, scheint aber beliebig und einfach mal festgelegt
 export class CubePartExport {
 
 	constructor(readonly type: string,
-	readonly index: number) {}
+		readonly index: number) { }
 
 }
 
@@ -92,25 +92,24 @@ export class CubePart implements Exportable, Equalizable<CubePart>, Printable {
 
 	static getByType(type: CubePartType): ReadonlyArray<CubePart> {
 		const item = this._allByType.get(type);
-		if(item === undefined) throw new Error(`Invalid type: ${type}`);
+		if (item === undefined) throw new Error(`Invalid type: ${type}`);
 		return item;
 	}
 
 	static getByTypeAndIndex(type: CubePartType, index: number): CubePart {
 		const item = this.getByType(type)[index];
-		if(item === undefined) throw new Error(`Invalid index: ${index}`);
+		if (item === undefined) throw new Error(`Invalid index: ${index}`);
 		return item;
 	}
 
 	static getByOriginAndDimensions(origin: Vector, dimensions: ReadonlyArray<Dimension>): CubePart {
 		const item = this._allByOriginAndDimensions.get(JSON.stringify([origin, dimensions]));
-		if(item === undefined) throw new Error(`Invalid origin and dimensions: ${origin}, ${dimensions}`);
+		if (item === undefined) throw new Error(`Invalid origin and dimensions: ${origin}, ${dimensions}`);
 		return item;
 	}
 
 	readonly normalVectors: ReadonlyArray<CubeFace>
 
-	//SL: Changed directions to tangentVectors
 	readonly tangentVectors: ReadonlyArray<CubeFace>
 
 	readonly origin: Vector
@@ -122,16 +121,16 @@ export class CubePart implements Exportable, Equalizable<CubePart>, Printable {
 		readonly index: number,
 		readonly name: string,
 		readonly localBase: ReadonlyArray<CubeFace>) {
-		
+
 		if (localBase.length !== 3) throw new Error(`Invalid local base length: ${localBase.length}`);
 		if (!localBase[0].getNormalVector().crossProduct(localBase[1].getNormalVector()).equals(localBase[2].getNormalVector())) throw new Error(`Invalid local base as they are not orthoganl or right-handed: ${localBase}`);
-		
+
 		this.normalVectors = localBase.slice(0, type.countNormalVectors());
 		this.tangentVectors = localBase.slice(type.countNormalVectors(), 3);
 		this.origin = this.normalVectors.reduce((origin, nv) => origin.withComponent(nv.dimension, nv.positiveDirection ? 1 : -1), Vector.ZERO);
 		this.dimensions = this.tangentVectors.map(d => d.dimension);
 
-		if(!CubePart._allByType.has(type)) CubePart._allByType.set(type, new Array());
+		if (!CubePart._allByType.has(type)) CubePart._allByType.set(type, new Array());
 		(CubePart._allByType.get(type) as Array<CubePart>).push(this);
 		CubePart._allByOriginAndDimensions.set(JSON.stringify([this.origin, this.dimensions]), this);
 	}

@@ -10,6 +10,6 @@ export interface EventListener<E extends EventData> {
 	 * Function call
 	 * @param e - Event data that is worked on
 	 */
-	(e: E): void
+	(e: E): Promise<void> | void
 
 }
