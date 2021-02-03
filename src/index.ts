@@ -12,13 +12,6 @@ export * from './Cube Geometry/CubePart';
 export * from './Cube Geometry/CubePartType';
 export * from './Cube Geometry/CubeSpecification';
 
-export * from './Cube History/CubeHistory';
-export * from './Cube History/CubeHistoryChange';
-export * from './Cube History/CubeHistoryFutureCleaned';
-export * from './Cube History/CubeHistoryMoved';
-export * from './Cube History/CubeHistoryPastCleaned';
-export * from './Cube History/CubeHistoryRecorded';
-
 export * from './Cube Move/CubeMove';
 export * from './Cube Move/CubeMoveAngle';
 export * from './Cube Move/CubeMoveExporter';
