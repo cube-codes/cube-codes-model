@@ -32,7 +32,7 @@ export class PermutationCubeStateConverter {
 		if(log) logstring = logstring + permutations.toString() + orientations.toString();
 		if(log) console.log(logstring);
 
-		return new PermutationCubeState(cubeState.spec, cubeState.solv, permutations, orientations);
+		return new PermutationCubeState(cubeState.spec, cubeState.solutionCondition, permutations, orientations);
 	}
 
 	load(state: PermutationCubeState): CubeState {

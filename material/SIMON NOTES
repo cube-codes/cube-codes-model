@@ -5,6 +5,8 @@
 * Note: I needed (for orbit) the "usual" solution condition, so (as I think you intended) I converted your CubeSolutionCondition into an interface and implemented a StrictCubeSolutionCondition and a ColorCubeSolutionCondition in the same file.  
 Now I dont understand anymore why we separate CubeSpecification and CubeSolutionCondition. Is this fine?
 
+* In ColorCubeLanguage there are in the end three little routines that probably can go in a single line inthe respective code above
+
 ---------------
 
 Simon 

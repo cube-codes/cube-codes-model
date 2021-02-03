@@ -1,10 +1,10 @@
 //import { CubePart } from "../Cube Geometry/CubePart";
-import { CubePartType } from "../../../src/Cube Geometry/CubePartType";
-import { CubeSpecification } from "../../../src/Cube Geometry/CubeSpecification";
-import { CubeSolutionCondition } from "../../../src/Cube/CubeSolutionCondition";
-import { Equalizable } from "../../../src/Interface/Equalizable";
-import { Exportable } from "../../../src/Interface/Exportable";
-import { Printable } from "../../../src/Interface/Printable";
+import { CubePartType } from "../Cube Geometry/CubePartType";
+import { CubeSpecification } from "../Cube Geometry/CubeSpecification";
+import { CubeSolutionCondition } from "../Cube/CubeSolutionCondition";
+import { Equalizable } from "../Interface/Equalizable";
+import { Exportable } from "../Interface/Exportable";
+import { Printable } from "../Interface/Printable";
 //import { Arrays } from "../Utilities/Arrays";
 //import { CubeletState } from "../Cube State/CubeletState";
 //import { Cubelet } from "../Cube/Cubelet";

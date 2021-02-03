@@ -1,7 +1,7 @@
-import { CubeSpecification } from '../../src/Cube Geometry/CubeSpecification';
+import { CubeSpecification } from '../src/Cube Geometry/CubeSpecification';
 //import { CubePart } from '../src/Cube Geometry/CubePart';
-import { CubeSolutionCondition, CubeSolutionConditionType } from '../../src/Cube/CubeSolutionCondition';
-import { Cube } from '../../src/Cube/Cube';
+import { CubeSolutionCondition, CubeSolutionConditionType } from '../src/Cube/CubeSolutionCondition';
+import { Cube } from '../src/Cube/Cube';
 //import { Cubelet } from '../src/Cube/Cubelet';
 //import { Vector } from '../src/Linear Algebra/Vector';
 //import { Dimension } from '../src/Linear Algebra/Dimension';
@@ -31,7 +31,7 @@ test('Test Converter', () => {
 	//and decoded back into a solved cube without errors?
 	let cubeState2=converter.load(permutationCubeState);
 	cube.setState(cubeState2);
-	expect(cube.solv.isCubeSolved(cube));
+	expect(cube.isSolved());
 
 	//Is after a rotation the cube correctly encoded into permutations?
 	cube.mRight();
@@ -47,7 +47,7 @@ test('Test Converter', () => {
 	let cubeState3=converter.load(permutationCubeState2);
 	cube.setState(cubeState3);
 	cube.mRight(); 	cube.mRight(); 	cube.mRight();
-	expect(cube.solv.isCubeSolved(cube));
+	expect(cube.isSolved());
 
 });
 
