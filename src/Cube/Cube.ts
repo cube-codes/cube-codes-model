@@ -46,6 +46,10 @@ export class Cube implements Printable {
 
 	}
 
+	clone(): Cube {
+		return new Cube(this.spec, this.solutionCondition, this.getState());
+	}
+
 	toString(): string {
 		//TODO: ???
 		return '';
@@ -281,9 +285,9 @@ export class Cube implements Printable {
 
 		for (let moveIndex = 0; moveIndex < movesLength; moveIndex++) {
 			const face = CubeFace.getByIndex(Random.randomIntegerToInclusivly(5));
-			const sliceStart = Random.randomIntegerFromToInclusivly(1, this.spec.edgeLength);
-			const sliceCount = Random.randomIntegerFromToInclusivly(1, this.spec.edgeLength - sliceStart + 1);
-			const angle = Random.randomIntegerFromToInclusivly(1, 3);
+			const sliceStart = Random.randomIntegerFromToInclusivly(1, Math.ceil(this.spec.edgeLength / 2));
+			const sliceCount = Random.randomIntegerFromToInclusivly(1, this.spec.edgeLength - sliceStart);
+			const angle = [CubeMoveAngle.CC90, CubeMoveAngle.C90, CubeMoveAngle.C180][Random.randomIntegerFromToInclusivly(0, 2)];
 			await this.mRangeSlices(face, sliceStart, sliceCount, angle, source);
 		}
 
