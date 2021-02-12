@@ -16,16 +16,16 @@ export enum CubeSolutionConditionType {
 	COLOR = 1
 }
 
-export class CubeSolutionCondition implements Exportable, Equalizable<CubeSolutionCondition>, Printable {
+export class CubeSolutionCondition implements Exportable<number>, Equalizable<CubeSolutionCondition>, Printable {
 
 	constructor(readonly type: CubeSolutionConditionType) { }
 
-	static import(value: string): CubeSolutionCondition {
-		return new CubeSolutionCondition(parseInt(value));
+	static import(value: number): CubeSolutionCondition {
+		return new CubeSolutionCondition(value);
 	}
 
-	export(): string {
-		return this.type.toString();
+	export(): number {
+		return this.type;
 	}
 
 	equals(other: CubeSolutionCondition): boolean {

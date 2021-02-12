@@ -6,13 +6,13 @@ import { Vector } from "../Linear Algebra/Vector";
 
 export class CubeletStateExport {
 
-	constructor(readonly initialLocation: string,
-		readonly location: string,
-		readonly orientation: string) { }
+	constructor(readonly initialLocation: ReadonlyArray<number>,
+		readonly location: ReadonlyArray<number>,
+		readonly orientation: ReadonlyArray<ReadonlyArray<number>>) { }
 
 }
 
-export class CubeletState implements Exportable, Equalizable<CubeletState>, Printable {
+export class CubeletState implements Exportable<CubeletStateExport>, Equalizable<CubeletState>, Printable {
 
 	constructor(readonly initialLocation: Vector,
 		readonly location: Vector,
@@ -20,13 +20,12 @@ export class CubeletState implements Exportable, Equalizable<CubeletState>, Prin
 		//TODO: Lots of validation
 	}
 
-	static import(value: string): CubeletState {
-		const exportValue = JSON.parse(value) as CubeletStateExport;
-		return new CubeletState(Vector.import(exportValue.initialLocation), Vector.import(exportValue.location), Matrix.import(exportValue.orientation));
+	static import(value: CubeletStateExport): CubeletState {
+		return new CubeletState(Vector.import(value.initialLocation), Vector.import(value.location), Matrix.import(value.orientation));
 	}
 
-	export(): string {
-		return JSON.stringify(new CubeletStateExport(this.initialLocation.export(), this.location.export(), this.orientation.export()));
+	export(): CubeletStateExport {
+		return new CubeletStateExport(this.initialLocation.export(), this.location.export(), this.orientation.export());
 	}
 
 	equals(other: CubeletState): boolean {

@@ -2,7 +2,7 @@ import { Equalizable } from "../Interface/Equalizable";
 import { Exportable } from "../Interface/Exportable";
 import { Printable } from "../Interface/Printable";
 
-export class Dimension implements Exportable, Equalizable<Dimension>, Printable {
+export class Dimension implements Exportable<number>, Equalizable<Dimension>, Printable {
 
 	private static readonly _all: Array<Dimension> = new Array();
 
@@ -24,12 +24,12 @@ export class Dimension implements Exportable, Equalizable<Dimension>, Printable 
 		Dimension._all.push(this);
 	}
 
-	static import(value: string): Dimension {
-		return this.getByIndex(Number.parseInt(value));
+	static import(value: number): Dimension {
+		return this.getByIndex(value);
 	}
 
-	export(): string {
-		return this.index.toString();
+	export(): number {
+		return this.index;
 	}
 
 	equals(other: Dimension): boolean {

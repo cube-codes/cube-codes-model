@@ -72,12 +72,10 @@ export class Cube implements Printable {
 		for (let cubelet of this.#cubelets) {
 			cubelets.push(new CubeletState(cubelet.initialLocation.origin, cubelet.location.origin, cubelet.orientation.matrix));
 		}
-		return new CubeState(this.spec, this.solutionCondition, cubelets);
+		return new CubeState(this.spec, cubelets);
 	}
 
 	async setState(newState: CubeState, source?: object): Promise<Cube> {
-
-		if (!this.spec.equals(newState.spec)) throw new Error(`Invalid spec of new state: ${newState.spec}`);
 
 		//TODO: More validation? Depends on validation in cubeState
 
@@ -99,8 +97,6 @@ export class Cube implements Printable {
 
 	async move(move: CubeMove, source?: object): Promise<Cube> {
 
-		if (!this.spec.equals(move.spec)) throw new Error(`Invalid spec of move: ${move.spec}`);
-
 		const oldState = this.getState();
 
 		const dimension = move.face.dimension;
@@ -109,7 +105,7 @@ export class Cube implements Printable {
 		const angle = (((move.angle * (move.face.positiveDirection ? 1 : -1) * -1) % 4) + 4) % 4; // rotateSlice rotates CCW
 
 		let sliceComponent = startSliceComponent;
-		for (let sliceIndex = 0; sliceIndex < move.sliceCount; sliceIndex++) {
+		for (let sliceIndex = 0; sliceIndex <= move.sliceEnd - move.sliceStart; sliceIndex++) {
 			for (let angleIndex = 0; angleIndex < angle; angleIndex++) {
 				for (let cubelet of this.#cubelets) {
 					if (cubelet.location.origin.componentEquals(dimension, sliceComponent)) {

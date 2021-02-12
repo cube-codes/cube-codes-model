@@ -22,40 +22,52 @@ export class CubeMoveExporter {
 
 			let face;
 			let sliceStart;
-			let sliceCount;
+			let sliceEnd;
+			let angleOrientation;
 			if (regexResult === null) {
 				throw new Error(`Invalid CML string: ${moveString}`);
 			} else if (regexResult.groups?.rangeFace !== undefined) { // range
 				face = this.parseFace(regexResult.groups?.rangeFace);
 				sliceStart = parseInt(regexResult.groups?.rangeStart ?? '1');
-				sliceCount = parseInt(regexResult.groups?.rangeCount ?? '2');
+				sliceEnd = parseInt(regexResult.groups?.rangeCount ?? (sliceStart + 1).toString());
+				angleOrientation = 1;
 			} else if (regexResult.groups?.rotationFace !== undefined) { // rotation
 				face = this.parseFace(regexResult.groups?.rotationFace);
 				sliceStart = 1;
-				sliceCount = this.spec.edgeLength;
+				sliceEnd = this.spec.edgeLength;
+				angleOrientation = 1;
 			} else if (regexResult.groups?.inlayFace !== undefined) { // inlay
+				if(this.spec.edgeLength < 3) {
+					return null;
+				}
 				face = this.parseFace(regexResult.groups?.inlayFace);
 				sliceStart = 2;
-				sliceCount = this.spec.edgeLength - 2;
+				sliceEnd = this.spec.edgeLength - 1;
+				angleOrientation = face.dimension.equals(Dimension.Z) ? 1 : -1;
 			} else if (regexResult.groups?.sliceFace !== undefined) { // slice
 				face = this.parseFace(regexResult.groups?.sliceFace);
 				sliceStart = parseInt(regexResult.groups?.sliceStart ?? '1');
-				sliceCount = 1;
+				sliceEnd = sliceStart;
+				angleOrientation = 1;
 			} else if (regexResult.groups?.middleFace !== undefined) { // middle
+				if(this.spec.edgeLength % 2 === 0) {
+					return null;
+				}
 				face = this.parseFace(regexResult.groups?.middleFace);
 				sliceStart = Math.floor((this.spec.edgeLength + 1) / 2);
-				sliceCount = this.spec.edgeLength % 2;
+				sliceEnd = sliceStart;
+				angleOrientation = face.dimension.equals(Dimension.Z) ? 1 : -1;
 			} else {
 				throw new Error(`Invalid CML string: ${moveString}`);
 			}
 
-			const angle = parseInt(regexResult.groups?.angle ?? 1) * (regexResult.groups?.angleInverted === undefined ? 1 : regexResult.groups?.angleInverted === "'" ? -1 : NaN);
+			const angle = parseInt(regexResult.groups?.angle ?? 1) * (regexResult.groups?.angleInverted === undefined ? 1 : regexResult.groups?.angleInverted === "'" ? -1 : NaN) * angleOrientation;
 
-			if (isNaN(sliceStart) || isNaN(sliceCount) || isNaN(angle)) {
+			if (isNaN(sliceStart) || isNaN(sliceEnd) || isNaN(angle)) {
 				throw new Error(`Invalid CML string: ${moveString}`);
 			}
 
-			return new CubeMove(this.spec, face, sliceStart, sliceCount, angle);
+			return new CubeMove(this.spec, face, sliceStart, sliceEnd, angle);
 
 		}).filter(move => move !== null).map(move => move as CubeMove);
 	}
@@ -101,27 +113,28 @@ export class CubeMoveExporter {
 	}
 
 	stringify(moves: ReadonlyArray<CubeMove>): string {
-		//TODO: Wollen wir, dass manche moves nicht übersetzt werden????
-		return moves.filter(move => move.angle % 4 !== 0 && move.sliceCount !== 0).map(move => {
+		return moves.map(move => {
 
-			let angleOrientation = 1;
+			let angleOrientation;
 			let moveString = '';
 
-			if (this.spec.edgeLength % 2 === 1 && move.sliceStart === Math.ceil(this.spec.edgeLength / 2) && move.sliceCount === 1) { // middle
-				angleOrientation *= move.face.positiveDirection ? 1 : -1;
+			if (this.spec.edgeLength % 2 === 1 && move.sliceStart === Math.ceil(this.spec.edgeLength / 2) && move.sliceEnd === move.sliceStart) { // middle
+				angleOrientation = (move.face.positiveDirection ? 1 : -1) * (move.face.dimension.equals(Dimension.Z) ? 1 : -1);
 				moveString += this.stringifyMiddleFace(move.face);
-			} else if (move.sliceCount === 1) { // slice
+			} else if (move.sliceEnd === move.sliceStart) { // slice
+				angleOrientation = 1;
 				moveString += move.sliceStart !== 1 ? move.sliceStart.toString() : '';
 				moveString += this.stringifySliceFace(move.face);
-			} else if (move.sliceStart === 2 && move.sliceCount === this.spec.edgeLength - 2) { // inlay
-				angleOrientation *= move.face.positiveDirection ? 1 : -1;
+			} else if (move.sliceStart === 2 && move.sliceEnd === this.spec.edgeLength - 1) { // inlay
+				angleOrientation = (move.face.positiveDirection ? 1 : -1) * (move.face.dimension.equals(Dimension.Z) ? 1 : -1);
 				moveString += this.stringifyInlayFace(move.face);
-			} else if (move.sliceStart === 1 && move.sliceCount === this.spec.edgeLength) { // rotation
-				angleOrientation *= move.face.positiveDirection ? 1 : -1;
+			} else if (move.sliceStart === 1 && move.sliceEnd === this.spec.edgeLength) { // rotation
+				angleOrientation = (move.face.positiveDirection ? 1 : -1);
 				moveString += this.stringifyRotationFace(move.face);
 			} else { // range
+				angleOrientation = 1;
 				moveString += move.sliceStart !== 1 ? move.sliceStart.toString() + '-' : '';
-				moveString += move.sliceCount !== 2 ? move.sliceCount.toString() : '';
+				moveString += move.sliceEnd !== move.sliceStart + 1 ? move.sliceEnd.toString() : '';
 				moveString += this.stringifyRangeFace(move.face);
 			}
 

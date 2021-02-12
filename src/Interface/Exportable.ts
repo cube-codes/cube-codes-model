@@ -1,5 +1,5 @@
-export interface Exportable {
+export interface Exportable<T> {
 
-	export(): string
+	export(): T
 
 }

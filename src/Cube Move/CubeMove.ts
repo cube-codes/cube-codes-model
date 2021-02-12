@@ -4,50 +4,47 @@ import { Equalizable } from "../Interface/Equalizable";
 import { Exportable } from "../Interface/Exportable";
 import { Printable } from "../Interface/Printable";
 import { CubeMoveAngle } from "./CubeMoveAngle";
-import { CubeMoveExporter } from "./CubeMoveExporter";
 
 export class CubeMoveExport {
 
-	constructor(readonly spec: string,
-	readonly face: string,
-	readonly sliceStart: number,
-	readonly sliceCount: number,
-	readonly angle: number) {}
+	constructor(readonly face: number,
+		readonly sliceStart: number,
+		readonly sliceEnd: number,
+		readonly angle: number) { }
 
 }
 
-export class CubeMove implements Exportable, Equalizable<CubeMove>, Printable {
+export class CubeMove implements Exportable<CubeMoveExport>, Equalizable<CubeMove>, Printable {
 
-	constructor(readonly spec: CubeSpecification,
+	constructor(spec: CubeSpecification,
 		readonly face: CubeFace,
 		readonly sliceStart: number,
-		readonly sliceCount: number,
+		readonly sliceEnd: number,
 		readonly angle: number | CubeMoveAngle) {
-		if (!Number.isInteger(sliceStart) || sliceStart < 1 || sliceStart > this.spec.edgeLength) throw 'Invalid slice start';
-		if (!Number.isInteger(sliceCount) || sliceCount < 0 || sliceStart + sliceCount - 1 > this.spec.edgeLength) throw 'Invalid slice count';
+		if (!Number.isInteger(sliceStart) || sliceStart < 1 || sliceStart > spec.edgeLength) throw 'Invalid slice start';
+		if (!Number.isInteger(sliceEnd) || sliceEnd < sliceStart || sliceEnd > spec.edgeLength) throw 'Invalid slice end';
 		if (!Number.isInteger(angle)) throw 'Invalid angel';
 	}
 
-	static import(value: string): CubeMove {
-		const exportValue = JSON.parse(value) as CubeMoveExport;
-		return new CubeMove(CubeSpecification.import(exportValue.spec), CubeFace.import(exportValue.face), exportValue.sliceStart, exportValue.sliceCount, exportValue.angle);
+	static import(spec: CubeSpecification, value: CubeMoveExport): CubeMove {
+		return new CubeMove(spec, CubeFace.import(value.face), value.sliceStart, value.sliceEnd, value.angle);
 	}
 
-	export(): string {
-		return JSON.stringify(new CubeMoveExport(this.spec.export(), this.face.export(), this.sliceStart, this.sliceCount, this.angle));
+	export(): CubeMoveExport {
+		return new CubeMoveExport(this.face.export(), this.sliceStart, this.sliceEnd, this.angle);
 	}
 
 	equals(other: CubeMove): boolean {
-		return this.spec.equals(other.spec) && this.face.equals(other.face) && this.sliceStart === other.sliceStart && this.sliceCount === other.sliceCount && this.angle === other.angle;
+		return this.face.equals(other.face) && this.sliceStart === other.sliceStart && this.sliceEnd === other.sliceEnd && this.angle === other.angle;
 	}
 
 	toString(): string {
-		const cubeMoveExporter = new CubeMoveExporter(this.spec);
-		return `${cubeMoveExporter.stringify([this])}`;
+		//TODO: ???
+		return '';
 	}
 
-	getInverse(): CubeMove {
-		return new CubeMove(this.spec, this.face, this.sliceStart, this.sliceCount, -this.angle);
+	getInverse(spec: CubeSpecification): CubeMove {
+		return new CubeMove(spec, this.face, this.sliceStart, this.sliceEnd, -this.angle);
 	}
 
 }

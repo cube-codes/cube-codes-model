@@ -50,12 +50,12 @@ Lassen wir so, scheint aber beliebig und einfach mal festgelegt
 */
 export class CubePartExport {
 
-	constructor(readonly type: string,
+	constructor(readonly type: number,
 		readonly index: number) { }
 
 }
 
-export class CubePart implements Exportable, Equalizable<CubePart>, Printable {
+export class CubePart implements Exportable<CubePartExport>, Equalizable<CubePart>, Printable {
 
 	private static readonly _allByType: Map<CubePartType, Array<CubePart>> = new Map();
 	private static readonly _allByOriginAndDimensions: Map<string, CubePart> = new Map();
@@ -135,13 +135,12 @@ export class CubePart implements Exportable, Equalizable<CubePart>, Printable {
 		CubePart._allByOriginAndDimensions.set(JSON.stringify([this.origin, this.dimensions]), this);
 	}
 
-	static import(value: string): CubePart {
-		const exportValue = JSON.parse(value) as CubePartExport;
-		return CubePart.getByTypeAndIndex(CubePartType.import(exportValue.type), exportValue.index);
+	static import(value: CubePartExport): CubePart {
+		return CubePart.getByTypeAndIndex(CubePartType.import(value.type), value.index);
 	}
 
-	export(): string {
-		return JSON.stringify(new CubePartExport(this.type.export(), this.index));
+	export(): CubePartExport {
+		return new CubePartExport(this.type.export(), this.index);
 	}
 
 	equals(other: CubePart): boolean {
