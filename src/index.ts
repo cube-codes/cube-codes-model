@@ -14,10 +14,11 @@ export * from './Cube Geometry/CubeSpecification';
 
 export * from './Cube Move/CubeMove';
 export * from './Cube Move/CubeMoveAngle';
-export * from './Cube Move/CubeMoveExporter';
+export * from './Cube Move/CubeMoveStringifier';
 
 export * from './Cube State/CubeletState';
 export * from './Cube State/CubeState';
+export * from './Cube State/CubeStateStringifier';
 
 export * from './Event/Event';
 export * from './Event/EventData';

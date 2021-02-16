@@ -42,14 +42,14 @@ export class CubeSolutionCondition implements Exportable<number>, Equalizable<Cu
 			case CubeSolutionConditionType.STRICT:
 				return cubelet.location.equals(cubelet.initialLocation) && cubelet.orientation.equals(CubeletOrientation.IDENTITY);
 			case CubeSolutionConditionType.COLOR:
-				return (cubelet.location.part.equals(cubelet.initialLocation.part) && (cubelet.location.type.equals(CubePartType.FACE) || cubelet.orientation.equals(CubeletOrientation.IDENTITY)));
+				return cubelet.location.part.equals(cubelet.initialLocation.part) && (cubelet.location.type.equals(CubePartType.FACE) || cubelet.orientation.equals(CubeletOrientation.IDENTITY));
 			default:
 				throw Error(`Invalid type: ${this.type}`);
 		}
 	}
 
 	isCubeSolved(cube: Cube): boolean {
-		return cube.cubelets.findAll().every(c => this.isCubeletSolved(c));
+		return cube.getInspector().findAll().every(c => this.isCubeletSolved(c));
 	}
 
 }

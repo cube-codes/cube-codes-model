@@ -35,7 +35,7 @@ export class CubeFace implements Exportable<number>, Equalizable<CubeFace>, Prin
 		return item;
 	}
 
-	static getDimensionAndDirection(dimension: Dimension, positiveDirection: boolean): CubeFace {
+	static getByDimensionAndDirection(dimension: Dimension, positiveDirection: boolean): CubeFace {
 		return this.getByNormalVector(Vector.fromComponent(dimension, positiveDirection ? 1 : -1));
 	}
 

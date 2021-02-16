@@ -11,43 +11,6 @@ import { CubePartType } from "./CubePartType";
  * The normal vectors are counterclockwise ordered, with some arbitrary initial direction (used in computing ReorientationNumbers in CubeState). Face has 4 instead of 1 normal vector to account for the internal orientation of a FaceCubical (Picture on the cube)... 
  * In this class we define all 8 Corners, 12 Edges, 6 Faces explicitly.
  */
-//TODO: nextCorners, Edges, Faces find them automatically
-//TODO: Why here CubeFace?? What with Edge and Corner?
-//TODO: Why must the Corners/Edges/Faces be ordered and why this additional Neighbours
-
-/*
-
-Cubelets sind Teil genau eines CubeParts
-
-NVs:
-Corner: 3 Normalvektoren raus aus dem Würfel
-Edge  : 2 "
-Face  : 1 " (Ist natürlich gleich dem NV des dazugehörenden CubeFace)
-Kann man immer als CubeFaces angeben und der Part ist dann die Schnittmenge der Faces
-
-NV Order:
-Es gibt keine speziell sinnvolle Reihenfolge
-Es muss nur eine festgelegt sein
-Es soll ein Rechtsdrehendes System sein
-
-Additional NV:
-Nur type=Face brauchen sie um deren Std-Orientierung festzulegen
-Es ist eine beliebige Wahl eines Faces das nicht dem eigenen und dem negativen eigenen entsprocht. (Punkt auf dem Face nach oben )
-
-Lokales Koordinatensystem (immer 3 NV):
-ist rechtsdrehend
-Die ersten K davon sind die NV des Part, der Rest sind die noch freien Richtungsvektoren
-
-Ortsvektor von Parts:
-Ganz prinzipiell  gibe es einen Einheitswürfel mit x_i e {-1,0,1}
-Lese die NV des lokalen Koordinatensystems. Diese geben 1/-1 Komponenten, der Rest ist 0. z.B. bei Kante UF -> X=0 wegen keinem NV, Y=1 wegen UP=positiv, Z=1 wegen FRONT=positiv
-
-Reine Nachbarschaftsbeziehen lassen wir erstmal weg, wir kommen dann bei den Wünschen im Inspector drauf zurück....
-
-Reihenfolge der Parts:
-Lassen wir so, scheint aber beliebig und einfach mal festgelegt
-
-*/
 export class CubePartExport {
 
 	constructor(readonly type: number,

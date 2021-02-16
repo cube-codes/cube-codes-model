@@ -1,4 +1,5 @@
 import { BitInputStream, BitOutputStream } from "@thi.ng/bitstream";
+import { Base64 } from "js-base64";
 import { CubePartType } from "../Cube Geometry/CubePartType";
 import { CubeSpecification } from "../Cube Geometry/CubeSpecification";
 import { Dimension } from "../Linear Algebra/Dimension";
@@ -7,7 +8,7 @@ import { Vector } from "../Linear Algebra/Vector";
 import { CubeletState } from "./CubeletState";
 import { CubeState } from "./CubeState";
 
-export class CubeStateExporter {
+export class CubeStateStringifier {
 
 	readonly #maxComponent: number;
 
@@ -19,7 +20,7 @@ export class CubeStateExporter {
 	}
 
 	parse(stateString: string): CubeState {
-		const stream = new BitInputStream(Uint8Array.from(stateString, c => c.charCodeAt(0)));
+		const stream = new BitInputStream(Uint8Array.from(Base64.decode(stateString), c => c.charCodeAt(0)));
 		const cubelets = [];
 		const cubeletCount = CubePartType.getAll().map(t => t.countLocations(this.spec)).reduce((sum, value) => sum + value, 0);
 		for(let cubeletIndex = 0; cubeletIndex < cubeletCount; cubeletIndex++) {
@@ -53,7 +54,7 @@ export class CubeStateExporter {
 			this.bitifyLocation(c.location, stream);
 			this.bitifyOrientation(c.orientation, stream);
 		});
-		return String.fromCodePoint(...stream.bytes());
+		return Base64.encode(String.fromCodePoint(...stream.bytes()));
 	}
 
 	private bitifyLocation(location: Vector, stream: BitOutputStream): void {

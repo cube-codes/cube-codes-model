@@ -7,15 +7,18 @@ import { Dimension } from '../src/Linear Algebra/Dimension';
 import { Cubelet } from '../src/Cube/Cubelet';
 import { Matrix } from '../src/Linear Algebra/Matrix';
 import { CubeSolutionCondition, CubeSolutionConditionType } from '../src/Cube/CubeSolutionCondition';
+import { CubeMove } from '../src/Cube Move/CubeMove';
+import { CubeFace } from '../src/Cube Geometry/CubeFace';
+import { CubeMoveAngle } from '../src/Cube Move/CubeMoveAngle';
 
 test('Simple Move', () => {
 
 	const spec = new CubeSpecification(4);
 	const solv = new CubeSolutionCondition(CubeSolutionConditionType.STRICT);
 	const cube = new Cube(spec, solv);
-	cube.mFront();
-	expect(cube.cubelets.initiallyAtOrigin(Vector.fromComponents(1.5, 1.5, 1.5)).findOne().location.origin).toEqual(Vector.fromComponents(1.5, -1.5, 1.5));
-	expect(cube.cubelets.initiallyAtOrigin(Vector.fromComponents(1.5, 1.5, -1.5)).findOne().location.origin).toEqual(Vector.fromComponents(1.5, 1.5, -1.5));
+	cube.move(new CubeMove(spec, CubeFace.FRONT, 1, 1, CubeMoveAngle.C90));
+	expect(cube.getInspector().initiallyAtOrigin(Vector.fromComponents(1.5, 1.5, 1.5)).findOne().location.origin).toEqual(Vector.fromComponents(1.5, -1.5, 1.5));
+	expect(cube.getInspector().initiallyAtOrigin(Vector.fromComponents(1.5, 1.5, -1.5)).findOne().location.origin).toEqual(Vector.fromComponents(1.5, 1.5, -1.5));
 
 });
 
@@ -53,9 +56,9 @@ test('Basic Test', () => {
 	///////////////////////////
 	// Rotation Cube
 	const cube = new Cube(spec, solv);
-	cube.mRight();
+	cube.move(new CubeMove(spec, CubeFace.RIGHT, 1, 1, CubeMoveAngle.C90));
 	//console.log(cube.toString());
-	expect(cube.cubelets.initiallyAtOrigin(Vector.fromComponents(1.5, 1.5, 1.5)).findOne().location.origin).toEqual(Vector.fromComponents(1.5, 1.5, -1.5));
-	expect(cube.cubelets.initiallyAtOrigin(Vector.fromComponents(0.5, 1.5, 1.5)).findOne().location.origin).toEqual(Vector.fromComponents(0.5, 1.5, 1.5));
+	expect(cube.getInspector().initiallyAtOrigin(Vector.fromComponents(1.5, 1.5, 1.5)).findOne().location.origin).toEqual(Vector.fromComponents(1.5, 1.5, -1.5));
+	expect(cube.getInspector().initiallyAtOrigin(Vector.fromComponents(0.5, 1.5, 1.5)).findOne().location.origin).toEqual(Vector.fromComponents(0.5, 1.5, 1.5));
 
 });

@@ -3,7 +3,7 @@ import { CubeSpecification } from "../Cube Geometry/CubeSpecification";
 import { Dimension } from "../Linear Algebra/Dimension";
 import { CubeMove } from "./CubeMove";
 
-export class CubeMoveExporter {
+export class CubeMoveStringifier {
 
 	private static readonly SEPARATOR: RegExp = /[\s_]+/
 
@@ -12,13 +12,13 @@ export class CubeMoveExporter {
 	constructor(private readonly spec: CubeSpecification) { }
 
 	parse(movesString: string): ReadonlyArray<CubeMove> {
-		return movesString.split(CubeMoveExporter.SEPARATOR).map(moveString => {
+		return movesString.split(CubeMoveStringifier.SEPARATOR).map(moveString => {
 
 			if (moveString === '') {
 				return null;
 			}
 
-			const regexResult = moveString.match(CubeMoveExporter.LANGUAGE);
+			const regexResult = moveString.match(CubeMoveStringifier.LANGUAGE);
 
 			let face;
 			let sliceStart;
