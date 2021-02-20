@@ -39,44 +39,37 @@ export class CubeSolutionCondition implements Exportable<number>, Equalizable<Cu
 		return '';
 	}
 
-	isCubeletSolved(cubelet: ReadonlyCubelet): boolean {
+	isCubeletSolvedFromPerspective(cubelet: ReadonlyCubelet, perspective:Matrix): boolean {
 		switch (this.type) {
 			case CubeSolutionConditionType.STRICT:
-				return cubelet.location.equals(cubelet.initialLocation) && cubelet.orientation.equals(CubeletOrientation.IDENTITY);
+				if (
+				perspective.inverse().vectorMultiply(cubelet.currentLocation.origin).equals(cubelet.initialLocation.origin)
+				&& perspective.inverse().multiply(cubelet.currentOrientation.matrix).equals(Matrix.IDENTITY)
+				) return true;
+				else return false;
 			case CubeSolutionConditionType.COLOR:
-				return cubelet.location.part.equals(cubelet.initialLocation.part) && (cubelet.location.type.equals(CubePartType.FACE) || cubelet.orientation.equals(CubeletOrientation.IDENTITY));
+				if (
+					(new CubeletLocation(cubelet.cube.spec,perspective.inverse().vectorMultiply(cubelet.currentLocation.origin)).part.equals(cubelet.initialLocation.part))
+					&& (cubelet.currentLocation.type.equals(CubePartType.FACE) || perspective.inverse().multiply(cubelet.currentOrientation.matrix).equals(Matrix.IDENTITY))
+					) return true;
+				else return false;
 			default:
 				throw Error(`Invalid type: ${this.type}`);
 		}
 	}
 
 	/** If you rotate by perspective, then the result is solved from this perspective  */
-	private isCubeSolvedfromPerspective(cube: Cube, perspective:Matrix):boolean {
+	public isCubeSolvedFromPerspective(cube: Cube, perspective:Matrix):boolean {
 		for(let cubelet of cube.cubelets) {
-			switch (this.type) {
-				case CubeSolutionConditionType.STRICT:
-					if (!(
-					perspective.inverse().vectorMultiply(cubelet.location.origin).equals(cubelet.initialLocation.origin)
-					&& perspective.inverse().multiply(cubelet.orientation.matrix).equals(Matrix.IDENTITY)
-					)) return false;
-					else break;
-				case CubeSolutionConditionType.COLOR:
-					if (!(
-						(new CubeletLocation(cube.spec,perspective.inverse().vectorMultiply(cubelet.location.origin)).part.equals(cubelet.initialLocation.part))
-						&& (cubelet.location.type.equals(CubePartType.FACE) || perspective.inverse().multiply(cubelet.orientation.matrix).equals(Matrix.IDENTITY))
-						)) return false;
-					else break;
-				default:
-					throw Error(`Invalid type: ${this.type}`);
-			}
+			if (this.isCubeletSolvedFromPerspective(cubelet,perspective)) return true;	
 		}
-		return true;
+		return false;
 	}
 
 	isCubeSolved(cube: Cube): boolean {
 		//return cube.getInspector().findAll().every(c => this.isCubeletSolved(c));
 		for (let perspective of CubeletOrientation.ALL()) {
-			if (this.isCubeSolvedfromPerspective(cube,perspective)) return true;
+			if (this.isCubeSolvedFromPerspective(cube,perspective)) return true;
 		}
 		return false;
 	}

@@ -15,11 +15,11 @@ export class Cubelet implements ReadonlyCubelet {
 	constructor(
 		readonly cube: Cube,
 		readonly initialLocation: CubeletLocation,
-		location?: CubeletLocation,
-		orientation?: CubeletOrientation) {
+		currentLocation?: CubeletLocation,
+		currentOrientation?: CubeletOrientation) {
 
-		this.#location = location ?? initialLocation;
-		this.#orientation = orientation ?? CubeletOrientation.IDENTITY;
+		this.#location = currentLocation ?? initialLocation;
+		this.#orientation = currentOrientation ?? CubeletOrientation.IDENTITY;
 
 		if (!this.cube.spec.equals(this.initialLocation.spec)) throw new Error(`Invalid spec of intial location (expected: ${this.cube.spec}): ${this.initialLocation.spec}`);
 		if (!this.cube.spec.equals(this.#location.spec)) throw new Error(`Invalid spec of location (expected: ${this.cube.spec}): ${this.#location.spec}`);
@@ -30,14 +30,14 @@ export class Cubelet implements ReadonlyCubelet {
 	 * 
 	 */
 	toString(): string {
-		return this.type.toString() + '(' + this.initialLocation.toString() + '->' + this.location.toString() + '|' + this.orientation.toString() + ')';
+		return this.type.toString() + '(' + this.initialLocation.toString() + '->' + this.currentLocation.toString() + '|' + this.currentOrientation.toString() + ')';
 	}
 
-	get location(): CubeletLocation {
+	get currentLocation(): CubeletLocation {
 		return this.#location;
 	}
 
-	get orientation(): CubeletOrientation {
+	get currentOrientation(): CubeletOrientation {
 		return this.#orientation;
 	}
 
@@ -45,8 +45,13 @@ export class Cubelet implements ReadonlyCubelet {
 		return this.initialLocation.type;
 	}
 
+	//Using getPerpectiveFromMids for odd cubes
 	isSolved(): boolean {
-		return this.cube.solutionCondition.isCubeletSolved(this);
+		return this.cube.solutionCondition.isCubeletSolvedFromPerspective(this,this.cube.getPerspectiveFromFaceMids())
+	}
+
+	getSolvedLocation():CubeletLocation {
+		return new CubeletLocation(this.cube.spec, this.cube.getPerspectiveFromFaceMids().vectorMultiply(this.initialLocation.origin));
 	}
 
 	rotate(dimension: Dimension): void {
@@ -61,8 +66,9 @@ export class Cubelet implements ReadonlyCubelet {
 		this.#orientation = newOrientation;
 	}
 
-	getCubeletFaceShownAtCubeFace(cubeFace:CubeFace):CubeFace {
-		return CubeFace.getByNormalVector(this.orientation.matrix.inverse().vectorMultiply(cubeFace.getNormalVector()));
+	getColorAt(currentFace:CubeFace):CubeFace {
+		//TODO Validate request
+		return CubeFace.getByNormalVector(this.currentOrientation.matrix.inverse().vectorMultiply(currentFace.getNormalVector()));
 	}
 
 }

@@ -49,15 +49,15 @@ export class CubeletInspector {
 	}
 
 	inPart(part: CubePart): CubeletInspector {
-		return this.withPredicate(cubelet => cubelet.location.part.equals(part));
+		return this.withPredicate(cubelet => cubelet.currentLocation.part.equals(part));
 	}
 
 	atOrigin(origin: Vector): CubeletInspector {
-		return this.withPredicate(cubelet => cubelet.location.origin.equals(origin));
+		return this.withPredicate(cubelet => cubelet.currentLocation.origin.equals(origin));
 	}
 
 	atOriginComponent(dimension: Dimension, component: number): CubeletInspector {
-		return this.withPredicate(cubelet => cubelet.location.origin.componentEquals(dimension, component));
+		return this.withPredicate(cubelet => cubelet.currentLocation.origin.componentEquals(dimension, component));
 	}
 
 	atX(x: number): CubeletInspector {
@@ -73,7 +73,7 @@ export class CubeletInspector {
 	}
 
 	along(dimension: Dimension): CubeletInspector {
-		return this.withPredicate(cubelet => cubelet.location.isAlong(dimension));
+		return this.withPredicate(cubelet => cubelet.currentLocation.isAlong(dimension));
 	}
 
 	alongX(): CubeletInspector {
@@ -87,7 +87,8 @@ export class CubeletInspector {
 	alongZ(): CubeletInspector {
 		return this.along(Dimension.Z);
 	}
-
+	
+	
 	initiallyInPart(part: CubePart): CubeletInspector {
 		return this.withPredicate(cubelet => cubelet.initialLocation.part.equals(part));
 	}
@@ -127,6 +128,49 @@ export class CubeletInspector {
 	initiallyAlongZ(): CubeletInspector {
 		return this.initiallyAlong(Dimension.Z);
 	}
+
+		
+	
+	solvedInPart(part: CubePart): CubeletInspector {
+		return this.withPredicate(cubelet => cubelet.getSolvedLocation().part.equals(part));
+	}
+
+	solvedAtOrigin(origin: Vector): CubeletInspector {
+		return this.withPredicate(cubelet => cubelet.getSolvedLocation().origin.equals(origin));
+	}
+
+	solvedAtOriginComponent(dimension: Dimension, component: number): CubeletInspector {
+		return this.withPredicate(cubelet => cubelet.getSolvedLocation().origin.componentEquals(dimension, component));
+	}
+
+	solvedAtX(x: number): CubeletInspector {
+		return this.solvedAtOriginComponent(Dimension.X, x);
+	}
+
+	solvedAtY(y: number): CubeletInspector {
+		return this.solvedAtOriginComponent(Dimension.Y, y);
+	}
+
+	solvedAtZ(z: number): CubeletInspector {
+		return this.solvedAtOriginComponent(Dimension.Z, z);
+	}
+
+	solvedAlong(dimension: Dimension): CubeletInspector {
+		return this.withPredicate(cubelet => cubelet.initialLocation.isAlong(dimension));
+	}
+
+	solvedAlongX(): CubeletInspector {
+		return this.solvedAlong(Dimension.X);
+	}
+
+	solvedAlongY(): CubeletInspector {
+		return this.solvedAlong(Dimension.Y);
+	}
+
+	solvedAlongZ(): CubeletInspector {
+		return this.solvedAlong(Dimension.Z);
+	}
+
 
 	solved(): CubeletInspector {
 		return this.withPredicate(cubelet => cubelet.isSolved());

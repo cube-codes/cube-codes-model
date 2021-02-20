@@ -12,9 +12,11 @@ import { CubeletState } from "../Cube State/CubeletState";
 import { CubeletOrientation } from "./CubeletOrientation";
 import { ReadonlyCubelet } from "./ReadonlyCubelet";
 import { CubeletInspector } from './CubeletInspector';
+import { Vector } from '../Linear Algebra/Vector';
+import { Matrix } from '../Linear Algebra/Matrix';
 
 export class Cube {
-
+	
 	/**
 	 * @event
 	 */
@@ -60,7 +62,7 @@ export class Cube {
 	getState(): CubeState {
 		const cubelets = new Array<CubeletState>();
 		for (let cubelet of this.#cubelets) {
-			cubelets.push(new CubeletState(cubelet.initialLocation.origin, cubelet.location.origin, cubelet.orientation.matrix));
+			cubelets.push(new CubeletState(cubelet.initialLocation.origin, cubelet.currentLocation.origin, cubelet.currentOrientation.matrix));
 		}
 		return new CubeState(this.spec, cubelets);
 	}
@@ -98,7 +100,7 @@ export class Cube {
 		for (let sliceIndex = 0; sliceIndex <= move.sliceEnd - move.sliceStart; sliceIndex++) {
 			for (let angleIndex = 0; angleIndex < angle; angleIndex++) {
 				for (let cubelet of this.#cubelets) {
-					if (cubelet.location.origin.componentEquals(dimension, sliceComponent)) {
+					if (cubelet.currentLocation.origin.componentEquals(dimension, sliceComponent)) {
 						cubelet.rotate(dimension);
 					}
 				}
@@ -111,5 +113,18 @@ export class Cube {
 		return this;
 
 	}
+
+	getPerspectiveFromFaceMids():Matrix {
+		const maxComponent=this.spec.edgeLength/2-0.5;
+		if(this.spec.edgeLength % 2 == 0) throw Error('getPerspectiveFromFaceMids() only implemented for odd cubes');
+		let fromX=new Vector([maxComponent,0,0]);
+		let fromY=new Vector([0,maxComponent,0]);
+		let fromZ=new Vector([0,0,maxComponent]);
+		let toX=this.getInspector().initiallyAtOrigin(fromX).findOne().currentLocation.origin;
+		let toY=this.getInspector().initiallyAtOrigin(fromY).findOne().currentLocation.origin;
+		let toZ=this.getInspector().initiallyAtOrigin(fromZ).findOne().currentLocation.origin;
+		return Matrix.forBaseChange([fromX,fromY,fromZ],[toX,toY,toZ]);	
+	}
+	
 
 }

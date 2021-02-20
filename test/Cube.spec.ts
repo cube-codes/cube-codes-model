@@ -17,8 +17,8 @@ test('Simple Move', () => {
 	const solv = new CubeSolutionCondition(CubeSolutionConditionType.STRICT);
 	const cube = new Cube(spec, solv);
 	cube.move(new CubeMove(spec, CubeFace.FRONT, 1, 1, CubeMoveAngle.C90));
-	expect(cube.getInspector().initiallyAtOrigin(Vector.fromComponents(1.5, 1.5, 1.5)).findOne().location.origin).toEqual(Vector.fromComponents(1.5, -1.5, 1.5));
-	expect(cube.getInspector().initiallyAtOrigin(Vector.fromComponents(1.5, 1.5, -1.5)).findOne().location.origin).toEqual(Vector.fromComponents(1.5, 1.5, -1.5));
+	expect(cube.getInspector().initiallyAtOrigin(Vector.fromComponents(1.5, 1.5, 1.5)).findOne().currentLocation.origin).toEqual(Vector.fromComponents(1.5, -1.5, 1.5));
+	expect(cube.getInspector().initiallyAtOrigin(Vector.fromComponents(1.5, 1.5, -1.5)).findOne().currentLocation.origin).toEqual(Vector.fromComponents(1.5, 1.5, -1.5));
 
 });
 
@@ -35,8 +35,8 @@ test('Solution Condition', () => {
 	expect(cube1.isSolved());
 	expect(cube2.isSolved());
 	//Rotate orientation of element at right face 
-	cube1.getInspector().atOrigin(new Vector([1.5,0.5,0.5])).findOne().orientation.rotate(Dimension.X);
-	cube2.getInspector().atOrigin(new Vector([1.5,0.5,0.5])).findOne().orientation.rotate(Dimension.X);
+	cube1.getInspector().atOrigin(new Vector([1.5,0.5,0.5])).findOne().currentOrientation.rotate(Dimension.X);
+	cube2.getInspector().atOrigin(new Vector([1.5,0.5,0.5])).findOne().currentOrientation.rotate(Dimension.X);
 	expect(cube1.isSolved());
 	expect(cube2.isSolved());
 	expect(!cube1.isSolved());
@@ -57,14 +57,14 @@ test('Basic Test', () => {
 
 	// Is the origin still vailable in the cubelet?
 	expect(uf2cubelet.initialLocation.origin).toEqual(Vector.fromComponents(0.5, 1.5, 1.5));
-	expect(uf2cubelet.location.origin).toEqual(Vector.fromComponents(0.5, 1.5, 1.5));
+	expect(uf2cubelet.currentLocation.origin).toEqual(Vector.fromComponents(0.5, 1.5, 1.5));
 
 	uf2cubelet.rotate(Dimension.Y);
 
 	// Does it keep the initial location?
 	expect(uf2cubelet.initialLocation.origin).toEqual(Vector.fromComponents(0.5, 1.5, 1.5));
 	// Does it change the location correctly?
-	expect(uf2cubelet.location.origin).toEqual(Vector.fromComponents(1.5, 1.5, -0.5));
+	expect(uf2cubelet.currentLocation.origin).toEqual(Vector.fromComponents(1.5, 1.5, -0.5));
 
 
 	///////////////////////////
@@ -80,7 +80,7 @@ test('Basic Test', () => {
 	const cube = new Cube(spec, solv);
 	cube.move(new CubeMove(spec, CubeFace.RIGHT, 1, 1, CubeMoveAngle.C90));
 	//console.log(cube.toString());
-	expect(cube.getInspector().initiallyAtOrigin(Vector.fromComponents(1.5, 1.5, 1.5)).findOne().location.origin).toEqual(Vector.fromComponents(1.5, 1.5, -1.5));
-	expect(cube.getInspector().initiallyAtOrigin(Vector.fromComponents(0.5, 1.5, 1.5)).findOne().location.origin).toEqual(Vector.fromComponents(0.5, 1.5, 1.5));
+	expect(cube.getInspector().initiallyAtOrigin(Vector.fromComponents(1.5, 1.5, 1.5)).findOne().currentLocation.origin).toEqual(Vector.fromComponents(1.5, 1.5, -1.5));
+	expect(cube.getInspector().initiallyAtOrigin(Vector.fromComponents(0.5, 1.5, 1.5)).findOne().currentLocation.origin).toEqual(Vector.fromComponents(0.5, 1.5, 1.5));
 
 });
