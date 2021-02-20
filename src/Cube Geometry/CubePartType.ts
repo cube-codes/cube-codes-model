@@ -3,7 +3,7 @@ import { Exportable } from "../Interface/Exportable";
 import { Printable } from "../Interface/Printable";
 import { CubeSpecification } from "./CubeSpecification";
 
-export class CubePartType implements Exportable, Equalizable<CubePartType>, Printable {
+export class CubePartType implements Exportable<number>, Equalizable<CubePartType>, Printable {
 
 	private static readonly _all: Array<CubePartType> = new Array();
 
@@ -25,12 +25,12 @@ export class CubePartType implements Exportable, Equalizable<CubePartType>, Prin
 		CubePartType._all.push(this);
 	}
 
-	static import(value: string): CubePartType {
-		return CubePartType.getByIndex(Number.parseInt(value));
+	static import(value: number): CubePartType {
+		return CubePartType.getByIndex(value);
 	}
 
-	export(): string {
-		return this.index.toString();
+	export(): number {
+		return this.index;
 	}
 
 	equals(other: CubePartType): boolean {

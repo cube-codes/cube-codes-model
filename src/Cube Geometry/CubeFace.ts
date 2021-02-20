@@ -7,7 +7,7 @@ import { Dimension } from "../Linear Algebra/Dimension";
 /** 
  * CubeFaces are directions in which normal vectors point, in which cubicals show different stickers. Of course CubeFaces can be identified with CubeParts of type Face, but they have different roles.
  */
-export class CubeFace implements Exportable, Equalizable<CubeFace>, Printable {
+export class CubeFace implements Exportable<number>, Equalizable<CubeFace>, Printable {
 
 	private static readonly _all: Array<CubeFace> = new Array();
 	private static readonly _allByNormalVectorExport: Map<string, CubeFace> = new Map();
@@ -30,26 +30,26 @@ export class CubeFace implements Exportable, Equalizable<CubeFace>, Printable {
 	}
 
 	static getByNormalVector(normalVector: Vector): CubeFace {
-		const item = this._allByNormalVectorExport.get(normalVector.export());
+		const item = this._allByNormalVectorExport.get(JSON.stringify(normalVector.export()));
 		if (item === undefined) throw new Error(`Invalid normal vector: ${normalVector}`);
 		return item;
 	}
 
-	static getDimensionAndDirection(dimension: Dimension, positiveDirection: boolean): CubeFace {
+	static getByDimensionAndDirection(dimension: Dimension, positiveDirection: boolean): CubeFace {
 		return this.getByNormalVector(Vector.fromComponent(dimension, positiveDirection ? 1 : -1));
 	}
 
 	private constructor(readonly index: number, readonly name: string, readonly dimension: Dimension, readonly positiveDirection: boolean) {
 		CubeFace._all.push(this);
-		CubeFace._allByNormalVectorExport.set(this.getNormalVector().export(), this);
+		CubeFace._allByNormalVectorExport.set(JSON.stringify(this.getNormalVector().export()), this);
 	}
 
-	static import(value: string): CubeFace {
-		return CubeFace.getByIndex(Number.parseInt(value));
+	static import(value: number): CubeFace {
+		return CubeFace.getByIndex(value);
 	}
 
-	export(): string {
-		return this.index.toString();
+	export(): number {
+		return this.index;
 	}
 
 	equals(other: CubeFace): boolean {

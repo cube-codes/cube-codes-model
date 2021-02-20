@@ -16,16 +16,16 @@ export enum CubeSolutionConditionType {
 	COLOR = 1
 }
 
-export class CubeSolutionCondition implements Exportable, Equalizable<CubeSolutionCondition>, Printable {
+export class CubeSolutionCondition implements Exportable<number>, Equalizable<CubeSolutionCondition>, Printable {
 
 	constructor(readonly type: CubeSolutionConditionType) { }
 
-	static import(value: string): CubeSolutionCondition {
-		return new CubeSolutionCondition(parseInt(value));
+	static import(value: number): CubeSolutionCondition {
+		return new CubeSolutionCondition(value);
 	}
 
-	export(): string {
-		return this.type.toString();
+	export(): number {
+		return this.type;
 	}
 
 	equals(other: CubeSolutionCondition): boolean {
@@ -42,14 +42,14 @@ export class CubeSolutionCondition implements Exportable, Equalizable<CubeSoluti
 			case CubeSolutionConditionType.STRICT:
 				return cubelet.location.equals(cubelet.initialLocation) && cubelet.orientation.equals(CubeletOrientation.IDENTITY);
 			case CubeSolutionConditionType.COLOR:
-				return (cubelet.location.part.equals(cubelet.initialLocation.part) && (cubelet.location.type.equals(CubePartType.FACE) || cubelet.orientation.equals(CubeletOrientation.IDENTITY)));
+				return cubelet.location.part.equals(cubelet.initialLocation.part) && (cubelet.location.type.equals(CubePartType.FACE) || cubelet.orientation.equals(CubeletOrientation.IDENTITY));
 			default:
 				throw Error(`Invalid type: ${this.type}`);
 		}
 	}
 
 	isCubeSolved(cube: Cube): boolean {
-		return cube.cubelets.findAll().every(c => this.isCubeletSolved(c));
+		return cube.getInspector().findAll().every(c => this.isCubeletSolved(c));
 	}
 
 }

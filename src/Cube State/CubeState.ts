@@ -2,31 +2,27 @@ import { CubePart } from "../Cube Geometry/CubePart";
 import { CubePartType } from "../Cube Geometry/CubePartType";
 import { CubeSpecification } from "../Cube Geometry/CubeSpecification";
 import { CubeletLocation } from "../Cube/CubeletLocation";
-import { CubeSolutionCondition } from "../Cube/CubeSolutionCondition";
 import { Equalizable } from "../Interface/Equalizable";
 import { Exportable } from "../Interface/Exportable";
 import { Printable } from "../Interface/Printable";
 import { Matrix } from "../Linear Algebra/Matrix";
 import { Arrays } from "../Utilities/Arrays";
-import { CubeletState } from "./CubeletState";
+import { CubeletState, CubeletStateExport } from "./CubeletState";
 
 export class CubeStateExport {
 
-	constructor(readonly spec: string,
-		readonly solutionCondition: string,
-		readonly cubelets: ReadonlyArray<string>) { }
+	constructor(readonly cubelets: ReadonlyArray<CubeletStateExport>) { }
 
 }
 
-export class CubeState implements Exportable, Equalizable<CubeState>, Printable {
+export class CubeState implements Exportable<CubeStateExport>, Equalizable<CubeState>, Printable {
 
-	constructor(readonly spec: CubeSpecification,
-		readonly solutionCondition: CubeSolutionCondition,
+	constructor(spec: CubeSpecification,
 		readonly cubelets: ReadonlyArray<CubeletState>) {
 		//TODO: lots of validation
 	}
 
-	static fromSolved(spec: CubeSpecification, solutionCondition: CubeSolutionCondition): CubeState {
+	static fromSolved(spec: CubeSpecification): CubeState {
 		const cubelets = Array<CubeletState>();
 		for (const cubePartType of CubePartType.getAll()) {
 			for (const cubePart of CubePart.getByType(cubePartType)) {
@@ -35,20 +31,19 @@ export class CubeState implements Exportable, Equalizable<CubeState>, Printable 
 				}
 			}
 		}
-		return new CubeState(spec, solutionCondition, cubelets);
+		return new CubeState(spec, cubelets);
 	}
 
-	static import(value: string): CubeState {
-		const exportValue = JSON.parse(value) as CubeStateExport;
-		return new CubeState(CubeSpecification.import(exportValue.spec), CubeSolutionCondition.import(exportValue.solutionCondition), exportValue.cubelets.map(c => CubeletState.import(c)));
+	static import(spec: CubeSpecification, value: CubeStateExport): CubeState {
+		return new CubeState(spec, value.cubelets.map(c => CubeletState.import(c)));
 	}
 
-	export(): string {
-		return JSON.stringify(new CubeStateExport(this.spec.export(), this.solutionCondition.export(), this.cubelets.map(c => c.export())));
+	export(): CubeStateExport {
+		return new CubeStateExport(this.cubelets.map(c => c.export()));
 	}
 
 	equals(other: CubeState): boolean {
-		return this.spec.equals(other.spec) && this.solutionCondition.equals(other.solutionCondition) && Arrays.equals(this.cubelets, other.cubelets);
+		return Arrays.equals(this.cubelets, other.cubelets);
 	}
 
 	toString(): string {

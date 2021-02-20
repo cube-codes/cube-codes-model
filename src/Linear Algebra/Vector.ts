@@ -3,15 +3,14 @@ import { Dimension } from "./Dimension";
 import { Equalizable } from "../Interface/Equalizable";
 import { Exportable } from "../Interface/Exportable";
 import { Printable } from "../Interface/Printable";
-import { Matrix } from "./Matrix";
 
-export class Vector implements Exportable, Equalizable<Vector>, Printable {
+export class Vector implements Exportable<ReadonlyArray<number>>, Equalizable<Vector>, Printable {
 
 	static readonly ZERO = Vector.fromComponents(0, 0, 0)
 
-	readonly components: Array<number>
+	readonly components: ReadonlyArray<number>
 
-	constructor(components: Array<number>) {
+	constructor(components: ReadonlyArray<number>) {
 		if (components.length !== 3) throw new Error(`Invalid components length: ${components.length}`);
 		this.components = clone(components);
 	}
@@ -28,16 +27,16 @@ export class Vector implements Exportable, Equalizable<Vector>, Printable {
 		return this.ZERO.withComponent(dimension, component);
 	}
 
-	static import(value: string): Vector {
-		return new Vector(JSON.parse(value));
+	static import(value: ReadonlyArray<number>): Vector {
+		return new Vector(value);
 	}
 
-	export(): string {
-		return JSON.stringify(this.components);
+	export(): ReadonlyArray<number> {
+		return this.components;
 	}
 
 	equals(other: Vector): boolean {
-		return deepEqual(this.components, other.components) as unknown as boolean;
+		return deepEqual(this.copyComponents(), other.copyComponents()) as unknown as boolean;
 	}
 
 	toString(): string {
@@ -46,6 +45,10 @@ export class Vector implements Exportable, Equalizable<Vector>, Printable {
 
 	ensureInteger(): void {
 		this.components.forEach((component, index) => { if (!Number.isInteger(component)) throw new Error(`Invalid component ${Dimension.getByIndex(index)}: ${component}`); });
+	}
+
+	copyComponents(): Array<number> {
+		return clone(this.components);
 	}
 
 	getComponent(dimension: Dimension): number {
@@ -75,7 +78,7 @@ export class Vector implements Exportable, Equalizable<Vector>, Printable {
 	}
 
 	add(summand2: Vector): Vector {
-		return new Vector(add(this.components, summand2.components) as number[]);
+		return new Vector(add(this.copyComponents(), summand2.copyComponents()) as number[]);
 	}
 
 	addAt(dimension: Dimension, summand2: number): Vector {
@@ -83,7 +86,7 @@ export class Vector implements Exportable, Equalizable<Vector>, Printable {
 	}
 
 	subtract(subtrahend: Vector): Vector {
-		return new Vector(subtract(this.components, subtrahend.components) as number[]);
+		return new Vector(subtract(this.copyComponents(), subtrahend.copyComponents()) as number[]);
 	}
 
 	subtractAt(dimension: Dimension, subtrahend: number): Vector {
@@ -91,23 +94,19 @@ export class Vector implements Exportable, Equalizable<Vector>, Printable {
 	}
 
 	scalarMultiply(factor2: number): Vector {
-		return new Vector(multiply(this.components, factor2));
+		return new Vector(multiply(this.copyComponents(), factor2));
 	}
 
 	scalarDivide(divisor: number): Vector {
-		return new Vector(divide(this.components, divisor) as number[]);
+		return new Vector(divide(this.copyComponents(), divisor) as number[]);
 	}
 
 	dotProduct(factor2: Vector): number {
-		return dot(this.components, factor2.components);
+		return dot(this.copyComponents(), factor2.copyComponents());
 	}
 
 	crossProduct(factor2: Vector): Vector {
-		return new Vector(cross(this.components, factor2.components) as number[]);
-	}
-
-	rotate(axis: Dimension): Vector {
-		return Matrix.fromRotation(axis).vectorMultiply(this);
+		return new Vector(cross(this.copyComponents(), factor2.copyComponents()) as number[]);
 	}
 
 }

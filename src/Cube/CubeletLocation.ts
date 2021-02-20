@@ -4,6 +4,7 @@ import { CubeSpecification } from "../Cube Geometry/CubeSpecification";
 import { Equalizable } from "../Interface/Equalizable";
 import { Printable } from "../Interface/Printable";
 import { Dimension } from "../Linear Algebra/Dimension";
+import { Matrix } from "../Linear Algebra/Matrix";
 import { Vector } from "../Linear Algebra/Vector";
 
 /** 
@@ -102,8 +103,8 @@ export class CubeletLocation implements Equalizable<CubeletLocation>, Printable 
 		return this.part.dimensions.some(d => d === dimension);
 	}
 
-	rotate(dimension: Dimension): CubeletLocation {
-		return new CubeletLocation(this.spec, this.origin.rotate(dimension));
+	rotate(axis: Dimension): CubeletLocation {
+		return new CubeletLocation(this.spec, Matrix.fromRotation(axis).vectorMultiply(this.origin));
 	}
 
 }
