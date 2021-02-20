@@ -75,8 +75,7 @@ export class CubeSolutionCondition implements Exportable<number>, Equalizable<Cu
 
 	isCubeSolved(cube: Cube): boolean {
 		//return cube.getInspector().findAll().every(c => this.isCubeletSolved(c));
-		let allCubePerspectives=CubeletOrientation.ALL();
-		for (let perspective of allCubePerspectives) {
+		for (let perspective of CubeletOrientation.ALL()) {
 			if (this.isCubeSolvedfromPerspective(cube,perspective)) return true;
 		}
 		return false;

@@ -40,7 +40,7 @@ export class CubeletOrientation implements Equalizable<CubeletOrientation>, Prin
 			//3 nontrivial Rotations around X, Y, Z axis (resp: permutation matrices 2-cycle, fixpioint +1 and permutation matrices identity)
 			result.push(new Matrix([[+1, 0, 0], [0, 0, -1], [0, +1, 0]])); //=Matrix.fromRotation(X)
 			result.push(new Matrix([[+1, 0, 0], [0, -1, 0], [0, 0, -1]]));
-			result.push(new Matrix([[+1, 0, 0], [0, 0, 1], [0, 0, -1]]));
+			result.push(new Matrix([[+1, 0, 0], [0, 0, 1], [0, -1, 0]]));
 			result.push(new Matrix([[0, 0, +1], [0, +1, 0], [-1, 0, 0]])); //=Matrix.fromRotation(Y)
 			result.push(new Matrix([[-1, 0, 0], [0, +1, 0], [0, 0, -1]]));
 			result.push(new Matrix([[0, 0, -1], [0, +1, 0], [+1, 0, 0]]));
@@ -58,7 +58,7 @@ export class CubeletOrientation implements Equalizable<CubeletOrientation>, Prin
 			result.push(new Matrix([[0, +1, 0], [0, 0, -1], [-1, 0, 0]])); //fixes(1,1,-1)
 			//6 point symmetries on axis between antipodal pairs of edges 
 			result.push(new Matrix([[-1, 0, 0], [0, 0, +1], [0, +1, 0]])); 
-			result.push(new Matrix([[-1, 0, 0], [0, 0, -1], [0, 0, -1]]));
+			result.push(new Matrix([[-1, 0, 0], [0, 0, -1], [0, -1, 0]]));
 			result.push(new Matrix([[0, 0, +1], [0, -1, 0], [+1, 0, 0]])); 
 			result.push(new Matrix([[0, 0, -1], [0, -1, 0], [-1, 0, 0]]));
 			result.push(new Matrix([[0, +1, 0], [+1, 0, 0], [0, 0, +1]])); 
