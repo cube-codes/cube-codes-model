@@ -345,3 +345,4 @@ test('Multi Move Stringify Test', () => {
 	expect(cms3.stringify([new CubeMove(spec3, CubeFace.DOWN, 1, 2, 5), new CubeMove(spec3, CubeFace.BACK, 1, 3, -5), new CubeMove(spec3, CubeFace.UP, 1, 1, 2)])).toEqual('d5 z5 U2');
 
 });
+

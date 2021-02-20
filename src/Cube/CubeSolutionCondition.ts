@@ -5,6 +5,8 @@ import { ReadonlyCubelet } from "./ReadonlyCubelet";
 import { Exportable } from "../Interface/Exportable";
 import { Equalizable } from "../Interface/Equalizable";
 import { Printable } from "../Interface/Printable";
+import { Matrix } from "../Linear Algebra/Matrix";
+import { CubeletLocation } from "./CubeletLocation";
 
 
 /** 
@@ -48,8 +50,36 @@ export class CubeSolutionCondition implements Exportable<number>, Equalizable<Cu
 		}
 	}
 
+	/** If you rotate by perspective, then the result is solved from this perspective  */
+	private isCubeSolvedfromPerspective(cube: Cube, perspective:Matrix):boolean {
+		for(let cubelet of cube.cubelets) {
+			switch (this.type) {
+				case CubeSolutionConditionType.STRICT:
+					if (!(
+					perspective.inverse().vectorMultiply(cubelet.location.origin).equals(cubelet.initialLocation.origin)
+					&& perspective.inverse().multiply(cubelet.orientation.matrix).equals(Matrix.IDENTITY)
+					)) return false;
+					else break;
+				case CubeSolutionConditionType.COLOR:
+					if (!(
+						(new CubeletLocation(cube.spec,perspective.inverse().vectorMultiply(cubelet.location.origin)).part.equals(cubelet.initialLocation.part))
+						&& (cubelet.location.type.equals(CubePartType.FACE) || perspective.inverse().multiply(cubelet.orientation.matrix).equals(Matrix.IDENTITY))
+						)) return false;
+					else break;
+				default:
+					throw Error(`Invalid type: ${this.type}`);
+			}
+		}
+		return true;
+	}
+
 	isCubeSolved(cube: Cube): boolean {
-		return cube.getInspector().findAll().every(c => this.isCubeletSolved(c));
+		//return cube.getInspector().findAll().every(c => this.isCubeletSolved(c));
+		let allCubePerspectives=CubeletOrientation.ALL();
+		for (let perspective of allCubePerspectives) {
+			if (this.isCubeSolvedfromPerspective(cube,perspective)) return true;
+		}
+		return false;
 	}
 
 }

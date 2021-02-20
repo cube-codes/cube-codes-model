@@ -22,6 +22,28 @@ test('Simple Move', () => {
 
 });
 
+test('Solution Condition', () => {
+
+	const spec = new CubeSpecification(4);
+	const solv1 = new CubeSolutionCondition(CubeSolutionConditionType.STRICT);
+	const solv2 = new CubeSolutionCondition(CubeSolutionConditionType.COLOR);
+	const cube1 = new Cube(spec, solv1);
+	const cube2 = new Cube(spec, solv2);
+	//Rotate complete cube
+	cube1.move(new CubeMove(spec, CubeFace.FRONT, 1, 4, CubeMoveAngle.C90));
+	cube2.move(new CubeMove(spec, CubeFace.FRONT, 1, 4, CubeMoveAngle.C90));
+	expect(cube1.isSolved());
+	expect(cube2.isSolved());
+	//Rotate orientation of element at right face 
+	cube1.getInspector().atOrigin(new Vector([1.5,0.5,0.5])).findOne().orientation.rotate(Dimension.X);
+	cube2.getInspector().atOrigin(new Vector([1.5,0.5,0.5])).findOne().orientation.rotate(Dimension.X);
+	expect(cube1.isSolved());
+	expect(cube2.isSolved());
+	expect(!cube1.isSolved());
+	expect(cube2.isSolved());
+	//TODO Switch two elements at right face....
+});
+
 test('Basic Test', () => {
 
 	const spec = new CubeSpecification(4);

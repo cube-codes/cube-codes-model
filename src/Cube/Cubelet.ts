@@ -1,3 +1,4 @@
+import { CubeFace } from "../Cube Geometry/CubeFace";
 import { CubePartType } from "../Cube Geometry/CubePartType";
 import { Dimension } from "../Linear Algebra/Dimension";
 import { Cube } from "./Cube";
@@ -58,6 +59,10 @@ export class Cubelet implements ReadonlyCubelet {
 		if (!this.initialLocation.type.equals(newLocation.type)) throw new Error(`Invalid type of location (expected: ${this.initialLocation.type}): ${newLocation.type}`);
 		this.#location = newLocation;
 		this.#orientation = newOrientation;
+	}
+
+	getCubeletFaceShownAtCubeFace(cubeFace:CubeFace):CubeFace {
+		return CubeFace.getByNormalVector(this.orientation.matrix.inverse().vectorMultiply(cubeFace.getNormalVector()));
 	}
 
 }
