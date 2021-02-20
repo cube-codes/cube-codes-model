@@ -1,4 +1,5 @@
 import { CubeFace } from "../Cube Geometry/CubeFace";
+import { CubePart } from "../Cube Geometry/CubePart";
 import { CubePartType } from "../Cube Geometry/CubePartType";
 import { Dimension } from "../Linear Algebra/Dimension";
 import { Cube } from "./Cube";
@@ -33,8 +34,18 @@ export class Cubelet implements ReadonlyCubelet {
 		return this.type.toString() + '(' + this.initialLocation.toString() + '->' + this.currentLocation.toString() + '|' + this.currentOrientation.toString() + ')';
 	}
 
+	//convenience, as it shows the colors
+	getInitialPart() :CubePart {
+		return this.initialLocation.part;
+	}
+
 	get currentLocation(): CubeletLocation {
 		return this.#location;
+	}
+
+	//convenience, in particular at Cube3 
+	getCurrentPart() :CubePart {
+		return this.#location.part;
 	}
 
 	get currentOrientation(): CubeletOrientation {
@@ -54,6 +65,11 @@ export class Cubelet implements ReadonlyCubelet {
 		return new CubeletLocation(this.cube.spec, this.cube.getPerspectiveFromFaceMids().vectorMultiply(this.initialLocation.origin));
 	}
 
+	//convenience, in particular at Cube3 
+	getSolvedPart():CubePart {
+		return this.getSolvedLocation().part;
+	}
+
 	rotate(dimension: Dimension): void {
 		this.#location = this.#location.rotate(dimension);
 		this.#orientation = this.#orientation.rotate(dimension);
@@ -67,7 +83,7 @@ export class Cubelet implements ReadonlyCubelet {
 	}
 
 	getColorAt(currentFace:CubeFace):CubeFace {
-		//TODO Validate request
+		if (!this.currentLocation.part.normalVectors.find(v => currentFace.equals(v))) throw Error("Cubelet is not visible from currentFace");
 		return CubeFace.getByNormalVector(this.currentOrientation.matrix.inverse().vectorMultiply(currentFace.getNormalVector()));
 	}
 

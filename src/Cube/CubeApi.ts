@@ -164,7 +164,7 @@ export class CubeApi {
 
 	// Others
 
-	async moveByString(movesString: string, source?: object): Promise<CubeApi> {
+	async move(movesString: string, source?: object): Promise<CubeApi> {
 		for (let move of new CubeMoveStringifier(this.cube.spec).parse(movesString)) {
 			await this.cube.move(move, source)
 		}

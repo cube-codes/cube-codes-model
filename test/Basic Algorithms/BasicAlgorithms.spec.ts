@@ -1,4 +1,4 @@
-import { CubeSpecification, CubeSolutionCondition, CubeSolutionConditionType, Cube, CubeFace } from '../../src';
+import { CubeSpecification, CubeSolutionCondition, CubeSolutionConditionType, Cube, CubeFace, CubeMoveAngle } from '../../src';
 import { CubePart } from '../../src/Cube Geometry/CubePart';
 import { CubeApi } from '../../src/Cube/CubeApi';
 
@@ -9,24 +9,45 @@ test('Simple Move', () => {
 	const cube = new Cube(spec, solv);
 	const CUBE=new CubeApi(cube);
 	const CUBELETS=CUBE.cubelets;
+	const API=console;
 	
-	CUBE.moveByString('M R L U F F U B B R L U U D L L R R U D B F F F R R L R L F F');
-	//.move("....")
-	let HANS=CUBELETS.solvedInPart(CubePart.UF).findOne();
-	//3er: selbes Enum Location.UF etc
-	//3er: .withCurrentPart(CubePart) := inPart().findOne() 
-	//3er: .withSolvedPart(CubePart) := solvedInPart(CubePart).findOne()
-	let FarbeOben:CubeFace=CUBELETS.inPart(CubePart.U).findOne().getColorAt(CubeFace.UP);
-	//3er CUBELETS.currentlyAt(CubePart.U).getColor()   // getColor=getColorAt(cubelet.getNormalVector[0]) if type=Face, error else
+	// Verdrehen
+	// Den ganzen Würfel front clockwise (damit er anders daliegt), dann 
+	CUBE.frontRange(1, 3, CubeMoveAngle.C90);
+	CUBE.move(" U' ");
+
+	//[Farben gehören noch eingeführt für faces]
+
+	// Variablen definieren
+	let HANS=CUBELETS.withSolvedPart(CubePart.UF);
+	API.log("Liegt ursprünglich dh. hat Farben: "+HANS.getInitialPart().toString()+"\n"
+			+"Liegt aktuell an der Stelle: "+ HANS.getCurrentPart().toString() +"\n"
+			+"Gehört nach Mittenfarben nach: "+ HANS.getSolvedPart().toString());
+	let Obenfarbe:CubeFace=CUBELETS.withCurrentPart(CubePart.U).getColorAt(CubeFace.UP);
+			API.log("Die Obenfarbe (der Mitte) ist: "+Obenfarbe+"\n"
+			+"und von oben ist seine Farbe: "+ HANS.getColorAt(CubeFace.UP));
+	// getColor=getColorAt(cubelet.getNormalVector[0]) if type=Face, error else
 
 	//HANS liegt in der 1. Ebene (obersten Ebene)
-	if(HANS.currentLocation.part==CubePart.UF && HANS.getColorAt(CubeFace.UP)==FarbeOben) CUBE.moveByString(" F E F E' ");
-	//if (HANS.currentPart()==CubePart.UF
-	// HANS.solvedPart()
-	if(HANS.currentLocation.part==CubePart.UF && HANS.getColorAt(CubeFace.FRONT)==FarbeOben) CUBE.moveByString(" ");
+	if(HANS.getCurrentPart()==CubePart.UF && HANS.getColorAt(CubeFace.FRONT)==Obenfarbe) CUBE.move(" F E F E' ");
+	else if(HANS.getCurrentPart()==CubePart.UF && HANS.getColorAt(CubeFace.UP)==Obenfarbe) CUBE.move(" ");
+	else if(HANS.getCurrentPart()==CubePart.UR && HANS.getColorAt(CubeFace.RIGHT)==Obenfarbe) CUBE.move(" R' F' ");
+	else if(HANS.getCurrentPart()==CubePart.UR && HANS.getColorAt(CubeFace.UP)==Obenfarbe) 	
+	{
+		// !! BUG: The composite move does not wirk here, not even "R R"
+		//CUBE.move(" R R D' F F "); 
+		CUBE.move(" R "); 
+		API.log(HANS.getCurrentPart().toString());
+		CUBE.move(" R "); 
+		API.log(HANS.getCurrentPart().toString());
+		CUBE.move(" D' "); 
+		API.log(HANS.getCurrentPart().toString());
+		CUBE.move(" F "); 
+		API.log(HANS.getCurrentPart().toString());
+		CUBE.move(" F "); 
+		API.log(HANS.getCurrentPart().toString());
+	}
 	/*
-	if(HANS r & HANS1 außen) move(R'F');
-	if(HANS r & HANS1 oben) move(RRD'FF);
 	if(HANS h & HANS1 außen) move(BE'F);
 	if(HANS h & HANS1 oben) move(BBDDFF);
 	if(HANS l & HANS1 außen) move(LF);
@@ -50,4 +71,10 @@ test('Simple Move', () => {
 	if(HANS l & HANS1 außen) {move(D); move(F'EF);}
 	if(HANS l & HANS1 unten) move(DFF);
 	*/
+
+	//Jetzt sollte der Stein an der richtigen Stelle mit den richtigen Farben stehen
+	/*API.log("Liegt ursprünglich dh. hat Farben: "+HANS.getInitialPart().toString()+"\n"
+			+"Liegt aktuell an der Stelle: "+ HANS.getCurrentPart().toString() +"\n"
+			+"Gehört nach Mittenfarben nach: "+ HANS.getSolvedPart().toString());*/
+	expect(HANS.getCurrentPart()==CubePart.UF && HANS.getColorAt(CubeFace.UP)==Obenfarbe).toEqual(true);
 	});

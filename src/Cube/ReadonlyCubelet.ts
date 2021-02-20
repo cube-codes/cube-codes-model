@@ -1,4 +1,5 @@
 import { CubeFace } from "../Cube Geometry/CubeFace";
+import { CubePart } from "../Cube Geometry/CubePart";
 import { CubePartType } from "../Cube Geometry/CubePartType";
 import { Printable } from "../Interface/Printable";
 import { Cube } from "./Cube";
@@ -11,7 +12,11 @@ export interface ReadonlyCubelet extends Printable {
 
 	readonly initialLocation: CubeletLocation
 
+	getInitialPart():CubePart; //those also contain all colors
+
 	readonly currentLocation: CubeletLocation
+
+	getCurrentPart():CubePart; 
 
 	readonly currentOrientation: CubeletOrientation
 
@@ -21,5 +26,7 @@ export interface ReadonlyCubelet extends Printable {
 
 	getSolvedLocation(): CubeletLocation;
 
+	getSolvedPart():CubePart;
+	
 	getColorAt(currentFace:CubeFace):CubeFace;
 }

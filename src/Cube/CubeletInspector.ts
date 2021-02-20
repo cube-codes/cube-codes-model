@@ -12,19 +12,28 @@ export class CubeletInspector {
 
 	#negateNext: boolean
 
-	constructor(cubelets: ReadonlyArray<ReadonlyCubelet>) {
+	constructor(cubelets: ReadonlyArray<ReadonlyCubelet>,
+		predicates: Array<(cubelet: ReadonlyCubelet) => boolean> = [],
+		negateNext: boolean = false) {
 		this.#cubelets = cubelets;
-		this.#predicates = [];
-		this.#negateNext = false;
+		this.#predicates = predicates;
+		this.#negateNext = negateNext;
+	}
+
+	clone():CubeletInspector {
+		let predicatesClone=new Array<(cubelet: ReadonlyCubelet) => boolean> ();
+		this.#predicates.forEach(val => predicatesClone.push(Object.assign({}, val)));
+		return new CubeletInspector(this.#cubelets,predicatesClone,this.#negateNext);
 	}
 
 	withPredicate(predicate: (cubelet: ReadonlyCubelet) => boolean) {
+		let clone=this.clone();
 		if (this.#negateNext) {
-			predicate = cubelet => !predicate.call(this, cubelet);
-			this.#negateNext = false;
+			predicate = function(cubelet){return !predicate.call(clone, cubelet);};
+			clone.#negateNext = false;
 		}
-		this.#predicates.push(predicate);
-		return this;
+		clone.#predicates.push(predicate);
+		return clone;
 	}
 
 	not(): CubeletInspector {
@@ -234,6 +243,17 @@ export class CubeletInspector {
 	areUnsolved(): boolean {
 		this.checkTermination();
 		return this.findAll().every(cubelet => !cubelet.isSolved());
+	}
+
+	//////////////////////////////////////////////////////////////////////
+	// SIMON API Cube3 convenience functions
+
+	withCurrentPart(cubePart:CubePart):ReadonlyCubelet {
+		return this.inPart(cubePart).findOne();
+	}
+
+	withSolvedPart(cubePart:CubePart):ReadonlyCubelet {
+		return this.solvedInPart(cubePart).findOne();
 	}
 
 }
