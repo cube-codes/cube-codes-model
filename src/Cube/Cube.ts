@@ -11,7 +11,6 @@ import { CubeSolutionCondition } from "./CubeSolutionCondition";
 import { CubeletState } from "../Cube State/CubeletState";
 import { CubeletOrientation } from "./CubeletOrientation";
 import { ReadonlyCubelet } from "./ReadonlyCubelet";
-import { CubeletInspector } from './CubeletInspector';
 
 export class Cube {
 
@@ -47,10 +46,6 @@ export class Cube {
 
 	get cubelets(): ReadonlyArray<ReadonlyCubelet> {
 		return this.#cubelets;
-	}
-
-	getInspector(): CubeletInspector {
-		return new CubeletInspector(this.#cubelets);
 	}
 
 	isSolved(): boolean {

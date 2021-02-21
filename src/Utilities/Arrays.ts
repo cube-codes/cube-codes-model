@@ -46,16 +46,22 @@ export abstract class Arrays {
 		return Arrays.integerRangeFromToExclusivly(0, toInclusivly + 1);
 	}
 
+	static repeat(length: number, value: number) {
+		return Array(length).fill(value);
+	}
+
 	static equals<T extends Equalizable<any>>(value1: ReadonlyArray<T>, value2: ReadonlyArray<T>): boolean {
 		if(value1.length !== value2.length) {
 			return false;
 		}
-		for(let index = 0; index < value1.length; index++) {
-			if(!value1[index].equals(value2[index])) {
-				return false;
-			}
+		return value1.every((v, i) => v.equals(value2[i]));
+	}
+
+	static identifies<T extends any>(value1: ReadonlyArray<T>, value2: ReadonlyArray<T>): boolean {
+		if(value1.length !== value2.length) {
+			return false;
 		}
-		return true;
+		return value1.every((v, i) => v === value2[i]);
 	}
 	
 }

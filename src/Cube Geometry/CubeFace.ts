@@ -3,11 +3,12 @@ import { Equalizable } from "../Interface/Equalizable";
 import { Exportable } from "../Interface/Exportable";
 import { Printable } from "../Interface/Printable";
 import { Dimension } from "../Linear Algebra/Dimension";
+import { Identifiable } from "../Interface/Identifiable";
 
 /** 
  * CubeFaces are directions in which normal vectors point, in which cubicals show different stickers. Of course CubeFaces can be identified with CubeParts of type Face, but they have different roles.
  */
-export class CubeFace implements Exportable<number>, Equalizable<CubeFace>, Printable {
+export class CubeFace implements Exportable<number>, Identifiable, Equalizable<CubeFace>, Printable {
 
 	private static readonly _all: Array<CubeFace> = new Array();
 	private static readonly _allByNormalVectorExport: Map<string, CubeFace> = new Map();
@@ -50,6 +51,10 @@ export class CubeFace implements Exportable<number>, Equalizable<CubeFace>, Prin
 
 	export(): number {
 		return this.index;
+	}
+
+	id(): string {
+		return JSON.stringify(this.export());
 	}
 
 	equals(other: CubeFace): boolean {

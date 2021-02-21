@@ -1,8 +1,8 @@
-import { CubePart } from "../Cube Geometry/CubePart";
-import { CubePartType } from "../Cube Geometry/CubePartType";
-import { Dimension } from "../Linear Algebra/Dimension";
-import { Vector } from "../Linear Algebra/Vector";
-import { ReadonlyCubelet } from "./ReadonlyCubelet";
+import { CubePart } from "../src/Cube Geometry/CubePart";
+import { CubePartType } from "../src/Cube Geometry/CubePartType";
+import { Dimension } from "../src/Linear Algebra/Dimension";
+import { Vector } from "../src/Linear Algebra/Vector";
+import { ReadonlyCubelet } from "../src/Cube/ReadonlyCubelet";
 
 export class CubeletInspector {
 

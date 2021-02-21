@@ -49,7 +49,7 @@ export class CubeSolutionCondition implements Exportable<number>, Equalizable<Cu
 	}
 
 	isCubeSolved(cube: Cube): boolean {
-		return cube.getInspector().findAll().every(c => this.isCubeletSolved(c));
+		return cube.cubelets.every(c => this.isCubeletSolved(c));
 	}
 
 }
