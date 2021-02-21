@@ -1,5 +1,6 @@
 import { Equalizable } from "../Interface/Equalizable";
 import { Exportable } from "../Interface/Exportable";
+import { Identifiable } from "../Interface/Identifiable";
 import { Printable } from "../Interface/Printable";
 import { Matrix } from "../Linear Algebra/Matrix";
 import { Vector } from "../Linear Algebra/Vector";
@@ -12,7 +13,7 @@ export class CubeletStateExport {
 
 }
 
-export class CubeletState implements Exportable<CubeletStateExport>, Equalizable<CubeletState>, Printable {
+export class CubeletState implements Exportable<CubeletStateExport>, Identifiable, Equalizable<CubeletState>, Printable {
 
 	constructor(readonly initialLocation: Vector,
 		readonly location: Vector,
@@ -26,6 +27,10 @@ export class CubeletState implements Exportable<CubeletStateExport>, Equalizable
 
 	export(): CubeletStateExport {
 		return new CubeletStateExport(this.initialLocation.export(), this.location.export(), this.orientation.export());
+	}
+
+	id(): string {
+		return JSON.stringify(this.export());
 	}
 
 	equals(other: CubeletState): boolean {

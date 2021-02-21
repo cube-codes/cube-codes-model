@@ -1,8 +1,9 @@
 import { Equalizable } from "../Interface/Equalizable";
 import { Exportable } from "../Interface/Exportable";
+import { Identifiable } from "../Interface/Identifiable";
 import { Printable } from "../Interface/Printable";
 
-export class Dimension implements Exportable<number>, Equalizable<Dimension>, Printable {
+export class Dimension implements Exportable<number>, Identifiable, Equalizable<Dimension>, Printable {
 
 	private static readonly _all: Array<Dimension> = new Array();
 
@@ -30,6 +31,10 @@ export class Dimension implements Exportable<number>, Equalizable<Dimension>, Pr
 
 	export(): number {
 		return this.index;
+	}
+
+	id(): string {
+		return JSON.stringify(this.export());
 	}
 
 	equals(other: Dimension): boolean {

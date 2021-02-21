@@ -1,24 +1,23 @@
-import { CubeSpecification } from '../src/Cube Geometry/CubeSpecification';
-import { CubePart } from '../src/Cube Geometry/CubePart';
-import { CubeletLocation } from '../src/Cube/CubeletLocation';
-import { Cube } from '../src/Cube/Cube';
-import { Vector } from '../src/Linear Algebra/Vector';
-import { Dimension } from '../src/Linear Algebra/Dimension';
-import { Cubelet } from '../src/Cube/Cubelet';
-import { Matrix } from '../src/Linear Algebra/Matrix';
-import { CubeSolutionCondition, CubeSolutionConditionType } from '../src/Cube/CubeSolutionCondition';
-import { CubeMove } from '../src/Cube Move/CubeMove';
-import { CubeFace } from '../src/Cube Geometry/CubeFace';
-import { CubeMoveAngle } from '../src/Cube Move/CubeMoveAngle';
+import { CubeSpecification } from '../../src/Cube Geometry/CubeSpecification';
+import { CubePart } from '../../src/Cube Geometry/CubePart';
+import { CubeletLocation } from '../../src/Cube/CubeletLocation';
+import { Cube } from '../../src/Cube/Cube';
+import { Vector } from '../../src/Linear Algebra/Vector';
+import { Dimension } from '../../src/Linear Algebra/Dimension';
+import { Cubelet } from '../../src/Cube/Cubelet';
+import { Matrix } from '../../src/Linear Algebra/Matrix';
+import { CubeSolutionCondition, CubeSolutionConditionType } from '../../src/Cube/CubeSolutionCondition';
+import { CubeApi } from '../CubeApi';
 
 test('Simple Move', () => {
 
 	const spec = new CubeSpecification(4);
 	const solv = new CubeSolutionCondition(CubeSolutionConditionType.STRICT);
 	const cube = new Cube(spec, solv);
-	cube.move(new CubeMove(spec, CubeFace.FRONT, 1, 1, CubeMoveAngle.C90));
-	expect(cube.getInspector().initiallyAtOrigin(Vector.fromComponents(1.5, 1.5, 1.5)).findOne().location.origin).toEqual(Vector.fromComponents(1.5, -1.5, 1.5));
-	expect(cube.getInspector().initiallyAtOrigin(Vector.fromComponents(1.5, 1.5, -1.5)).findOne().location.origin).toEqual(Vector.fromComponents(1.5, 1.5, -1.5));
+	const cubeApi = new CubeApi(cube);
+	cubeApi.front();
+	expect(cubeApi.cubelets.initiallyAtOrigin(Vector.fromComponents(1.5, 1.5, 1.5)).findOne().location.origin).toEqual(Vector.fromComponents(1.5, -1.5, 1.5));
+	expect(cubeApi.cubelets.initiallyAtOrigin(Vector.fromComponents(1.5, 1.5, -1.5)).findOne().location.origin).toEqual(Vector.fromComponents(1.5, 1.5, -1.5));
 
 });
 
@@ -56,9 +55,10 @@ test('Basic Test', () => {
 	///////////////////////////
 	// Rotation Cube
 	const cube = new Cube(spec, solv);
-	cube.move(new CubeMove(spec, CubeFace.RIGHT, 1, 1, CubeMoveAngle.C90));
+	const cubeApi = new CubeApi(cube);
+	cubeApi.right();
 	//console.log(cube.toString());
-	expect(cube.getInspector().initiallyAtOrigin(Vector.fromComponents(1.5, 1.5, 1.5)).findOne().location.origin).toEqual(Vector.fromComponents(1.5, 1.5, -1.5));
-	expect(cube.getInspector().initiallyAtOrigin(Vector.fromComponents(0.5, 1.5, 1.5)).findOne().location.origin).toEqual(Vector.fromComponents(0.5, 1.5, 1.5));
+	expect(cubeApi.cubelets.initiallyAtOrigin(Vector.fromComponents(1.5, 1.5, 1.5)).findOne().location.origin).toEqual(Vector.fromComponents(1.5, 1.5, -1.5));
+	expect(cubeApi.cubelets.initiallyAtOrigin(Vector.fromComponents(0.5, 1.5, 1.5)).findOne().location.origin).toEqual(Vector.fromComponents(0.5, 1.5, 1.5));
 
 });

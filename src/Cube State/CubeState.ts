@@ -4,6 +4,7 @@ import { CubeSpecification } from "../Cube Geometry/CubeSpecification";
 import { CubeletLocation } from "../Cube/CubeletLocation";
 import { Equalizable } from "../Interface/Equalizable";
 import { Exportable } from "../Interface/Exportable";
+import { Identifiable } from "../Interface/Identifiable";
 import { Printable } from "../Interface/Printable";
 import { Matrix } from "../Linear Algebra/Matrix";
 import { Arrays } from "../Utilities/Arrays";
@@ -15,7 +16,7 @@ export class CubeStateExport {
 
 }
 
-export class CubeState implements Exportable<CubeStateExport>, Equalizable<CubeState>, Printable {
+export class CubeState implements Exportable<CubeStateExport>, Identifiable, Equalizable<CubeState>, Printable {
 
 	constructor(spec: CubeSpecification,
 		readonly cubelets: ReadonlyArray<CubeletState>) {
@@ -40,6 +41,10 @@ export class CubeState implements Exportable<CubeStateExport>, Equalizable<CubeS
 
 	export(): CubeStateExport {
 		return new CubeStateExport(this.cubelets.map(c => c.export()));
+	}
+
+	id(): string {
+		return JSON.stringify(this.export());
 	}
 
 	equals(other: CubeState): boolean {

@@ -3,8 +3,9 @@ import { Dimension } from "./Dimension";
 import { Equalizable } from "../Interface/Equalizable";
 import { Exportable } from "../Interface/Exportable";
 import { Printable } from "../Interface/Printable";
+import { Identifiable } from "../Interface/Identifiable";
 
-export class Vector implements Exportable<ReadonlyArray<number>>, Equalizable<Vector>, Printable {
+export class Vector implements Exportable<ReadonlyArray<number>>, Identifiable, Equalizable<Vector>, Printable {
 
 	static readonly ZERO = Vector.fromComponents(0, 0, 0)
 
@@ -33,6 +34,10 @@ export class Vector implements Exportable<ReadonlyArray<number>>, Equalizable<Ve
 
 	export(): ReadonlyArray<number> {
 		return this.components;
+	}
+
+	id(): string {
+		return JSON.stringify(this.export());
 	}
 
 	equals(other: Vector): boolean {

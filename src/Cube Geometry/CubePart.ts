@@ -1,5 +1,6 @@
 import { Equalizable } from "../Interface/Equalizable";
 import { Exportable } from "../Interface/Exportable";
+import { Identifiable } from "../Interface/Identifiable";
 import { Printable } from "../Interface/Printable";
 import { Dimension } from "../Linear Algebra/Dimension";
 import { Vector } from "../Linear Algebra/Vector";
@@ -18,7 +19,7 @@ export class CubePartExport {
 
 }
 
-export class CubePart implements Exportable<CubePartExport>, Equalizable<CubePart>, Printable {
+export class CubePart implements Exportable<CubePartExport>, Identifiable, Equalizable<CubePart>, Printable {
 
 	private static readonly _allByType: Map<CubePartType, Array<CubePart>> = new Map();
 	private static readonly _allByOriginAndDimensions: Map<string, CubePart> = new Map();
@@ -104,6 +105,10 @@ export class CubePart implements Exportable<CubePartExport>, Equalizable<CubePar
 
 	export(): CubePartExport {
 		return new CubePartExport(this.type.export(), this.index);
+	}
+
+	id(): string {
+		return JSON.stringify(this.export());
 	}
 
 	equals(other: CubePart): boolean {
