@@ -2,6 +2,7 @@ import { CubeFace } from "../Cube Geometry/CubeFace";
 import { CubeSpecification } from "../Cube Geometry/CubeSpecification";
 import { Equalizable } from "../Interface/Equalizable";
 import { Exportable } from "../Interface/Exportable";
+import { Identifiable } from "../Interface/Identifiable";
 import { Printable } from "../Interface/Printable";
 import { CubeMoveAngle } from "./CubeMoveAngle";
 
@@ -14,7 +15,7 @@ export class CubeMoveExport {
 
 }
 
-export class CubeMove implements Exportable<CubeMoveExport>, Equalizable<CubeMove>, Printable {
+export class CubeMove implements Exportable<CubeMoveExport>, Identifiable, Equalizable<CubeMove>, Printable {
 
 	constructor(spec: CubeSpecification,
 		readonly face: CubeFace,
@@ -32,6 +33,10 @@ export class CubeMove implements Exportable<CubeMoveExport>, Equalizable<CubeMov
 
 	export(): CubeMoveExport {
 		return new CubeMoveExport(this.face.export(), this.sliceStart, this.sliceEnd, this.angle);
+	}
+
+	id(): string {
+		return JSON.stringify(this.export());
 	}
 
 	equals(other: CubeMove): boolean {

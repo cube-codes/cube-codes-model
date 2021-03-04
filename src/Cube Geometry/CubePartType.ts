@@ -1,9 +1,10 @@
 import { Equalizable } from "../Interface/Equalizable";
 import { Exportable } from "../Interface/Exportable";
+import { Identifiable } from "../Interface/Identifiable";
 import { Printable } from "../Interface/Printable";
 import { CubeSpecification } from "./CubeSpecification";
 
-export class CubePartType implements Exportable<number>, Equalizable<CubePartType>, Printable {
+export class CubePartType implements Exportable<number>, Identifiable, Equalizable<CubePartType>, Printable {
 
 	private static readonly _all: Array<CubePartType> = new Array();
 
@@ -31,6 +32,10 @@ export class CubePartType implements Exportable<number>, Equalizable<CubePartTyp
 
 	export(): number {
 		return this.index;
+	}
+
+	id(): string {
+		return JSON.stringify(this.export());
 	}
 
 	equals(other: CubePartType): boolean {

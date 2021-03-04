@@ -11,12 +11,12 @@ import { CubeSolutionCondition } from "./CubeSolutionCondition";
 import { CubeletState } from "../Cube State/CubeletState";
 import { CubeletOrientation } from "./CubeletOrientation";
 import { ReadonlyCubelet } from "./ReadonlyCubelet";
-import { CubeletInspector } from './CubeletInspector';
+import { Dimension } from '../Linear Algebra/Dimension';
 import { Vector } from '../Linear Algebra/Vector';
 import { Matrix } from '../Linear Algebra/Matrix';
 
 export class Cube {
-	
+
 	/**
 	 * @event
 	 */
@@ -24,8 +24,7 @@ export class Cube {
 
 	readonly #cubelets: ReadonlyArray<Cubelet>
 
-	constructor(
-		readonly spec: CubeSpecification, readonly solutionCondition: CubeSolutionCondition, state?: CubeState) {
+	constructor(readonly spec: CubeSpecification, readonly solutionCondition: CubeSolutionCondition, state?: CubeState) {
 
 		const cubelets = new Array<Cubelet>();
 		for (const cubePartType of CubePartType.getAll()) {
@@ -49,10 +48,6 @@ export class Cube {
 
 	get cubelets(): ReadonlyArray<ReadonlyCubelet> {
 		return this.#cubelets;
-	}
-
-	getInspector(): CubeletInspector {
-		return new CubeletInspector(this.#cubelets);
 	}
 
 	isSolved(): boolean {
@@ -114,17 +109,13 @@ export class Cube {
 
 	}
 
-	getPerspectiveFromFaceMids():Matrix {
-		const maxComponent=this.spec.edgeLength/2-0.5;
-		if(this.spec.edgeLength % 2 == 0) throw Error('getPerspectiveFromFaceMids() only implemented for odd cubes');
-		let fromX=new Vector([maxComponent,0,0]);
-		let fromY=new Vector([0,maxComponent,0]);
-		let fromZ=new Vector([0,0,maxComponent]);
-		let toX=this.getInspector().initiallyAtOrigin(fromX).findOne().currentLocation.origin;
-		let toY=this.getInspector().initiallyAtOrigin(fromY).findOne().currentLocation.origin;
-		let toZ=this.getInspector().initiallyAtOrigin(fromZ).findOne().currentLocation.origin;
-		return Matrix.forBaseChange([fromX,fromY,fromZ],[toX,toY,toZ]);	
+	getPerspectiveFromFaceMids(): CubeletOrientation {
+		const maxComponent = this.spec.edgeLength / 2 - 0.5;
+		if (this.spec.edgeLength % 2 == 0) throw Error('getPerspectiveFromFaceMids() only implemented for odd cubes');
+		const from = Dimension.getAll().map(d => Vector.fromComponent(d, maxComponent));
+		const to = Dimension.getAll().map(d => this.#cubelets.filter(c => c.initialLocation.origin.equals(from[d.index]))[0].currentLocation.origin);
+		return new CubeletOrientation(Matrix.forBaseChange(from, to));
 	}
-	
+
 
 }

@@ -4,8 +4,9 @@ import { Equalizable } from "../Interface/Equalizable";
 import { Exportable } from "../Interface/Exportable";
 import { Printable } from "../Interface/Printable";
 import { Vector } from "./Vector";
+import { Identifiable } from "../Interface/Identifiable";
 
-export class Matrix implements Exportable<ReadonlyArray<ReadonlyArray<number>>>, Equalizable<Matrix>, Printable {
+export class Matrix implements Exportable<ReadonlyArray<ReadonlyArray<number>>>, Identifiable, Equalizable<Matrix>, Printable {
 
 	static readonly ZERO = new Matrix([[0, 0, 0], [0, 0, 0], [0, 0, 0]])
 	static readonly IDENTITY = new Matrix([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
@@ -53,6 +54,10 @@ export class Matrix implements Exportable<ReadonlyArray<ReadonlyArray<number>>>,
 
 	export(): ReadonlyArray<ReadonlyArray<number>> {
 		return this.components;
+	}
+
+	id(): string {
+		return JSON.stringify(this.export());
 	}
 
 	equals(other: Matrix): boolean {

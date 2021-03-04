@@ -10,7 +10,7 @@ import { CubeletLocation } from "./CubeletLocation";
 
 
 /** 
- * 0 = A cube counts as solved iff all cubelets are at their initial place  and orientation
+ * 0 = A cube counts as solved if all cubelets are at their initial place and orientation
  * 1 = The most "usual" condition for a 6-color cube: A cube counts as solved if all cubelets are location-wise at least in their initial cubeparts and have identityCorner/Edge orientation.
  */
 export enum CubeSolutionConditionType {
@@ -39,39 +39,25 @@ export class CubeSolutionCondition implements Exportable<number>, Equalizable<Cu
 		return '';
 	}
 
-	isCubeletSolvedFromPerspective(cubelet: ReadonlyCubelet, perspective:Matrix): boolean {
+	isCubeletSolvedFromPerspective(cubelet: ReadonlyCubelet, perspective: CubeletOrientation): boolean {
 		switch (this.type) {
 			case CubeSolutionConditionType.STRICT:
-				if (
-				perspective.inverse().vectorMultiply(cubelet.currentLocation.origin).equals(cubelet.initialLocation.origin)
-				&& perspective.inverse().multiply(cubelet.currentOrientation.matrix).equals(Matrix.IDENTITY)
-				) return true;
-				else return false;
+				return perspective.matrix.inverse().vectorMultiply(cubelet.currentLocation.origin).equals(cubelet.initialLocation.origin)
+					&& perspective.matrix.inverse().multiply(cubelet.currentOrientation.matrix).equals(Matrix.IDENTITY);
 			case CubeSolutionConditionType.COLOR:
-				if (
-					(new CubeletLocation(cubelet.cube.spec,perspective.inverse().vectorMultiply(cubelet.currentLocation.origin)).part.equals(cubelet.initialLocation.part))
-					&& (cubelet.currentLocation.type.equals(CubePartType.FACE) || perspective.inverse().multiply(cubelet.currentOrientation.matrix).equals(Matrix.IDENTITY))
-					) return true;
-				else return false;
+				return new CubeletLocation(cubelet.cube.spec, perspective.matrix.inverse().vectorMultiply(cubelet.currentLocation.origin)).part.equals(cubelet.initialLocation.part)
+					&& (cubelet.currentLocation.type.equals(CubePartType.FACE) || perspective.matrix.inverse().multiply(cubelet.currentOrientation.matrix).equals(Matrix.IDENTITY));
 			default:
 				throw Error(`Invalid type: ${this.type}`);
 		}
 	}
 
-	/** If you rotate by perspective, then the result is solved from this perspective  */
-	public isCubeSolvedFromPerspective(cube: Cube, perspective:Matrix):boolean {
-		for(let cubelet of cube.cubelets) {
-			if (this.isCubeletSolvedFromPerspective(cubelet,perspective)) return true;	
-		}
-		return false;
+	isCubeSolvedFromPerspective(cube: Cube, perspective: CubeletOrientation): boolean {
+		return cube.cubelets.every(c => this.isCubeletSolvedFromPerspective(c, perspective));
 	}
 
 	isCubeSolved(cube: Cube): boolean {
-		//return cube.getInspector().findAll().every(c => this.isCubeletSolved(c));
-		for (let perspective of CubeletOrientation.ALL()) {
-			if (this.isCubeSolvedFromPerspective(cube,perspective)) return true;
-		}
-		return false;
+		return CubeletOrientation.getAll().some(p => this.isCubeSolvedFromPerspective(cube, p));
 	}
 
 }

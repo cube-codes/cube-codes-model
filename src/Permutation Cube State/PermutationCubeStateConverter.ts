@@ -4,8 +4,6 @@ import { CubeState } from "../Cube State/CubeState";
 import { CubePartType } from "../Cube Geometry/CubePartType";
 import { CubeletLocation } from "../Cube/CubeletLocation";
 import { CubeletState } from "../Cube State/CubeletState";
-
-//import { ReadonlyCubelet } from "../Cube/ReadonlyCubelet";
 import { CubeletOrientation } from "../Cube/CubeletOrientation";
 import { Vector } from "../Linear Algebra/Vector";
 import { Matrix } from "../Linear Algebra/Matrix";
@@ -13,41 +11,45 @@ import { PermutationCubeState } from "./PermutationCubeState";
 
 export class PermutationCubeStateConverter {
 
-	constructor() { }
+	constructor(readonly spec: CubeSpecification) { }
 
-	save(cubeState:CubeState): PermutationCubeState {
+	fromCubeState(cubeState: CubeState): PermutationCubeState {
+
 		const permutations = [new Array<number>(), new Array<number>(), new Array<number>()];
-		const orientations = [new Array<number>(), new Array<number>(), new Array<number>()];
-		let log:boolean=false;
+		const reorientations = [new Array<number>(), new Array<number>(), new Array<number>()];
+
+		const log = false;
 		let logstring = 'getState: ';
+
 		for (const cubeletState of cubeState.cubelets) {
-			let initialLocation=new CubeletLocation(cubeState.spec,cubeletState.initialLocation);
-			let location=new CubeletLocation(cubeState.spec,cubeletState.location);
-			let orientation= new CubeletOrientation(cubeletState.orientation);
-			permutations[initialLocation.type.countDimensions()][this.indexFromLocation(cubeState.spec,initialLocation)] = this.indexFromLocation(cubeState.spec, location)
-			orientations[initialLocation.type.countDimensions()][this.indexFromLocation(cubeState.spec,initialLocation)] = this.reorientationNumberFromMatrix(initialLocation.part, location.part, orientation);
-			//if (log) logstring = logstring + ' At[' + this.indexFromLocation(initialLocation).toString() + ']' + cubical.toString() + " ";
+			const initialLocation = new CubeletLocation(this.spec, cubeletState.initialLocation);
+			const location = new CubeletLocation(this.spec, cubeletState.location);
+			const orientation = new CubeletOrientation(cubeletState.orientation);
+			permutations[initialLocation.type.countDimensions()][this.fromLocation(initialLocation)] = this.fromLocation(location)
+			reorientations[initialLocation.type.countDimensions()][this.fromLocation(initialLocation)] = this.fromMatrix(initialLocation.part, location.part, orientation);
+			//if (log) logstring += ' At[' + this.indexFromLocation(initialLocation).toString() + ']' + cubical.toString() + " ";
 		}
 
-		if(log) logstring = logstring + permutations.toString() + orientations.toString();
-		if(log) console.log(logstring);
+		if (log) logstring = logstring + permutations.toString() + reorientations.toString();
+		if (log) console.log(logstring);
 
-		return new PermutationCubeState(cubeState.spec, cubeState.solv, permutations, orientations);
+		return new PermutationCubeState(this.spec, permutations, reorientations);
+
 	}
 
-	load(state: PermutationCubeState): CubeState {
-		let cubeletStates=new Array<CubeletState>();
+	toCubeState(state: PermutationCubeState): CubeState {
+
+		const cubeletStates = new Array<CubeletState>();
 		for (const type of CubePartType.getAll()) {
-			for(let index=0;index < type.countLocations(state.spec);index++) {
-			const initialLocation = this.indexToLocation(state.spec,index,type);
-			const location = this.indexToLocation(state.spec, state.permutations[type.index][index], type);
-			const orientation = this.reorientationNumberToMatrix(initialLocation.part, location.part, state.reorientations[type.index][index]);
-			cubeletStates.push(new CubeletState(initialLocation.origin,location.origin,orientation.matrix));	
-			}	
+			for (let index = 0; index < type.countLocations(this.spec); index++) {
+				const initialLocation = this.toLocation(index, type);
+				const location = this.toLocation(state.permutations[type.index][index], type);
+				const orientation = this.toMatrix(initialLocation.part, location.part, state.reorientations[type.index][index]);
+				cubeletStates.push(new CubeletState(initialLocation.origin, location.origin, orientation.matrix));
+			}
 		}
-		return new CubeState(state.spec,state.solv,cubeletStates);	
+		return new CubeState(this.spec, cubeletStates);
 	}
-
 
 	/** Index of a CubicalLocations by type. 
 	 * The format is cubePartIndex*(N-2)^d+(remainingCoordinate[0]-1)*(N-2)^(d-1)...
@@ -55,36 +57,36 @@ export class PermutationCubeStateConverter {
 	 * @param spec 
 	 * @param CubicalLocation 
 	 */
-	public indexFromLocation(spec:CubeSpecification, cubeLocation: CubeletLocation): number {
+	fromLocation(cubeLocation: CubeletLocation): number {
 		const componentMaximum = (cubeLocation.spec.edgeLength - 1) / 2;
 		let result = cubeLocation.part.index;
 		//encodes the remainingCoordinates 0...(N-3)^d, since each remainingCoordinate is -componentMaximum+1...componentMaximum-1
 		for (let remainingCoordinate of cubeLocation.originComponentsInPartDimensions) {
-			result = (remainingCoordinate+componentMaximum- 1) + result * (spec.edgeLength - 2);
+			result = (remainingCoordinate + componentMaximum - 1) + result * (this.spec.edgeLength - 2);
 		}
 		//result=result+1; // from 0-based to to 1-based
-		return result; 
+		return result;
 	}
 
 	/** CubeLocation with a given index by type. The format is cubePartIndex*(N-2)^d+remainingCoordinate[0]*(N-2)^(d-1)...
 	 * while remainingCoordinate[0] enumerates the possible values -max+1....max-1
 	 */
-	public indexToLocation(spec:CubeSpecification, indexByType: number, type: CubePartType): CubeletLocation {
-		const componentMaximum = (spec.edgeLength - 1) / 2;
+	toLocation(indexByType: number, type: CubePartType): CubeletLocation {
+		const componentMaximum = (this.spec.edgeLength - 1) / 2;
 		//indexByType=indexByType-1; // from 1-based to to 0-based 
 		let remainingCoordinates = new Array<number>();
 		for (let i = type.countDimensions() - 1; i >= 0; i--) {
-			remainingCoordinates[i] = (indexByType % (spec.edgeLength - 2))-componentMaximum + 1;
-			indexByType = Math.floor(indexByType / (spec.edgeLength - 2));
+			remainingCoordinates[i] = (indexByType % (this.spec.edgeLength - 2)) - componentMaximum + 1;
+			indexByType = Math.floor(indexByType / (this.spec.edgeLength - 2));
 		}
 		let cubePart: CubePart = CubePart.getByTypeAndIndex(type, indexByType);
-		return CubeletLocation.fromPartAndOriginComponentsInPartDimensions(spec, cubePart, remainingCoordinates);
+		return CubeletLocation.fromPartAndOriginComponentsInPartDimensions(this.spec, cubePart, remainingCoordinates);
 	}
 
 	/** Returns a number 0....CubePart.normalVectors.length-1 that expresses how the Matrix (mapping the normal vectors at initiallocation to normal vectors at newlocation) are shifted with respect to the fixed order of the normal vectors at both places
 	 */
-	public reorientationNumberFromMatrix(initialPart: CubePart, newPart: CubePart, orientation: CubeletOrientation): number {
-		let log:boolean=false;
+	fromMatrix(initialPart: CubePart, newPart: CubePart, orientation: CubeletOrientation): number {
+		let log: boolean = false;
 		let logstring = 'reorientationNumberFromMatrix ' + initialPart.toString() + "->" + newPart.toString() + "|" + orientation.matrix.toString() + "\n";
 		let transformedNormalVectors = new Array<Vector>();
 		let transformedTangentVectors = new Array<Vector>();
@@ -95,20 +97,20 @@ export class PermutationCubeStateConverter {
 		for (let i: number = 0; i < initialPart.type.countNormalVectors(); i++) {
 			transformedNormalVectors.push(orientation.matrix.vectorMultiply(initialPart.normalVectors[i].getNormalVector()));
 			newlocationNormalVectors.push(newPart.normalVectors[i].getNormalVector());
-			if(log) logstring = logstring + '(' + transformedNormalVectors[i].toString() + '/' + newlocationNormalVectors[i].toString() + ')';
+			if (log) logstring = logstring + '(' + transformedNormalVectors[i].toString() + '/' + newlocationNormalVectors[i].toString() + ')';
 		}
-		for (let i: number = 0; i < 3-initialPart.type.countNormalVectors(); i++) {
+		for (let i: number = 0; i < 3 - initialPart.type.countNormalVectors(); i++) {
 			transformedTangentVectors.push(orientation.matrix.vectorMultiply(initialPart.tangentVectors[i].getNormalVector()));
 			newlocationTangentVectors.push(newPart.tangentVectors[i].getNormalVector());
-			if(log) logstring = logstring + '(' + transformedTangentVectors[i].toString() + '/' + newlocationTangentVectors[i].toString() + ')';
+			if (log) logstring = logstring + '(' + transformedTangentVectors[i].toString() + '/' + newlocationTangentVectors[i].toString() + ')';
 		}
-		if(log)console.log(logstring);
-	
+		if (log) console.log(logstring);
+
 		//Find out how the normal vectors are cyclically permuted and how the tangent vectors are rotated
 		//In arbitrary dimension we would combine these two types of information, but in dimension 3 this means 
 		//* for CORNER 3 normal vectors, for EDGE 2 normal vectors (and no or a already fixed tangent vectors )
 		//* for FACE 4 possible roations of the tangent vector (and 1 fixed normal vector)
-		
+
 		if (initialPart.type == CubePartType.FACE) {
 			for (let reorientationNumber = 0; reorientationNumber < 4; reorientationNumber++) {
 				if (transformedTangentVectors[0].equals(newlocationTangentVectors[0])) return reorientationNumber;
@@ -129,8 +131,8 @@ export class PermutationCubeStateConverter {
 	/** Takes a number 0....CubePart.normalVectors.length-1 and finds a Matrix (mapping the normal vectors at initiallocation to normal vectors at newlocation) are shifted with respect to the fixed order of the normal vectors at both places
 	* Because Face has four normal vectors (instead of one), the function is unique
 	*/
-	public reorientationNumberToMatrix(initialPart: CubePart, newPart: CubePart, reorientationNumber: number): CubeletOrientation {
-		let log:boolean=false;
+	toMatrix(initialPart: CubePart, newPart: CubePart, reorientationNumber: number): CubeletOrientation {
+		let log: boolean = false;
 		let logstring = 'reorientationNumberFromMatrix ' + initialPart.toString() + "->" + newPart.toString() + "|" + reorientationNumber.toString() + "\n";
 		let initialLocationNormalVectors = new Array<Vector>();
 		let initialLocationTangentVectors = new Array<Vector>();
@@ -143,22 +145,21 @@ export class PermutationCubeStateConverter {
 			newLocationNormalVectors.push(newPart.normalVectors[i].getNormalVector());
 			if (log) logstring = logstring + '(' + initialLocationNormalVectors[i].toString() + '/' + newLocationNormalVectors[i].toString() + ')';
 		}
-		for (let i: number = 0; i < 3-initialPart.type.countNormalVectors(); i++) {
+		for (let i: number = 0; i < 3 - initialPart.type.countNormalVectors(); i++) {
 			initialLocationTangentVectors.push(initialPart.tangentVectors[i].getNormalVector());
 			newLocationTangentVectors.push(newPart.tangentVectors[i].getNormalVector());
 			if (log) logstring = logstring + '(' + initialLocationTangentVectors[i].toString() + '/' + newLocationTangentVectors[i].toString() + ')';
 		}
 		if (log) console.log(logstring);
-	
+
 
 
 		//shift according to reorientationNumber
 		if (initialPart.type == CubePartType.FACE) {
 			//rotate the only one transformedNormalVector counterclockwise around the only one normal vector
-			for (let i = 0; i < reorientationNumber; i++) 
-			{ 
-				initialLocationTangentVectors[0] = initialLocationTangentVectors[0].crossProduct(initialLocationNormalVectors[0]); 
-				initialLocationTangentVectors[1] = initialLocationTangentVectors[1].crossProduct(initialLocationNormalVectors[0]); 
+			for (let i = 0; i < reorientationNumber; i++) {
+				initialLocationTangentVectors[0] = initialLocationTangentVectors[0].crossProduct(initialLocationNormalVectors[0]);
+				initialLocationTangentVectors[1] = initialLocationTangentVectors[1].crossProduct(initialLocationNormalVectors[0]);
 			}
 		}
 		else {
@@ -171,7 +172,5 @@ export class PermutationCubeStateConverter {
 		let newLocationBasis = newLocationNormalVectors.concat(newLocationTangentVectors);
 		return new CubeletOrientation(Matrix.forBaseChange(initialLocationBasis, newLocationBasis));
 	}
-
-
 
 }
