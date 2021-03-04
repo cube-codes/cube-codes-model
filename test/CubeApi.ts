@@ -1,15 +1,9 @@
-import { CubeFace } from "../src/Cube Geometry/CubeFace";
-import { CubeMove } from "../src/Cube Move/CubeMove";
-import { CubeMoveAngle } from "../src/Cube Move/CubeMoveAngle";
-import { CubeMoveStringifier } from "../src/Cube Move/CubeMoveStringifier";
-import { Cube } from "../src/Cube/Cube";
-import { Dimension } from "../src/Linear Algebra/Dimension";
-import { Random } from "../src/Utilities/Random";
-import { CubeletInspector } from "./CubeletInspector";
+import { Cube, CubeFace, CubeMoveAngle, CubeMove, Dimension, CubeMoveStringifier, Random, PermutationCubeState, PermutationCubeStateConverter } from "../src";
+import { CubeletInspector } from "./CubeletInspector"
 
 export class CubeApi {
 
-	constructor(private readonly cube: Cube) { }
+	constructor(protected readonly cube: Cube) { }
 
 	get cubelets(): CubeletInspector {
 		return new CubeletInspector(this.cube.cubelets);
@@ -170,8 +164,8 @@ export class CubeApi {
 
 	// Others
 
-	async moveByString(movesString: string, source?: object): Promise<CubeApi> {
-		for (let move of new CubeMoveStringifier(this.cube.spec).parse(movesString)) {
+	async move(movesString: string, source?: object): Promise<CubeApi> {
+		for (const move of new CubeMoveStringifier(this.cube.spec).parse(movesString)) {
 			await this.cube.move(move, source)
 		}
 		return this;
@@ -184,6 +178,18 @@ export class CubeApi {
 			const sliceStart = Random.randomIntegerFromToInclusivly(1, Math.ceil(this.cube.spec.edgeLength / 2));
 			await this.face(face, sliceStart, CubeMoveAngle.C90, source);
 		}
+
+		return this;
+
+	}
+
+	async shuffleByExplosion(source?: object): Promise<CubeApi> {
+
+		const permutationState = PermutationCubeState.fromShuffleByExplosion(this.cube.spec);
+		const permutationStateConverter = new PermutationCubeStateConverter(this.cube.spec);
+		const state = permutationStateConverter.toCubeState(permutationState);
+
+		await this.cube.setState(state);
 
 		return this;
 

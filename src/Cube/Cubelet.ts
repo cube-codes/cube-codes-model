@@ -1,3 +1,5 @@
+import { CubeFace } from "../Cube Geometry/CubeFace";
+import { CubePart } from "../Cube Geometry/CubePart";
 import { CubePartType } from "../Cube Geometry/CubePartType";
 import { Dimension } from "../Linear Algebra/Dimension";
 import { Cube } from "./Cube";
@@ -14,11 +16,11 @@ export class Cubelet implements ReadonlyCubelet {
 	constructor(
 		readonly cube: Cube,
 		readonly initialLocation: CubeletLocation,
-		location?: CubeletLocation,
-		orientation?: CubeletOrientation) {
+		currentLocation?: CubeletLocation,
+		currentOrientation?: CubeletOrientation) {
 
-		this.#location = location ?? initialLocation;
-		this.#orientation = orientation ?? CubeletOrientation.IDENTITY;
+		this.#location = currentLocation ?? initialLocation;
+		this.#orientation = currentOrientation ?? CubeletOrientation.IDENTITY;
 
 		if (!this.cube.spec.equals(this.initialLocation.spec)) throw new Error(`Invalid spec of intial location (expected: ${this.cube.spec}): ${this.initialLocation.spec}`);
 		if (!this.cube.spec.equals(this.#location.spec)) throw new Error(`Invalid spec of location (expected: ${this.cube.spec}): ${this.#location.spec}`);
@@ -29,23 +31,48 @@ export class Cubelet implements ReadonlyCubelet {
 	 * 
 	 */
 	toString(): string {
-		return this.type.toString() + '(' + this.initialLocation.toString() + '->' + this.location.toString() + '|' + this.orientation.toString() + ')';
+		return this.type.toString() + '(' + this.initialLocation.toString() + '->' + this.currentLocation.toString() + '|' + this.currentOrientation.toString() + ')';
 	}
 
-	get location(): CubeletLocation {
+	get initialPart(): CubePart {
+		return this.initialLocation.part;
+	}
+
+	get initialOrientation(): CubeletOrientation {
+		return CubeletOrientation.IDENTITY;
+	}
+
+	get currentLocation(): CubeletLocation {
 		return this.#location;
 	}
 
-	get orientation(): CubeletOrientation {
+	get currentPart(): CubePart {
+		return this.#location.part;
+	}
+
+	get currentOrientation(): CubeletOrientation {
 		return this.#orientation;
+	}
+
+	get solvedLocation(): CubeletLocation {
+		return new CubeletLocation(this.cube.spec, this.cube.getPerspectiveFromFaceMids().matrix.vectorMultiply(this.initialLocation.origin));
+	}
+
+	get solvedPart(): CubePart {
+		return this.solvedLocation.part;
+	}
+
+	get solvedOrientation(): CubeletOrientation {
+		return new CubeletOrientation(this.cube.getPerspectiveFromFaceMids().matrix.multiply(this.initialOrientation.matrix));
 	}
 
 	get type(): CubePartType {
 		return this.initialLocation.type;
 	}
 
+	//Using getPerpectiveFromMids for odd cubes
 	isSolved(): boolean {
-		return this.cube.solutionCondition.isCubeletSolved(this);
+		return this.cube.solutionCondition.isCubeletSolvedFromPerspective(this, this.cube.getPerspectiveFromFaceMids())
 	}
 
 	rotate(dimension: Dimension): void {
@@ -58,6 +85,11 @@ export class Cubelet implements ReadonlyCubelet {
 		if (!this.initialLocation.type.equals(newLocation.type)) throw new Error(`Invalid type of location (expected: ${this.initialLocation.type}): ${newLocation.type}`);
 		this.#location = newLocation;
 		this.#orientation = newOrientation;
+	}
+
+	getColorAt(currentFace: CubeFace): CubeFace {
+		if (!this.currentLocation.part.normalVectors.find(v => currentFace.equals(v))) throw Error("Cubelet is not visible from currentFace");
+		return CubeFace.getByNormalVector(this.currentOrientation.matrix.inverse().vectorMultiply(currentFace.getNormalVector()));
 	}
 
 }

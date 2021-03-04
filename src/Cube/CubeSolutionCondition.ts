@@ -5,10 +5,12 @@ import { ReadonlyCubelet } from "./ReadonlyCubelet";
 import { Exportable } from "../Interface/Exportable";
 import { Equalizable } from "../Interface/Equalizable";
 import { Printable } from "../Interface/Printable";
+import { Matrix } from "../Linear Algebra/Matrix";
+import { CubeletLocation } from "./CubeletLocation";
 
 
 /** 
- * 0 = A cube counts as solved iff all cubelets are at their initial place  and orientation
+ * 0 = A cube counts as solved if all cubelets are at their initial place and orientation
  * 1 = The most "usual" condition for a 6-color cube: A cube counts as solved if all cubelets are location-wise at least in their initial cubeparts and have identityCorner/Edge orientation.
  */
 export enum CubeSolutionConditionType {
@@ -37,19 +39,25 @@ export class CubeSolutionCondition implements Exportable<number>, Equalizable<Cu
 		return '';
 	}
 
-	isCubeletSolved(cubelet: ReadonlyCubelet): boolean {
+	isCubeletSolvedFromPerspective(cubelet: ReadonlyCubelet, perspective: CubeletOrientation): boolean {
 		switch (this.type) {
 			case CubeSolutionConditionType.STRICT:
-				return cubelet.location.equals(cubelet.initialLocation) && cubelet.orientation.equals(CubeletOrientation.IDENTITY);
+				return perspective.matrix.inverse().vectorMultiply(cubelet.currentLocation.origin).equals(cubelet.initialLocation.origin)
+					&& perspective.matrix.inverse().multiply(cubelet.currentOrientation.matrix).equals(Matrix.IDENTITY);
 			case CubeSolutionConditionType.COLOR:
-				return cubelet.location.part.equals(cubelet.initialLocation.part) && (cubelet.location.type.equals(CubePartType.FACE) || cubelet.orientation.equals(CubeletOrientation.IDENTITY));
+				return new CubeletLocation(cubelet.cube.spec, perspective.matrix.inverse().vectorMultiply(cubelet.currentLocation.origin)).part.equals(cubelet.initialLocation.part)
+					&& (cubelet.currentLocation.type.equals(CubePartType.FACE) || perspective.matrix.inverse().multiply(cubelet.currentOrientation.matrix).equals(Matrix.IDENTITY));
 			default:
 				throw Error(`Invalid type: ${this.type}`);
 		}
 	}
 
+	isCubeSolvedFromPerspective(cube: Cube, perspective: CubeletOrientation): boolean {
+		return cube.cubelets.every(c => this.isCubeletSolvedFromPerspective(c, perspective));
+	}
+
 	isCubeSolved(cube: Cube): boolean {
-		return cube.cubelets.every(c => this.isCubeletSolved(c));
+		return CubeletOrientation.getAll().some(p => this.isCubeSolvedFromPerspective(cube, p));
 	}
 
 }

@@ -11,6 +11,9 @@ import { CubeSolutionCondition } from "./CubeSolutionCondition";
 import { CubeletState } from "../Cube State/CubeletState";
 import { CubeletOrientation } from "./CubeletOrientation";
 import { ReadonlyCubelet } from "./ReadonlyCubelet";
+import { Dimension } from '../Linear Algebra/Dimension';
+import { Vector } from '../Linear Algebra/Vector';
+import { Matrix } from '../Linear Algebra/Matrix';
 
 export class Cube {
 
@@ -21,8 +24,7 @@ export class Cube {
 
 	readonly #cubelets: ReadonlyArray<Cubelet>
 
-	constructor(
-		readonly spec: CubeSpecification, readonly solutionCondition: CubeSolutionCondition, state?: CubeState) {
+	constructor(readonly spec: CubeSpecification, readonly solutionCondition: CubeSolutionCondition, state?: CubeState) {
 
 		const cubelets = new Array<Cubelet>();
 		for (const cubePartType of CubePartType.getAll()) {
@@ -55,7 +57,7 @@ export class Cube {
 	getState(): CubeState {
 		const cubelets = new Array<CubeletState>();
 		for (let cubelet of this.#cubelets) {
-			cubelets.push(new CubeletState(cubelet.initialLocation.origin, cubelet.location.origin, cubelet.orientation.matrix));
+			cubelets.push(new CubeletState(cubelet.initialLocation.origin, cubelet.currentLocation.origin, cubelet.currentOrientation.matrix));
 		}
 		return new CubeState(this.spec, cubelets);
 	}
@@ -93,7 +95,7 @@ export class Cube {
 		for (let sliceIndex = 0; sliceIndex <= move.sliceEnd - move.sliceStart; sliceIndex++) {
 			for (let angleIndex = 0; angleIndex < angle; angleIndex++) {
 				for (let cubelet of this.#cubelets) {
-					if (cubelet.location.origin.componentEquals(dimension, sliceComponent)) {
+					if (cubelet.currentLocation.origin.componentEquals(dimension, sliceComponent)) {
 						cubelet.rotate(dimension);
 					}
 				}
@@ -106,5 +108,14 @@ export class Cube {
 		return this;
 
 	}
+
+	getPerspectiveFromFaceMids(): CubeletOrientation {
+		const maxComponent = this.spec.edgeLength / 2 - 0.5;
+		if (this.spec.edgeLength % 2 == 0) throw Error('getPerspectiveFromFaceMids() only implemented for odd cubes');
+		const from = Dimension.getAll().map(d => Vector.fromComponent(d, maxComponent));
+		const to = Dimension.getAll().map(d => this.#cubelets.filter(c => c.initialLocation.origin.equals(from[d.index]))[0].currentLocation.origin);
+		return new CubeletOrientation(Matrix.forBaseChange(from, to));
+	}
+
 
 }

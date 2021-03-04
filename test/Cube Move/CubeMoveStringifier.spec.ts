@@ -1,7 +1,4 @@
-import { CubeMoveStringifier } from "../../src/Cube Move/CubeMoveStringifier";
-import { CubeSpecification } from "../../src/Cube Geometry/CubeSpecification";
-import { CubeFace } from "../../src/Cube Geometry/CubeFace";
-import { CubeMove } from "../../src/Cube Move/CubeMove";
+import { CubeSpecification, CubeMoveStringifier, CubeMove, CubeFace } from "../../src";
 
 const spec3 = new CubeSpecification(3);
 const spec8 = new CubeSpecification(8);

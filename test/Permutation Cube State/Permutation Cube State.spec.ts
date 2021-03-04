@@ -1,9 +1,5 @@
-import { CubeSpecification } from '../../src/Cube Geometry/CubeSpecification';
-import { CubeSolutionCondition, CubeSolutionConditionType } from '../../src/Cube/CubeSolutionCondition';
-import { Cube } from '../../src/Cube/Cube';
-import { PermutationCubeStateConverter } from '../../src/Permutation Cube State/PermutationCubeStateConverter';
+import { CubeSpecification, CubeSolutionCondition, CubeSolutionConditionType, Cube, PermutationCubeStateConverter, PermutationCubeState } from '../../src';
 import { CubeApi } from '../CubeApi';
-import { PermutationCubeState } from '../../src/Permutation Cube State/PermutationCubeState';
 
 test('Test Converter', () => {
 
