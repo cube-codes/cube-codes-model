@@ -34,22 +34,36 @@ export class Cubelet implements ReadonlyCubelet {
 		return this.type.toString() + '(' + this.initialLocation.toString() + '->' + this.currentLocation.toString() + '|' + this.currentOrientation.toString() + ')';
 	}
 
-	//convenience, as it shows the colors
-	getInitialPart() :CubePart {
+	get initialPart(): CubePart {
 		return this.initialLocation.part;
+	}
+
+	get initialOrientation(): CubeletOrientation {
+		return CubeletOrientation.IDENTITY;
 	}
 
 	get currentLocation(): CubeletLocation {
 		return this.#location;
 	}
 
-	//convenience, in particular at Cube3 
-	getCurrentPart() :CubePart {
+	get currentPart(): CubePart {
 		return this.#location.part;
 	}
 
 	get currentOrientation(): CubeletOrientation {
 		return this.#orientation;
+	}
+
+	get solvedLocation(): CubeletLocation {
+		return new CubeletLocation(this.cube.spec, this.cube.getPerspectiveFromFaceMids().matrix.vectorMultiply(this.initialLocation.origin));
+	}
+
+	get solvedPart(): CubePart {
+		return this.solvedLocation.part;
+	}
+
+	get solvedOrientation(): CubeletOrientation {
+		return new CubeletOrientation(this.cube.getPerspectiveFromFaceMids().matrix.multiply(this.initialOrientation.matrix));
 	}
 
 	get type(): CubePartType {
@@ -58,16 +72,7 @@ export class Cubelet implements ReadonlyCubelet {
 
 	//Using getPerpectiveFromMids for odd cubes
 	isSolved(): boolean {
-		return this.cube.solutionCondition.isCubeletSolvedFromPerspective(this,this.cube.getPerspectiveFromFaceMids())
-	}
-
-	getSolvedLocation():CubeletLocation {
-		return new CubeletLocation(this.cube.spec, this.cube.getPerspectiveFromFaceMids().vectorMultiply(this.initialLocation.origin));
-	}
-
-	//convenience, in particular at Cube3 
-	getSolvedPart():CubePart {
-		return this.getSolvedLocation().part;
+		return this.cube.solutionCondition.isCubeletSolvedFromPerspective(this, this.cube.getPerspectiveFromFaceMids())
 	}
 
 	rotate(dimension: Dimension): void {
@@ -82,7 +87,7 @@ export class Cubelet implements ReadonlyCubelet {
 		this.#orientation = newOrientation;
 	}
 
-	getColorAt(currentFace:CubeFace):CubeFace {
+	getColorAt(currentFace: CubeFace): CubeFace {
 		if (!this.currentLocation.part.normalVectors.find(v => currentFace.equals(v))) throw Error("Cubelet is not visible from currentFace");
 		return CubeFace.getByNormalVector(this.currentOrientation.matrix.inverse().vectorMultiply(currentFace.getNormalVector()));
 	}

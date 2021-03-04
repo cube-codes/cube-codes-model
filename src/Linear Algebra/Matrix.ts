@@ -38,8 +38,6 @@ export class Matrix implements Exportable<ReadonlyArray<ReadonlyArray<number>>>,
 		}
 	}
 
-	
-
 	static fromSameComponents(allComponents: number): Matrix {
 		return new Matrix([[allComponents, allComponents, allComponents], [allComponents, allComponents, allComponents], [allComponents, allComponents, allComponents]]);
 	}

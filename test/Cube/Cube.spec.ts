@@ -1,29 +1,15 @@
-import { CubeSpecification } from '../../src/Cube Geometry/CubeSpecification';
-import { CubePart } from '../../src/Cube Geometry/CubePart';
-import { CubeletLocation } from '../../src/Cube/CubeletLocation';
-import { Cube } from '../../src/Cube/Cube';
-import { Vector } from '../../src/Linear Algebra/Vector';
-import { Dimension } from '../../src/Linear Algebra/Dimension';
-import { Cubelet } from '../../src/Cube/Cubelet';
-import { Matrix } from '../../src/Linear Algebra/Matrix';
-import { CubeSolutionCondition, CubeSolutionConditionType } from '../../src/Cube/CubeSolutionCondition';
 import { CubeApi } from '../CubeApi';
+import { CubeFace, Cube, Cubelet, CubeletLocation, CubePart, CubeSolutionCondition, CubeSolutionConditionType, CubeSpecification, Dimension, Matrix, Vector } from '../../src';
 
 test('Simple Move', () => {
 
 	const spec = new CubeSpecification(4);
 	const solv = new CubeSolutionCondition(CubeSolutionConditionType.STRICT);
 	const cube = new Cube(spec, solv);
-<<<<<<< HEAD:test/Cube.spec.ts
-	cube.move(new CubeMove(spec, CubeFace.FRONT, 1, 1, CubeMoveAngle.C90));
-	expect(cube.getInspector().initiallyAtOrigin(Vector.fromComponents(1.5, 1.5, 1.5)).findOne().currentLocation.origin).toEqual(Vector.fromComponents(1.5, -1.5, 1.5));
-	expect(cube.getInspector().initiallyAtOrigin(Vector.fromComponents(1.5, 1.5, -1.5)).findOne().currentLocation.origin).toEqual(Vector.fromComponents(1.5, 1.5, -1.5));
-=======
 	const cubeApi = new CubeApi(cube);
 	cubeApi.front();
-	expect(cubeApi.cubelets.initiallyAtOrigin(Vector.fromComponents(1.5, 1.5, 1.5)).findOne().location.origin).toEqual(Vector.fromComponents(1.5, -1.5, 1.5));
-	expect(cubeApi.cubelets.initiallyAtOrigin(Vector.fromComponents(1.5, 1.5, -1.5)).findOne().location.origin).toEqual(Vector.fromComponents(1.5, 1.5, -1.5));
->>>>>>> origin/master:test/Cube/Cube.spec.ts
+	expect(cubeApi.cubelets.initiallyAtOrigin(Vector.fromComponents(1.5, 1.5, 1.5)).findOne().currentLocation.origin).toEqual(Vector.fromComponents(1.5, -1.5, 1.5));
+	expect(cubeApi.cubelets.initiallyAtOrigin(Vector.fromComponents(1.5, 1.5, -1.5)).findOne().currentLocation.origin).toEqual(Vector.fromComponents(1.5, 1.5, -1.5));
 
 });
 
@@ -32,30 +18,32 @@ test('Solution Condition', () => {
 	const spec = new CubeSpecification(3);
 	const solv1 = new CubeSolutionCondition(CubeSolutionConditionType.STRICT);
 	const cube1 = new Cube(spec, solv1);
+	const cube1Api = new CubeApi(cube1);
 	//Rotate complete cube on the front clockwise
-	cube1.move(new CubeMove(spec, CubeFace.FRONT, 1, 3, CubeMoveAngle.C90));
+	cube1Api.z();
 	//without using getPerspectiveFromFaceMids()
 	expect(cube1.isSolved());
 	//with using getPerspectiveFromFaceMids()
 	let perspectiveFromFaceMids=cube1.getPerspectiveFromFaceMids()
 	expect(perspectiveFromFaceMids.toString()).toEqual("((0,1,0),(-1,0,0),(0,0,1))");
 	expect(solv1.isCubeSolvedFromPerspective(cube1,perspectiveFromFaceMids));
-	let atUF=cube1.getInspector().inPart(CubePart.UF).findOne();
+	let atUF=cube1Api.cubelets.currentlyInPart(CubePart.UF).findOne();
 	expect(atUF.initialLocation.part).toEqual(CubePart.LF);
-	expect(atUF.getSolvedLocation().part).toEqual(CubePart.UF);
+	expect(atUF.solvedLocation.part).toEqual(CubePart.UF);
 	expect(atUF.getColorAt(CubeFace.UP)).toEqual(CubeFace.LEFT);
 	//THROWS AN EXCEPTION (TODO TEST) expect(atUF.getColorAt(CubeFace.DOWN)).toEqual(CubeFace.LEFT);
 	////
 	//Demonstrate different behaviour of the different solution conditions
 	const solv2 = new CubeSolutionCondition(CubeSolutionConditionType.COLOR);
 	const cube2 = new Cube(spec, solv2);
-	cube2.move(new CubeMove(spec, CubeFace.FRONT, 1, 3, CubeMoveAngle.C90));
+	const cube2Api = new CubeApi(cube2);
+	cube2Api.z();
 	//same cubes, different solv
 	expect(cube1.isSolved());
 	expect(cube2.isSolved());
 	//Rotate orientation of element at right face 
-	cube1.getInspector().atOrigin(new Vector([1,0,0])).findOne().currentOrientation.rotate(Dimension.X);
-	cube2.getInspector().atOrigin(new Vector([1,0,0])).findOne().currentOrientation.rotate(Dimension.X);
+	cube1Api.cubelets.currentlyAtOrigin(new Vector([1,0,0])).findOne().currentOrientation.rotate(Dimension.X);
+	cube2Api.cubelets.currentlyAtOrigin(new Vector([1,0,0])).findOne().currentOrientation.rotate(Dimension.X);
 	//different results
 	expect(!cube1.isSolved());
 	expect(cube2.isSolved());
@@ -85,9 +73,6 @@ test('Basic Test', () => {
 	expect(uf2cubelet.currentLocation.origin).toEqual(Vector.fromComponents(1.5, 1.5, -0.5));
 	// Does the function 
 
-
-
-
 	///////////////////////////
 	//Reorientation
 
@@ -102,12 +87,7 @@ test('Basic Test', () => {
 	const cubeApi = new CubeApi(cube);
 	cubeApi.right();
 	//console.log(cube.toString());
-<<<<<<< HEAD:test/Cube.spec.ts
-	expect(cube.getInspector().initiallyAtOrigin(Vector.fromComponents(1.5, 1.5, 1.5)).findOne().currentLocation.origin).toEqual(Vector.fromComponents(1.5, 1.5, -1.5));
-	expect(cube.getInspector().initiallyAtOrigin(Vector.fromComponents(0.5, 1.5, 1.5)).findOne().currentLocation.origin).toEqual(Vector.fromComponents(0.5, 1.5, 1.5));
-=======
-	expect(cubeApi.cubelets.initiallyAtOrigin(Vector.fromComponents(1.5, 1.5, 1.5)).findOne().location.origin).toEqual(Vector.fromComponents(1.5, 1.5, -1.5));
-	expect(cubeApi.cubelets.initiallyAtOrigin(Vector.fromComponents(0.5, 1.5, 1.5)).findOne().location.origin).toEqual(Vector.fromComponents(0.5, 1.5, 1.5));
->>>>>>> origin/master:test/Cube/Cube.spec.ts
+	expect(cubeApi.cubelets.initiallyAtOrigin(Vector.fromComponents(1.5, 1.5, 1.5)).findOne().currentLocation.origin).toEqual(Vector.fromComponents(1.5, 1.5, -1.5));
+	expect(cubeApi.cubelets.initiallyAtOrigin(Vector.fromComponents(0.5, 1.5, 1.5)).findOne().currentLocation.origin).toEqual(Vector.fromComponents(0.5, 1.5, 1.5));
 
 });

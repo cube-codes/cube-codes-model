@@ -1,13 +1,10 @@
-import { CubeSpecification } from '../../src/Cube Geometry/CubeSpecification';
-import { CubeSolutionCondition, CubeSolutionConditionType } from '../../src/Cube/CubeSolutionCondition';
-import { Cube } from '../../src/Cube/Cube';
+import { CubeSpecification, CubeSolutionCondition, CubeSolutionConditionType, Cube, ColorCubeStateStringifier } from '../../src';
 import { CubeApi } from '../CubeApi';
-import { ColorCubeStateStringifier } from '../../src/Cube State/ColorCubeStateStringifier';
 
 test('Basic Test', () => {
 
 	const spec = new CubeSpecification(3);
-	const solv= new CubeSolutionCondition(CubeSolutionConditionType.COLOR);
+	const solv = new CubeSolutionCondition(CubeSolutionConditionType.COLOR);
 	const cube = new Cube(spec, solv);
 	const cubeApi = new CubeApi(cube);
 	const colorCubeStateStringifier = new ColorCubeStateStringifier(spec);

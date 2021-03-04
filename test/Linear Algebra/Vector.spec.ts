@@ -1,5 +1,4 @@
-import { Dimension } from "../../src/Linear Algebra/Dimension";
-import { Vector } from "../../src/Linear Algebra/Vector";
+import { Vector, Dimension } from "../../src";
 
 test('Simple Calculations', () => {
 

@@ -1,5 +1,4 @@
-import { EventData } from "../../src/Event/EventData";
-import { Event } from "../../src/Event/Event";
+import { EventData, Event } from "../../src";
 
 interface ClickData extends EventData {
 	readonly text1: string

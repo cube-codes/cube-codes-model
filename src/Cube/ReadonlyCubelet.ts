@@ -12,21 +12,26 @@ export interface ReadonlyCubelet extends Printable {
 
 	readonly initialLocation: CubeletLocation
 
-	getInitialPart():CubePart; //those also contain all colors
+	readonly initialPart: CubePart
+
+	readonly initialOrientation: CubeletOrientation
 
 	readonly currentLocation: CubeletLocation
 
-	getCurrentPart():CubePart; 
+	readonly currentPart: CubePart
 
 	readonly currentOrientation: CubeletOrientation
+
+	readonly solvedLocation: CubeletLocation
+
+	readonly solvedPart: CubePart
+
+	readonly solvedOrientation: CubeletOrientation
 
 	readonly type: CubePartType
 
 	isSolved(): boolean
 
-	getSolvedLocation(): CubeletLocation;
+	getColorAt(currentFace: CubeFace): CubeFace
 
-	getSolvedPart():CubePart;
-	
-	getColorAt(currentFace:CubeFace):CubeFace;
 }

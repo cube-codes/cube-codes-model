@@ -1,16 +1,12 @@
-import { CubePart } from "../src/Cube Geometry/CubePart";
-import { CubePartType } from "../src/Cube Geometry/CubePartType";
-import { Dimension } from "../src/Linear Algebra/Dimension";
-import { Vector } from "../src/Linear Algebra/Vector";
-import { ReadonlyCubelet } from "../src/Cube/ReadonlyCubelet";
+import { ReadonlyCubelet, CubePartType, CubePart, Vector, Dimension } from "../src";
 
 export class CubeletInspector {
 
 	readonly #cubelets: ReadonlyArray<ReadonlyCubelet>
 
-	readonly #predicates: Array<(cubelet: ReadonlyCubelet) => boolean>
+	readonly #predicates: ReadonlyArray<(cubelet: ReadonlyCubelet) => boolean>
 
-	#negateNext: boolean
+	readonly #negateNext: boolean
 
 	constructor(cubelets: ReadonlyArray<ReadonlyCubelet>,
 		predicates: Array<(cubelet: ReadonlyCubelet) => boolean> = [],
@@ -20,25 +16,15 @@ export class CubeletInspector {
 		this.#negateNext = negateNext;
 	}
 
-	clone():CubeletInspector {
-		let predicatesClone=new Array<(cubelet: ReadonlyCubelet) => boolean> ();
-		this.#predicates.forEach(val => predicatesClone.push(Object.assign({}, val)));
-		return new CubeletInspector(this.#cubelets,predicatesClone,this.#negateNext);
-	}
-
 	withPredicate(predicate: (cubelet: ReadonlyCubelet) => boolean) {
-		let clone=this.clone();
 		if (this.#negateNext) {
-			predicate = function(cubelet){return !predicate.call(clone, cubelet);};
-			clone.#negateNext = false;
+			predicate = cubelet => !predicate.call(undefined, cubelet);
 		}
-		clone.#predicates.push(predicate);
-		return clone;
+		return new CubeletInspector(this.#cubelets, [...this.#predicates, predicate], false);
 	}
 
 	not(): CubeletInspector {
-		this.#negateNext = true;
-		return this;
+		return new CubeletInspector(this.#cubelets, [...this.#predicates], true);
 	}
 
 	withType(type: CubePartType): CubeletInspector {
@@ -57,47 +43,46 @@ export class CubeletInspector {
 		return this.withType(CubePartType.FACE);
 	}
 
-	inPart(part: CubePart): CubeletInspector {
+	currentlyInPart(part: CubePart): CubeletInspector {
 		return this.withPredicate(cubelet => cubelet.currentLocation.part.equals(part));
 	}
 
-	atOrigin(origin: Vector): CubeletInspector {
+	currentlyAtOrigin(origin: Vector): CubeletInspector {
 		return this.withPredicate(cubelet => cubelet.currentLocation.origin.equals(origin));
 	}
 
-	atOriginComponent(dimension: Dimension, component: number): CubeletInspector {
+	currentlyAtOriginComponent(dimension: Dimension, component: number): CubeletInspector {
 		return this.withPredicate(cubelet => cubelet.currentLocation.origin.componentEquals(dimension, component));
 	}
 
-	atX(x: number): CubeletInspector {
-		return this.atOriginComponent(Dimension.X, x);
+	currentlyAtX(x: number): CubeletInspector {
+		return this.currentlyAtOriginComponent(Dimension.X, x);
 	}
 
-	atY(y: number): CubeletInspector {
-		return this.atOriginComponent(Dimension.Y, y);
+	currentlyAtY(y: number): CubeletInspector {
+		return this.currentlyAtOriginComponent(Dimension.Y, y);
 	}
 
-	atZ(z: number): CubeletInspector {
-		return this.atOriginComponent(Dimension.Z, z);
+	currentlyAtZ(z: number): CubeletInspector {
+		return this.currentlyAtOriginComponent(Dimension.Z, z);
 	}
 
-	along(dimension: Dimension): CubeletInspector {
+	currentlyAlong(dimension: Dimension): CubeletInspector {
 		return this.withPredicate(cubelet => cubelet.currentLocation.isAlong(dimension));
 	}
 
-	alongX(): CubeletInspector {
-		return this.along(Dimension.X);
+	currentlyAlongX(): CubeletInspector {
+		return this.currentlyAlong(Dimension.X);
 	}
 
-	alongY(): CubeletInspector {
-		return this.along(Dimension.Y);
+	currentlyAlongY(): CubeletInspector {
+		return this.currentlyAlong(Dimension.Y);
 	}
 
-	alongZ(): CubeletInspector {
-		return this.along(Dimension.Z);
+	currentlyAlongZ(): CubeletInspector {
+		return this.currentlyAlong(Dimension.Z);
 	}
-	
-	
+
 	initiallyInPart(part: CubePart): CubeletInspector {
 		return this.withPredicate(cubelet => cubelet.initialLocation.part.equals(part));
 	}
@@ -138,18 +123,16 @@ export class CubeletInspector {
 		return this.initiallyAlong(Dimension.Z);
 	}
 
-		
-	
 	solvedInPart(part: CubePart): CubeletInspector {
-		return this.withPredicate(cubelet => cubelet.getSolvedLocation().part.equals(part));
+		return this.withPredicate(cubelet => cubelet.solvedPart.equals(part));
 	}
 
 	solvedAtOrigin(origin: Vector): CubeletInspector {
-		return this.withPredicate(cubelet => cubelet.getSolvedLocation().origin.equals(origin));
+		return this.withPredicate(cubelet => cubelet.solvedLocation.origin.equals(origin));
 	}
 
 	solvedAtOriginComponent(dimension: Dimension, component: number): CubeletInspector {
-		return this.withPredicate(cubelet => cubelet.getSolvedLocation().origin.componentEquals(dimension, component));
+		return this.withPredicate(cubelet => cubelet.solvedLocation.origin.componentEquals(dimension, component));
 	}
 
 	solvedAtX(x: number): CubeletInspector {
@@ -165,7 +148,7 @@ export class CubeletInspector {
 	}
 
 	solvedAlong(dimension: Dimension): CubeletInspector {
-		return this.withPredicate(cubelet => cubelet.initialLocation.isAlong(dimension));
+		return this.withPredicate(cubelet => cubelet.solvedLocation.isAlong(dimension));
 	}
 
 	solvedAlongX(): CubeletInspector {
@@ -179,7 +162,6 @@ export class CubeletInspector {
 	solvedAlongZ(): CubeletInspector {
 		return this.solvedAlong(Dimension.Z);
 	}
-
 
 	solved(): CubeletInspector {
 		return this.withPredicate(cubelet => cubelet.isSolved());
@@ -245,14 +227,15 @@ export class CubeletInspector {
 		return this.findAll().every(cubelet => !cubelet.isSolved());
 	}
 
-	//////////////////////////////////////////////////////////////////////
-	// SIMON API Cube3 convenience functions
-
-	withCurrentPart(cubePart:CubePart):ReadonlyCubelet {
-		return this.inPart(cubePart).findOne();
+	findCurrentlyInPart(cubePart: CubePart): ReadonlyCubelet {
+		return this.currentlyInPart(cubePart).findOne();
 	}
 
-	withSolvedPart(cubePart:CubePart):ReadonlyCubelet {
+	findInitiallyInPart(cubePart: CubePart): ReadonlyCubelet {
+		return this.initiallyInPart(cubePart).findOne();
+	}
+
+	findSolvedInPart(cubePart: CubePart): ReadonlyCubelet {
 		return this.solvedInPart(cubePart).findOne();
 	}
 

@@ -1,6 +1,4 @@
-import { CubeStateStringifier } from "../../src/Cube State/CubeStateStringifier";
-import { CubeSpecification } from "../../src/Cube Geometry/CubeSpecification";
-import { CubeState } from "../../src/Cube State/CubeState";
+import { CubeSpecification, CubeStateStringifier, CubeState } from "../../src";
 
 const spec8 = new CubeSpecification(8);
 const css8 = new CubeStateStringifier(spec8);
