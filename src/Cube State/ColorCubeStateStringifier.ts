@@ -2,10 +2,12 @@ import { CubeState } from "./CubeState";
 import { CubeSpecification } from "../Cube Geometry/CubeSpecification";
 import { CubeFace } from "../Cube Geometry/CubeFace";
 import { Vector } from "../Linear Algebra/Vector";
-import { CubeletState, CubePartType, Matrix } from "..";
 import { CubeletLocation } from "../Cube/CubeletLocation";
 import { CubePart } from "../Cube Geometry/CubePart";
 import { Arrays } from "../Utilities/Arrays";
+import { CubeletState } from "./CubeletState";
+import { CubePartType } from "../Cube Geometry/CubePartType";
+import { Matrix } from "../Linear Algebra/Matrix";
 
 /**
  * Tools to read and write a textual diagram displaying where and in which orientation the cubicals are. However, the orientation of faces and different edges with same coloring (for N>3) are not distinguishable in this presentation.

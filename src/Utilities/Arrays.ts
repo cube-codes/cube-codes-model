@@ -15,7 +15,7 @@ export abstract class Arrays {
 		if(!Number.isInteger(from)) throw new Error(`Left boundary is no integer: ${from}`);
 		if(!Number.isInteger(toExclusivly)) throw new Error(`Right boundary is no integer: ${toExclusivly}`);
 		const length = toExclusivly - from;
-		return Array(length).map((v, i) => from + i);
+		return [... new Array(length).keys()].map((v, i) => from + i);
 	}
 
 	/**
@@ -47,7 +47,7 @@ export abstract class Arrays {
 	}
 
 	static repeat(length: number, value: number) {
-		return Array(length).fill(value);
+		return new Array(length).fill(value);
 	}
 
 	static equals<T extends Equalizable<any>>(value1: ReadonlyArray<T>, value2: ReadonlyArray<T>): boolean {
