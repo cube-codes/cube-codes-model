@@ -19,6 +19,8 @@ export class CubeletLocation implements Equalizable<CubeletLocation>, Printable 
 
 	constructor(readonly spec: CubeSpecification, readonly origin: Vector) {
 
+		//TODO: Test origin on being valid
+
 		let partOrigin = Vector.ZERO;
 		const partDimensions = new Array<Dimension>();
 		const originComponentsInPartDimensions = new Array<number>();

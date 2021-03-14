@@ -47,7 +47,11 @@ export class CubeletOrientation implements Equalizable<CubeletOrientation>, Prin
 		return matrices.map(m => new CubeletOrientation(m));
 	}
 
-	constructor(readonly matrix: Matrix) { }
+	constructor(readonly matrix: Matrix) {
+
+		//TODO: Test matrix on being valid
+	
+	}
 
 	equals(other: CubeletOrientation): boolean {
 		return this.matrix.equals(other.matrix);

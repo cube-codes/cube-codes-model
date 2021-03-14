@@ -152,8 +152,6 @@ export class PermutationCubeStateConverter {
 		}
 		if (log) console.log(logstring);
 
-
-
 		//shift according to reorientationNumber
 		if (initialPart.type == CubePartType.FACE) {
 			//rotate the only one transformedNormalVector counterclockwise around the only one normal vector
@@ -161,16 +159,21 @@ export class PermutationCubeStateConverter {
 				initialLocationTangentVectors[0] = initialLocationTangentVectors[0].crossProduct(initialLocationNormalVectors[0]);
 				initialLocationTangentVectors[1] = initialLocationTangentVectors[1].crossProduct(initialLocationNormalVectors[0]);
 			}
-		}
-		else {
+		} else if (initialPart.type == CubePartType.CORNER) {
 			//shift index
 			initialLocationNormalVectors = initialLocationNormalVectors.concat(initialLocationNormalVectors.splice(0, reorientationNumber));
+		} else if (initialPart.type == CubePartType.EDGE) {
+			//shift index
+			initialLocationNormalVectors = initialLocationNormalVectors.concat(initialLocationNormalVectors.splice(0, reorientationNumber));
+			//must flip the tangentvector so it stays a rotation matrixwith detetminant 1
+			if (reorientationNumber == 1) initialLocationTangentVectors[0] = initialLocationTangentVectors[0].scalarMultiply(-1);
 		}
 
 		//Solve for matrix: It is enough to match the first one?
 		let initialLocationBasis = initialLocationNormalVectors.concat(initialLocationTangentVectors);
 		let newLocationBasis = newLocationNormalVectors.concat(newLocationTangentVectors);
 		return new CubeletOrientation(Matrix.forBaseChange(initialLocationBasis, newLocationBasis));
+
 	}
 
 }
