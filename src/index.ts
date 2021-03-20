@@ -27,14 +27,17 @@ export * from './Event/EventSource';
 
 export * from './Interface/Equalizable';
 export * from './Interface/Exportable';
+export * from './Interface/Identifiable';
 export * from './Interface/Printable';
 
 export * from './Linear Algebra/Dimension';
 export * from './Linear Algebra/Matrix';
 export * from './Linear Algebra/Vector';
 
+export * from './Permutation Cube State/Color3Orbit';
 export * from './Permutation Cube State/PermutationCubeState';
 export * from './Permutation Cube State/PermutationCubeStateConverter';
 
 export * from './Utilities/Arrays';
+export * from './Utilities/Permutations';
 export * from './Utilities/Random';

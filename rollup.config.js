@@ -2,10 +2,10 @@ import noderesolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 
 export default [{
-	input: 'dist/package/index.js',
+	input: 'dist/package/index.rollup.js',
 	output: {
 		name: 'CCM',
-		file: 'dist/browser/cube-codes-model.js',
+		file: 'dist/browser/browser.js',
 		format: 'iife',
 		sourcemap: 'inline'
 	},
