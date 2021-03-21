@@ -6,6 +6,6 @@ export interface EventSource {
 	/**
 	 * Arbitrary information part
 	 */
-	readonly [key: string]: any;
+	[key: string]: any;
 
 }

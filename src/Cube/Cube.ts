@@ -14,6 +14,7 @@ import { ReadonlyCubelet } from "./ReadonlyCubelet";
 import { Dimension } from '../Linear Algebra/Dimension';
 import { Vector } from '../Linear Algebra/Vector';
 import { Matrix } from '../Linear Algebra/Matrix';
+import { EventSource } from '../Event/EventSource';
 
 export class Cube {
 
@@ -62,7 +63,7 @@ export class Cube {
 		return new CubeState(this.spec, cubelets);
 	}
 
-	async setState(newState: CubeState, source?: object): Promise<Cube> {
+	async setState(newState: CubeState, source?: EventSource): Promise<Cube> {
 
 		//TODO: More validation? Depends on validation in cubeState
 
@@ -82,7 +83,7 @@ export class Cube {
 
 	}
 
-	async move(move: CubeMove, source?: object): Promise<Cube> {
+	async move(move: CubeMove, source?: EventSource): Promise<Cube> {
 
 		const oldState = this.getState();
 
