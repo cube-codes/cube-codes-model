@@ -18,11 +18,11 @@ test('Simple Move', () => {
 	//[Farben gehören noch eingeführt für faces]
 
 	// Variablen definieren
-	let HANS = CUBELETS.findSolvedInPart(CubePart.UF);
+	const HANS = CUBELETS.findSolvedInPart(CubePart.UF);
 	API.log("Liegt ursprünglich dh. hat Farben: " + HANS.initialPart.toString() + "\n"
 		+ "Liegt aktuell an der Stelle: " + HANS.initialPart.toString() + "\n"
 		+ "Gehört nach Mittenfarben nach: " + HANS.initialPart.toString());
-	let Obenfarbe: CubeFace = CUBELETS.findCurrentlyInPart(CubePart.U).getColorAt(CubeFace.UP);
+	const Obenfarbe: CubeFace = CUBELETS.findCurrentlyInPart(CubePart.U).getColorAt(CubeFace.UP);
 	API.log("Die Obenfarbe (der Mitte) ist: " + Obenfarbe + "\n"
 		+ "und von oben ist seine Farbe: " + HANS.getColorAt(CubeFace.UP));
 	// getColor=getColorAt(cubelet.getNormalVector[0]) if type=Face, error else

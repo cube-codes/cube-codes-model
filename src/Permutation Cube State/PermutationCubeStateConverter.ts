@@ -79,19 +79,19 @@ export class PermutationCubeStateConverter {
 			remainingCoordinates[i] = (indexByType % (this.spec.edgeLength - 2)) - componentMaximum + 1;
 			indexByType = Math.floor(indexByType / (this.spec.edgeLength - 2));
 		}
-		let cubePart: CubePart = CubePart.getByTypeAndIndex(type, indexByType);
+		const cubePart = CubePart.getByTypeAndIndex(type, indexByType);
 		return CubeletLocation.fromPartAndOriginComponentsInPartDimensions(this.spec, cubePart, remainingCoordinates);
 	}
 
 	/** Returns a number 0....CubePart.normalVectors.length-1 that expresses how the Matrix (mapping the normal vectors at initiallocation to normal vectors at newlocation) are shifted with respect to the fixed order of the normal vectors at both places
 	 */
 	fromMatrix(initialPart: CubePart, newPart: CubePart, orientation: CubeletOrientation): number {
-		let log: boolean = false;
+		const log: boolean = false;
 		let logstring = 'reorientationNumberFromMatrix ' + initialPart.toString() + "->" + newPart.toString() + "|" + orientation.matrix.toString() + "\n";
 		let transformedNormalVectors = new Array<Vector>();
-		let transformedTangentVectors = new Array<Vector>();
-		let newlocationNormalVectors = new Array<Vector>();
-		let newlocationTangentVectors = new Array<Vector>();
+		const transformedTangentVectors = new Array<Vector>();
+		const newlocationNormalVectors = new Array<Vector>();
+		const newlocationTangentVectors = new Array<Vector>();
 
 		if (initialPart.type != newPart.type) throw new Error('CubeParts not matching type')
 		for (let i: number = 0; i < initialPart.type.countNormalVectors(); i++) {
@@ -132,12 +132,12 @@ export class PermutationCubeStateConverter {
 	* Because Face has four normal vectors (instead of one), the function is unique
 	*/
 	toMatrix(initialPart: CubePart, newPart: CubePart, reorientationNumber: number): CubeletOrientation {
-		let log: boolean = false;
+		const log: boolean = false;
 		let logstring = 'reorientationNumberFromMatrix ' + initialPart.toString() + "->" + newPart.toString() + "|" + reorientationNumber.toString() + "\n";
 		let initialLocationNormalVectors = new Array<Vector>();
-		let initialLocationTangentVectors = new Array<Vector>();
-		let newLocationNormalVectors = new Array<Vector>();
-		let newLocationTangentVectors = new Array<Vector>();
+		const initialLocationTangentVectors = new Array<Vector>();
+		const newLocationNormalVectors = new Array<Vector>();
+		const newLocationTangentVectors = new Array<Vector>();
 
 		if (initialPart.type != newPart.type) throw new Error('CubeParts not matching type')
 		for (let i: number = 0; i < initialPart.type.countNormalVectors(); i++) {
@@ -170,8 +170,8 @@ export class PermutationCubeStateConverter {
 		}
 
 		//Solve for matrix: It is enough to match the first one?
-		let initialLocationBasis = initialLocationNormalVectors.concat(initialLocationTangentVectors);
-		let newLocationBasis = newLocationNormalVectors.concat(newLocationTangentVectors);
+		const initialLocationBasis = initialLocationNormalVectors.concat(initialLocationTangentVectors);
+		const newLocationBasis = newLocationNormalVectors.concat(newLocationTangentVectors);
 		return new CubeletOrientation(Matrix.forBaseChange(initialLocationBasis, newLocationBasis));
 
 	}

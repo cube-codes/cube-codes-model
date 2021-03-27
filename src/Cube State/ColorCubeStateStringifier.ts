@@ -136,9 +136,9 @@ export class ColorCubeStateStringifier {
 
 						let initialLocation = initialLocationsPool[i];
 						let initialNormalVectors = initialLocation.part.normalVectors.map(f => f.getNormalVector());
-						let initialTangentVectors = initialLocation.part.tangentVectors.map(f => f.getNormalVector());
-						let normalVectors = location.part.normalVectors.map(f => f.getNormalVector());
-						let tangentVectors = location.part.tangentVectors.map(f => f.getNormalVector());
+						const initialTangentVectors = initialLocation.part.tangentVectors.map(f => f.getNormalVector());
+						const normalVectors = location.part.normalVectors.map(f => f.getNormalVector());
+						const tangentVectors = location.part.tangentVectors.map(f => f.getNormalVector());
 
 						//Now tries to match the normal vectors (tangent vectors have no color, so there are many solutions for FACE)
 						for (let rotation = 0; rotation < type.countNormalVectors(); rotation++) {

@@ -64,7 +64,7 @@ export class PermutationCubeState implements Exportable<PermutationCubeStateExpo
 			//Make a pool of all indices, choose a random one, then delete it from the pool etc
 			const indexPool = Arrays.integerRangeToExclusivly(n);
 			for (let initialindex = 0; initialindex < n; initialindex++) { //Until indexPool is empty
-				let indexIndex = Random.randomIntegerToExclusivly(indexPool.length);
+				const indexIndex = Random.randomIntegerToExclusivly(indexPool.length);
 				permutations[type.countDimensions()][initialindex] = indexPool[indexIndex];
 				indexPool.splice(indexIndex, 1);
 				//Also random orientation

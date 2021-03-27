@@ -24,10 +24,10 @@ test('Solution Condition', () => {
 	//without using getPerspectiveFromFaceMids()
 	expect(cube1.isSolved());
 	//with using getPerspectiveFromFaceMids()
-	let perspectiveFromFaceMids=cube1.getPerspectiveFromFaceMids()
+	const perspectiveFromFaceMids=cube1.getPerspectiveFromFaceMids()
 	expect(perspectiveFromFaceMids.toString()).toEqual("((0,1,0),(-1,0,0),(0,0,1))");
 	expect(solv1.isCubeSolvedFromPerspective(cube1,perspectiveFromFaceMids));
-	let atUF=cube1Api.cubelets.currentlyInPart(CubePart.UF).findOne();
+	const atUF=cube1Api.cubelets.currentlyInPart(CubePart.UF).findOne();
 	expect(atUF.initialLocation.part).toEqual(CubePart.LF);
 	expect(atUF.solvedLocation.part).toEqual(CubePart.UF);
 	expect(atUF.getColorAt(CubeFace.UP)).toEqual(CubeFace.LEFT);

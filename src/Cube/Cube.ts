@@ -57,7 +57,7 @@ export class Cube {
 
 	getState(): CubeState {
 		const cubelets = new Array<CubeletState>();
-		for (let cubelet of this.#cubelets) {
+		for (const cubelet of this.#cubelets) {
 			cubelets.push(new CubeletState(cubelet.initialLocation.origin, cubelet.currentLocation.origin, cubelet.currentOrientation.matrix));
 		}
 		return new CubeState(this.spec, cubelets);
