@@ -57,7 +57,14 @@ test('Test Tools', () => {
 	//console.log(PermutationCubeStateTools.getOrbit(permutationCubeState2, cubeSolutionCondition));
 	expect(permutationCubeState2.getColor3Orbit(spec).isSolvable());
 
-	const permutationCubeState3 = PermutationCubeState.fromShuffleByExplosion(spec);
+	const permutationCubeState3 = PermutationCubeState.fromShuffleByExplosion(spec, false);
+	//console.log(permutationCubeState3.toString());
 	//console.log(PermutationCubeStateTools.getOrbit(permutationCubeState3));
 	expect(!permutationCubeState3.getColor3Orbit(spec).isSolvable());
+
+	const permutationCubeState4 = PermutationCubeState.fromShuffleByExplosion(spec, true);
+	//console.log(permutationCubeState4.toString());
+	//console.log(PermutationCubeStateTools.getOrbit(permutationCubeState3));
+	expect(!permutationCubeState4.getColor3Orbit(spec).isSolvable());
+	expect(permutationCubeState.permutations[2][0]==0 && permutationCubeState.permutations[2][1]==1 && permutationCubeState.permutations[2][2]==2 && permutationCubeState.permutations[2][3]==3 && permutationCubeState.permutations[2][4]==4 && permutationCubeState.permutations[2][5]==5 && permutationCubeState.permutations[2][6]==6 && permutationCubeState.permutations[2][7]==7);
 });

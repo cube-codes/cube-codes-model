@@ -1,3 +1,5 @@
+import { CubeletLocation } from "..";
+import { CubePart } from "../Cube Geometry/CubePart";
 import { CubePartType } from "../Cube Geometry/CubePartType";
 import { CubeSpecification } from "../Cube Geometry/CubeSpecification";
 import { Equalizable } from "../Interface/Equalizable";
@@ -8,6 +10,7 @@ import { Arrays } from "../Utilities/Arrays";
 import { Permutations } from "../Utilities/Permutations";
 import { Random } from "../Utilities/Random";
 import { Color3Orbit } from "./Color3Orbit";
+import { PermutationCubeStateConverter } from "./PermutationCubeStateConverter";
 
 export class PermutationCubeStateExport {
 
@@ -53,22 +56,40 @@ export class PermutationCubeState implements Exportable<PermutationCubeStateExpo
 
 	}
 
-	static fromShuffleByExplosion(spec: CubeSpecification): PermutationCubeState {
+	//fixCross fixes for an odd the mids
+	static fromShuffleByExplosion(spec: CubeSpecification, fixCross:boolean): PermutationCubeState {
+
+		if (fixCross && (spec.edgeLength % 2==0)) throw new Error("ShuffleByExplosion with fixCross not supported for even edgeLength");
 
 		const permutations = [new Array(), new Array(), new Array()];
 		const reorientations = [new Array(), new Array(), new Array()];
+	 
+		
 
 		for (const type of CubePartType.getAll()) {
 			const n = type.countLocations(spec);
 			//RandomPermutation of 1...n
 			//Make a pool of all indices, choose a random one, then delete it from the pool etc
 			const indexPool = Arrays.integerRangeToExclusivly(n);
+			//If faces and fixMids, then the mids should not be permuted: Remove the mids from the pool....
+			if(fixCross && type==CubePartType.FACE) {
+				for(let face of CubePart.getByType(CubePartType.FACE)) {
+				indexPool.splice(indexPool.indexOf((new PermutationCubeStateConverter(spec)).fromLocation(new CubeletLocation(spec,face.origin.scalarMultiply((spec.edgeLength - 1) / 2)))),1);
+				}
+			}
+			
 			for (let initialindex = 0; initialindex < n; initialindex++) { //Until indexPool is empty
-				const indexIndex = Random.randomIntegerToExclusivly(indexPool.length);
-				permutations[type.countDimensions()][initialindex] = indexPool[indexIndex];
-				indexPool.splice(indexIndex, 1);
-				//Also random orientation
-				reorientations[type.countDimensions()][initialindex] = Random.randomIntegerToExclusivly(type.countNormalVectors());
+				if(fixCross &&  type==CubePartType.FACE && (new PermutationCubeStateConverter(spec)).toLocation(initialindex, CubePartType.FACE).origin.equals((new PermutationCubeStateConverter(spec)).toLocation(initialindex, CubePartType.FACE).part.origin.scalarMultiply((spec.edgeLength - 1) / 2))) {
+					permutations[type.countDimensions()][initialindex] = initialindex;
+					reorientations[type.countDimensions()][initialindex] = 0;
+				}
+				else {
+					const indexIndex = Random.randomIntegerToExclusivly(indexPool.length);
+					permutations[type.countDimensions()][initialindex] = indexPool[indexIndex];
+					indexPool.splice(indexIndex, 1);
+					//Also random orientation
+					reorientations[type.countDimensions()][initialindex] = Random.randomIntegerToExclusivly(type.countNormalVectors());
+				}
 			}
 
 		}
