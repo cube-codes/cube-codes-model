@@ -13,6 +13,9 @@ export * from './Cube Geometry/CubeSpecification';
 
 export * from './Cube Move/CubeMove';
 export * from './Cube Move/CubeMoveAngle';
+export * from './Cube Move/CubeMoveGrammarBuilder';
+export * from './Cube Move/CubeMoveGrammarHelper';
+export * from './Cube Move/CubeMoves';
 export * from './Cube Move/CubeMoveStringifier';
 
 export * from './Cube State/ColorCubeStateStringifier';

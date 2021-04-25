@@ -47,7 +47,9 @@
 	"dependencies": {
 		"@thi.ng/bitstream": "^1.1.38",
 		"@types/mathjs": "^6.0.11",
+		"@types/nearley": "^2.11.1",
 		"js-base64": "^3.6.0",
-		"mathjs": "^9.3.0"
+		"mathjs": "^9.3.0",
+		"nearley": "^2.20.1"
 	}
 }

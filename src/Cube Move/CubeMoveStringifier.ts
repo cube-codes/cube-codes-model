@@ -1,115 +1,18 @@
+import { Parser } from "nearley";
 import { CubeFace } from "../Cube Geometry/CubeFace";
 import { CubeSpecification } from "../Cube Geometry/CubeSpecification";
 import { Dimension } from "../Linear Algebra/Dimension";
 import { CubeMove } from "./CubeMove";
+import { CubeMoveGrammarBuilder } from "./CubeMoveGrammarBuilder";
 
 export class CubeMoveStringifier {
-
-	private static readonly SEPARATOR: RegExp = /[\s_]+/
-
-	private static readonly LANGUAGE: RegExp = /^(?:(?:(?:(?<rangeStart>[1-9][0-9]*)-)?(?<rangeCount>[0-9][0-9]*)?(?<rangeFace>r|u|f|l|d|b|Rw|Uw|Fw|Lw|Dw|Bw))|(?:(?<rotationFace>x|y|z))|(?:(?<inlayFace>m|e|s))|(?:(?<sliceStart>[1-9][0-9]*)?(?<sliceFace>R|U|F|L|D|B))|(?:(?<middleFace>M|E|S)))(?<angle>[0-9][0-9]*)?(?<angleInverted>')?$/
 
 	constructor(private readonly spec: CubeSpecification) { }
 
 	parse(movesString: string): ReadonlyArray<CubeMove> {
-		return movesString.split(CubeMoveStringifier.SEPARATOR).map(moveString => {
-
-			if (moveString === '') {
-				return null;
-			}
-
-			const regexResult = moveString.match(CubeMoveStringifier.LANGUAGE);
-
-			let face;
-			let sliceStart;
-			let sliceEnd;
-			let angleOrientation;
-			if (regexResult === null) {
-				throw new Error(`Invalid CML string: ${moveString}`);
-			} else if (regexResult.groups?.rangeFace !== undefined) { // range
-				face = this.parseFace(regexResult.groups?.rangeFace);
-				sliceStart = parseInt(regexResult.groups?.rangeStart ?? '1');
-				sliceEnd = parseInt(regexResult.groups?.rangeCount ?? (sliceStart + 1).toString());
-				angleOrientation = 1;
-			} else if (regexResult.groups?.rotationFace !== undefined) { // rotation
-				face = this.parseFace(regexResult.groups?.rotationFace);
-				sliceStart = 1;
-				sliceEnd = this.spec.edgeLength;
-				angleOrientation = 1;
-			} else if (regexResult.groups?.inlayFace !== undefined) { // inlay
-				if(this.spec.edgeLength < 3) {
-					return null;
-				}
-				face = this.parseFace(regexResult.groups?.inlayFace);
-				sliceStart = 2;
-				sliceEnd = this.spec.edgeLength - 1;
-				angleOrientation = face.dimension.equals(Dimension.Z) ? 1 : -1;
-			} else if (regexResult.groups?.sliceFace !== undefined) { // slice
-				face = this.parseFace(regexResult.groups?.sliceFace);
-				sliceStart = parseInt(regexResult.groups?.sliceStart ?? '1');
-				sliceEnd = sliceStart;
-				angleOrientation = 1;
-			} else if (regexResult.groups?.middleFace !== undefined) { // middle
-				if(this.spec.edgeLength % 2 === 0) {
-					return null;
-				}
-				face = this.parseFace(regexResult.groups?.middleFace);
-				sliceStart = Math.floor((this.spec.edgeLength + 1) / 2);
-				sliceEnd = sliceStart;
-				angleOrientation = face.dimension.equals(Dimension.Z) ? 1 : -1;
-			} else {
-				throw new Error(`Invalid CML string: ${moveString}`);
-			}
-
-			const angle = parseInt(regexResult.groups?.angle ?? 1) * (regexResult.groups?.angleInverted === undefined ? 1 : regexResult.groups?.angleInverted === "'" ? -1 : NaN) * angleOrientation;
-
-			if (isNaN(sliceStart) || isNaN(sliceEnd) || isNaN(angle)) {
-				throw new Error(`Invalid CML string: ${moveString}`);
-			}
-
-			return new CubeMove(this.spec, face, sliceStart, sliceEnd, angle);
-
-		}).filter(move => move !== null).map(move => move as CubeMove);
-	}
-
-	private parseFace(faceString: string): CubeFace {
-		switch (faceString) {
-			case 'r':
-			case 'Rw':
-			case 'x':
-			case 'm':
-			case 'R':
-			case 'M':
-				return CubeFace.RIGHT;
-			case 'u':
-			case 'Uw':
-			case 'y':
-			case 'e':
-			case 'U':
-			case 'E':
-				return CubeFace.UP;
-			case 'f':
-			case 'Fw':
-			case 'z':
-			case 's':
-			case 'F':
-			case 'S':
-				return CubeFace.FRONT;
-			case 'l':
-			case 'Lw':
-			case 'L':
-				return CubeFace.LEFT;
-			case 'b':
-			case 'Bw':
-			case 'B':
-				return CubeFace.BACK;
-			case 'd':
-			case 'Dw':
-			case 'D':
-				return CubeFace.DOWN;
-			default:
-				throw new Error(`Invalid CML face string: ${faceString}`);
-		}
+		const parser = new Parser(CubeMoveGrammarBuilder.build());
+		parser.feed(movesString);
+		return parser.finish()[0](this.spec);
 	}
 
 	stringify(moves: ReadonlyArray<CubeMove>): string {

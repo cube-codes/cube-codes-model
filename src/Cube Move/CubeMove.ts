@@ -48,8 +48,13 @@ export class CubeMove implements Exportable<CubeMoveExport>, Identifiable, Equal
 		return '';
 	}
 
+	getAngleMultiple(spec: CubeSpecification, angleFactor: number): CubeMove {
+		if (!Number.isInteger(angleFactor)) throw 'Invalid angle factor';
+		return new CubeMove(spec, this.face, this.sliceStart, this.sliceEnd, this.angle * angleFactor);
+	}
+
 	getInverse(spec: CubeSpecification): CubeMove {
-		return new CubeMove(spec, this.face, this.sliceStart, this.sliceEnd, -this.angle);
+		return this.getAngleMultiple(spec, -1);
 	}
 
 }
