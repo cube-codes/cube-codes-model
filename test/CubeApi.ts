@@ -243,7 +243,7 @@ export class CubeApi {
 
 	async shuffleByExplosion(source?: EventSource): Promise<CubeApi> {
 
-		const permutationState = PermutationCubeState.fromShuffleByExplosion(this.cube.spec);
+		const permutationState = PermutationCubeState.fromShuffleByExplosion(this.cube.spec, true);
 		const permutationStateConverter = new PermutationCubeStateConverter(this.cube.spec);
 		const state = permutationStateConverter.toCubeState(permutationState);
 
