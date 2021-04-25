@@ -9,7 +9,7 @@
 		"build": "tsc",
 		"test": "jest",
 		"build-browser": "rollup -c",
-		"build-docs": "typedoc",
+		"build-docs": "typedoc && node node_modules/nearley/bin/nearley-railroad.js 'src/Cube Move/CubeMoveGrammar.ne' -o 'dist/docs/CubeMoveGrammar.html'",
 		"ci-build": "npm ci && npm run build && npm run test && npm run build-browser && npm run build-docs",
 		"ci-release": "npm run ci-build && npm publish --access public"
 	},
