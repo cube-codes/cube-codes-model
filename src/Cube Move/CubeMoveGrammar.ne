@@ -10,13 +10,13 @@ repetition_sequence -> whitespace:? (repetition (whitespace repetition):* whites
 repetition          -> structure non_negative_integer:? "'":?                             {% data => helper.repetition(data) %}
 
 # Structures
-structure  -> group                                               {% id %}
-			| conjugate                                           {% id %}
-			| commutator                                          {% id %}
-			| block                                               {% id %}
-group      -> "(" repetition_sequence ")"                         {% data => helper.group(data) %}
-conjugate  -> "[" repetition_sequence "." repetition_sequence "]" {% data => helper.conjugate(data) %}
-commutator -> "[" repetition_sequence "," repetition_sequence "]" {% data => helper.commutator(data) %}
+structure    -> group                                               {% id %}
+			  | opconjugate                                         {% id %}
+			  | opcommutator                                        {% id %}
+			  | block                                               {% id %}
+group        -> "(" repetition_sequence ")"                         {% data => helper.group(data) %}
+opconjugate  -> "[" repetition_sequence ":" repetition_sequence "]" {% data => helper.opconjugate(data) %}
+opcommutator -> "[" repetition_sequence "," repetition_sequence "]" {% data => helper.opcommutator(data) %}
 
 # Blocks
 block    -> range                                                    {% id %}

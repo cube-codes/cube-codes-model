@@ -240,15 +240,15 @@ test('Multi Move Parse Test', () => {
 test('Complex Parse Test', () => {
 
 	expect(cms3.parse('(2D\' R2)2\'')).toEqual(cms3.parse('R2\' 2D R2\' 2D'));
-	expect(cms3.parse('[U. L]')).toEqual(cms3.parse('U\' L U'));
-	expect(cms3.parse('[U, L]')).toEqual(cms3.parse('L\' U\' L U'));
+	expect(cms3.parse('[U: L]')).toEqual(cms3.parse('U L U\''));
+	expect(cms3.parse('[U, L]')).toEqual(cms3.parse('U L U\' L\''));
 
-	expect(cms3.parse('[[2U. (R 2D)]2\', L]')).toEqual(cms3.parse('L\' 2U\' R 2D 2U 2U\' R 2D 2U L 2U\' 2D\' R\' 2U 2U\' 2D\' R\' 2U'));
+	expect(cms3.parse('[[2U: (R 2D)]2\', L]')).toEqual(cms3.parse('2U 2D\' R\' 2U\' 2U 2D\' R\' 2U\' L 2U R 2D 2U\' 2U R 2D 2U\' L\''));
 	expect(cms3.parse('(U3 (3R)\')2\'')).toEqual(cms3.parse('3R U3\' 3R U3\''));
 
 	expect(cms8.parse('(M)3\'')).toEqual(cms8.parse(''));
-	expect(cms8.parse('[M. L]')).toEqual(cms8.parse('L'));
-	expect(cms8.parse('[U, M]')).toEqual(cms8.parse('U\' U'));
+	expect(cms8.parse('[M: L]')).toEqual(cms8.parse('L'));
+	expect(cms8.parse('[U, M]')).toEqual(cms8.parse('U U\''));
 
 });
 /*

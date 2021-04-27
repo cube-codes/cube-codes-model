@@ -38,15 +38,15 @@ export class CubeMoveGrammarHelper {
 		};
 	}
 
-	conjugate(data: Array<any>): (spec: CubeSpecification) => ReadonlyArray<CubeMove> {
+	opconjugate(data: Array<any>): (spec: CubeSpecification) => ReadonlyArray<CubeMove> {
 		return spec => {
-			return CubeMoves.conjugate(spec, data[1](spec), data[3](spec));
+			return CubeMoves.opconjugate(spec, data[1](spec), data[3](spec));
 		};
 	}
 
-	commutator(data: Array<any>): (spec: CubeSpecification) => ReadonlyArray<CubeMove> {
+	opcommutator(data: Array<any>): (spec: CubeSpecification) => ReadonlyArray<CubeMove> {
 		return spec => {
-			return CubeMoves.commutator(spec, data[1](spec), data[3](spec));
+			return CubeMoves.opcommutator(spec, data[1](spec), data[3](spec));
 		};
 	}
 
