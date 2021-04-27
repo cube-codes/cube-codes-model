@@ -112,7 +112,7 @@ export class Cube {
 
 	getPerspectiveFromFaceMids(): CubeletOrientation {
 		const maxComponent = this.spec.edgeLength / 2 - 0.5;
-		if (this.spec.edgeLength % 2 == 0) throw Error('getPerspectiveFromFaceMids() only implemented for odd cubes');
+		if (this.spec.edgeLength % 2 === 0) throw Error('getPerspectiveFromFaceMids() only implemented for odd cubes');
 		const from = Dimension.getAll().map(d => Vector.fromComponent(d, maxComponent));
 		const to = Dimension.getAll().map(d => this.#cubelets.filter(c => c.initialLocation.origin.equals(from[d.index]))[0].currentLocation.origin);
 		return new CubeletOrientation(Matrix.forBaseChange(from, to));

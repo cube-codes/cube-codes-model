@@ -41,7 +41,7 @@ export class CubeletLocation implements Equalizable<CubeletLocation>, Printable 
 			}
 		}
 
-		if (partDimensions.length == 3) throw new Error(`Origin inside of cube: ${origin}`);
+		if (partDimensions.length === 3) throw new Error(`Origin inside of cube: ${origin}`);
 
 		this.part = CubePart.getByOriginAndDimensions(partOrigin, partDimensions);
 		this.originComponentsInPartDimensions = originComponentsInPartDimensions;
@@ -71,13 +71,13 @@ export class CubeletLocation implements Equalizable<CubeletLocation>, Printable 
 	static fromPart(spec: CubeSpecification, part: CubePart): ReadonlyArray<CubeletLocation> {
 		const maxOriginComponent = (spec.edgeLength - 1) / 2;
 		const result = new Array<CubeletLocation>();
-		if (part.type == CubePartType.CORNER) {
+		if (part.type === CubePartType.CORNER) {
 			result.push(CubeletLocation.fromPartAndOriginComponentsInPartDimensions(spec, part, []));
-		} else if (part.type == CubePartType.EDGE) {
+		} else if (part.type === CubePartType.EDGE) {
 			for (let remainingOriginComponent = -maxOriginComponent + 1; remainingOriginComponent <= maxOriginComponent - 1; remainingOriginComponent++) {
 				result.push(CubeletLocation.fromPartAndOriginComponentsInPartDimensions(spec, part, [remainingOriginComponent]));
 			}
-		} else if (part.type == CubePartType.FACE) {
+		} else if (part.type === CubePartType.FACE) {
 			for (let remainingOriginComponent1 = -maxOriginComponent + 1; remainingOriginComponent1 <= maxOriginComponent - 1; remainingOriginComponent1++) {
 				for (let remainingOriginComponent2 = -maxOriginComponent + 1; remainingOriginComponent2 <= maxOriginComponent - 1; remainingOriginComponent2++) {
 					result.push(CubeletLocation.fromPartAndOriginComponentsInPartDimensions(spec, part, [remainingOriginComponent1, remainingOriginComponent2]));

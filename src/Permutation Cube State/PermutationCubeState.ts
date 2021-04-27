@@ -1,7 +1,7 @@
-import { CubeletLocation } from "..";
 import { CubePart } from "../Cube Geometry/CubePart";
 import { CubePartType } from "../Cube Geometry/CubePartType";
 import { CubeSpecification } from "../Cube Geometry/CubeSpecification";
+import { CubeletLocation } from "../Cube/CubeletLocation";
 import { Equalizable } from "../Interface/Equalizable";
 import { Exportable } from "../Interface/Exportable";
 import { Identifiable } from "../Interface/Identifiable";
@@ -57,14 +57,14 @@ export class PermutationCubeState implements Exportable<PermutationCubeStateExpo
 	}
 
 	//fixCross fixes for an odd the mids
-	static fromShuffleByExplosion(spec: CubeSpecification, fixCross:boolean): PermutationCubeState {
+	static fromShuffleByExplosion(spec: CubeSpecification, fixCross: boolean): PermutationCubeState {
 
-		if (fixCross && (spec.edgeLength % 2==0)) throw new Error("ShuffleByExplosion with fixCross not supported for even edgeLength");
+		if (fixCross && (spec.edgeLength % 2 === 0)) throw new Error("ShuffleByExplosion with fixCross not supported for even edgeLength");
 
 		const permutations = [new Array(), new Array(), new Array()];
 		const reorientations = [new Array(), new Array(), new Array()];
-	 
-		
+
+
 
 		for (const type of CubePartType.getAll()) {
 			const n = type.countLocations(spec);
@@ -72,14 +72,14 @@ export class PermutationCubeState implements Exportable<PermutationCubeStateExpo
 			//Make a pool of all indices, choose a random one, then delete it from the pool etc
 			const indexPool = Arrays.integerRangeToExclusivly(n);
 			//If faces and fixMids, then the mids should not be permuted: Remove the mids from the pool....
-			if(fixCross && type==CubePartType.FACE) {
-				for(let face of CubePart.getByType(CubePartType.FACE)) {
-				indexPool.splice(indexPool.indexOf((new PermutationCubeStateConverter(spec)).fromLocation(new CubeletLocation(spec,face.origin.scalarMultiply((spec.edgeLength - 1) / 2)))),1);
+			if (fixCross && type === CubePartType.FACE) {
+				for (let face of CubePart.getByType(CubePartType.FACE)) {
+					indexPool.splice(indexPool.indexOf((new PermutationCubeStateConverter(spec)).fromLocation(new CubeletLocation(spec, face.origin.scalarMultiply((spec.edgeLength - 1) / 2)))), 1);
 				}
 			}
-			
+
 			for (let initialindex = 0; initialindex < n; initialindex++) { //Until indexPool is empty
-				if(fixCross &&  type==CubePartType.FACE && (new PermutationCubeStateConverter(spec)).toLocation(initialindex, CubePartType.FACE).origin.equals((new PermutationCubeStateConverter(spec)).toLocation(initialindex, CubePartType.FACE).part.origin.scalarMultiply((spec.edgeLength - 1) / 2))) {
+				if (fixCross && type === CubePartType.FACE && (new PermutationCubeStateConverter(spec)).toLocation(initialindex, CubePartType.FACE).origin.equals((new PermutationCubeStateConverter(spec)).toLocation(initialindex, CubePartType.FACE).part.origin.scalarMultiply((spec.edgeLength - 1) / 2))) {
 					permutations[type.countDimensions()][initialindex] = initialindex;
 					reorientations[type.countDimensions()][initialindex] = 0;
 				}
@@ -145,9 +145,9 @@ export class PermutationCubeState implements Exportable<PermutationCubeStateExpo
 		for (let index = 0; index < CubePartType.EDGE.countLocations(spec); index++) {
 			edgeReorientationsSum += this.reorientations[1][index];
 		}
-		
+
 		return new Color3Orbit(cornerPermutationsVsEdgePermutationsSignum, cornerReorientationsSum % 3, edgeReorientationsSum % 2);
-	
+
 	}
 
 }

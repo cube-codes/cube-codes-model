@@ -28,10 +28,10 @@ test('Simple Move', () => {
 	// getColor=getColorAt(cubelet.getNormalVector[0]) if type=Face, error else
 
 	//HANS liegt in der 1. Ebene (obersten Ebene)
-	if (HANS.currentPart == CubePart.UF && HANS.getColorAt(CubeFace.FRONT) == Obenfarbe) CUBE.move(" F E F E' ");
-	else if (HANS.currentPart == CubePart.UF && HANS.getColorAt(CubeFace.UP) == Obenfarbe) CUBE.move(" ");
-	else if (HANS.currentPart == CubePart.UR && HANS.getColorAt(CubeFace.RIGHT) == Obenfarbe) CUBE.move(" R' F' ");
-	else if (HANS.currentPart == CubePart.UR && HANS.getColorAt(CubeFace.UP) == Obenfarbe) {
+	if (HANS.currentPart === CubePart.UF && HANS.getColorAt(CubeFace.FRONT) === Obenfarbe) CUBE.move(" F E F E' ");
+	else if (HANS.currentPart === CubePart.UF && HANS.getColorAt(CubeFace.UP) === Obenfarbe) CUBE.move(" ");
+	else if (HANS.currentPart === CubePart.UR && HANS.getColorAt(CubeFace.RIGHT) === Obenfarbe) CUBE.move(" R' F' ");
+	else if (HANS.currentPart === CubePart.UR && HANS.getColorAt(CubeFace.UP) === Obenfarbe) {
 		// !! BUG: The composite move does not wirk here, not even "R R"
 		//CUBE.move(" R R D' F F "); 
 		CUBE.move(" R ");
@@ -74,5 +74,5 @@ test('Simple Move', () => {
 	/*API.log("Liegt ursprünglich dh. hat Farben: "+HANS.getInitialPart().toString()+"\n"
 			+"Liegt aktuell an der Stelle: "+ HANS.currentPart.toString() +"\n"
 			+"Gehört nach Mittenfarben nach: "+ HANS.getSolvedPart().toString());*/
-	expect(HANS.currentPart == CubePart.UF && HANS.getColorAt(CubeFace.UP) == Obenfarbe).toEqual(true);
+	expect(HANS.currentPart === CubePart.UF && HANS.getColorAt(CubeFace.UP) === Obenfarbe).toEqual(true);
 });
