@@ -19,12 +19,12 @@ export class CubeMoves {
 		return CubeMoves.repeat(spec, moves, -1);
 	}
 
-	static commutator(spec: CubeSpecification, moves1: ReadonlyArray<CubeMove>, moves2: ReadonlyArray<CubeMove>): readonly CubeMove[] {
-		return [...CubeMoves.invert(spec, moves2), ...CubeMoves.invert(spec, moves1), ...moves2, ...moves1];
+	static conjugate(spec: CubeSpecification, moves1: ReadonlyArray<CubeMove>, moves2: ReadonlyArray<CubeMove>): ReadonlyArray<CubeMove> {
+		return [...CubeMoves.invert(spec, moves1), ...moves2, ...moves1];
 	}
 
-	static conjugate(spec: CubeSpecification, moves1: ReadonlyArray<CubeMove>, moves2: ReadonlyArray<CubeMove>): readonly CubeMove[] {
-		return [...CubeMoves.invert(spec, moves1), ...moves2, ...moves1];
+	static commutator(spec: CubeSpecification, moves1: ReadonlyArray<CubeMove>, moves2: ReadonlyArray<CubeMove>): ReadonlyArray<CubeMove> {
+		return [...CubeMoves.invert(spec, moves2), ...CubeMoves.invert(spec, moves1), ...moves2, ...moves1];
 	}
 
 }

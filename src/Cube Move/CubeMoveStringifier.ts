@@ -10,8 +10,8 @@ export class CubeMoveStringifier {
 	constructor(private readonly spec: CubeSpecification) { }
 
 	/**
-	 * Parses a Cube Move string using the CubeMovGrammar:<br />
-	 * <iframe src="../CubeMoveGrammar.html" style="border-width: 0; width: 142.86%; height: 1000px; margin-bottom: -300px; transform: scale(0.70); transform-origin: 0 0; "></iframe>
+	 * Parses a Cube Move string using the CubeMoveGrammar:<br />
+	 * <iframe src="../grammar.docs.CubeMoveGrammar.html" style="border-width: 0; width: 142.86%; height: 1000px; margin-bottom: -300px; transform: scale(0.70); transform-origin: 0 0; "></iframe>
 	 */
 	parse(movesString: string): ReadonlyArray<CubeMove> {
 		const parser = new Parser(CubeMoveGrammarBuilder.build());
