@@ -1,6 +1,6 @@
 import { CubeFace } from "./CubeFace";
 
-export class WesternCubeColor {
+export class CubeColor {
 
 	static RED = CubeFace.RIGHT;
 
@@ -15,5 +15,3 @@ export class WesternCubeColor {
 	static BLUE = CubeFace.BACK;
 
 }
-
-export const CubeColor = WesternCubeColor;

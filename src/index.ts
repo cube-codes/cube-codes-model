@@ -6,13 +6,11 @@ export * from './Cube/CubeSolutionCondition';
 export * from './Cube/CubeStateChanged';
 export * from './Cube/ReadonlyCubelet';
 
+export * from './Cube Geometry/CubeColor';
 export * from './Cube Geometry/CubeFace';
 export * from './Cube Geometry/CubePart';
 export * from './Cube Geometry/CubePartType';
 export * from './Cube Geometry/CubeSpecification';
-export * from './Cube Geometry/InvertedWesternCubeColor';
-export * from './Cube Geometry/JapaneseCubeColor';
-export * from './Cube Geometry/WesternCubeColor';
 
 export * from './Cube Move/CubeMove';
 export * from './Cube Move/CubeMoveAngle';
