@@ -19,22 +19,23 @@ opconjugate  -> "[" repetition_sequence ":" repetition_sequence "]" {% data => h
 opcommutator -> "[" repetition_sequence "," repetition_sequence "]" {% data => helper.opcommutator(data) %}
 
 # Blocks
-block    -> range                                                    {% id %}
-		  | slice                                                    {% id %}
-		  | middle                                                   {% id %}
-		  | inlay                                                    {% id %}
-		  | rotation                                                 {% id %}
-range    -> (positive_integer "-"):? positive_integer:? [rufldb]     {% data => helper.range(data) %}
-		  | (positive_integer "-"):? positive_integer:? [RUFLDB] "w" {% data => helper.range(data) %}
-slice    -> positive_integer:? [RUFLDB]                              {% data => helper.slice(data) %}
-middle   -> [MES]                                                    {% data => helper.middle(data) %}
-inlay    -> [mes]                                                    {% data => helper.inlay(data) %}
-rotation -> [xyz]                                                    {% data => helper.rotation(data) %}
+block    -> range                                                      {% id %}
+		  | slice                                                      {% id %}
+		  | middle                                                     {% id %}
+		  | inlay                                                      {% id %}
+		  | rotation                                                   {% id %}
+range    -> ((positive_integer "-"):? positive_integer):? [rufldb]     {% data => helper.range(data) %}
+		  | ((positive_integer "-"):? positive_integer):? [RUFLDB] "w" {% data => helper.range(data) %}
+slice    -> positive_integer:? [RUFLDB]                                {% data => helper.slice(data) %}
+middle   -> [MES]                                                      {% data => helper.middle(data) %}
+inlay    -> [mes]                                                      {% data => helper.inlay(data) %}
+rotation -> [xyz]                                                      {% data => helper.rotation(data) %}
 
 # Basics
-positive_integer     -> [1-9] [0-9]:*
-non_negative_integer -> positive_integer | "0"
-whitespace           -> (" " | "\t" | "\n" | "\r"):+
+positive_integer     -> [1-9] [0-9]:*    {% data => helper.positive_integer(data) %}
+non_negative_integer -> positive_integer {% data => helper.non_negative_integer(data) %}
+                      | "0"              {% data => helper.non_negative_integer(data) %}
+whitespace           -> [ \t\n\r]:+      {% data => helper.whitespace(data) %}
 
 @{%
 

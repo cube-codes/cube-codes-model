@@ -18,7 +18,7 @@ export class CubeMoveGrammarHelper {
 
 	repetition(data: Array<any>): (spec: CubeSpecification) => ReadonlyArray<CubeMove> {
 		return spec => {
-			const factor = Number.parseInt(data[1] ?? 1) * (data[2] === null ? 1 : -1);
+			const factor = (data[1] ?? 1) * (data[2] === null ? 1 : -1);
 			const data0Result = data[0](spec);
 			if(data0Result === null) {
 				return [];
@@ -52,9 +52,9 @@ export class CubeMoveGrammarHelper {
 
 	range(data: Array<any>): (spec: CubeSpecification) => CubeMove {
 		return spec => {
-			const face = this.parseFace(data[2]);
-			const sliceStart = Number.parseInt((data[0] ?? [1])[0]);
-			const sliceEnd = Number.parseInt(data[1] ?? (sliceStart + 1));
+			const face = this.parseFace(data[1]);
+			const sliceStart = data[0]?.[0]?.[0] ?? 1;
+			const sliceEnd = data[0]?.[1] ?? 2;
 			return new CubeMove(spec, face, sliceStart, sliceEnd, 1);
 		};
 	}
@@ -62,7 +62,7 @@ export class CubeMoveGrammarHelper {
 	slice(data: Array<any>): (spec: CubeSpecification) => CubeMove {
 		return spec => {
 			const face = this.parseFace(data[1]);
-			const sliceStart = Number.parseInt(data[0] ?? 1);
+			const sliceStart = data[0] ?? 1;
 			const sliceEnd = sliceStart;
 			return new CubeMove(spec, face, sliceStart, sliceEnd, 1);
 		};
@@ -99,6 +99,21 @@ export class CubeMoveGrammarHelper {
 			const sliceEnd = spec.edgeLength;
 			return new CubeMove(spec, face, sliceStart, sliceEnd, 1);
 		};
+	}
+
+	positive_integer(data: Array<any>): number {
+		let resultString = '';
+		resultString += data[0];
+		data[1].forEach((numberString: string) => resultString += numberString);
+		return Number.parseInt(resultString);
+	}
+
+	non_negative_integer(data: Array<any>): number {
+		return Number.parseInt(data[0]);
+	}
+
+	whitespace(data: Array<any>): string {
+		return '<whitespace>';
 	}
 
 	private parseFace(faceString: string): CubeFace {

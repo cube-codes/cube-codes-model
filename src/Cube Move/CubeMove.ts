@@ -22,9 +22,9 @@ export class CubeMove implements Exportable<CubeMoveExport>, Identifiable, Equal
 		readonly sliceStart: number,
 		readonly sliceEnd: number,
 		readonly angle: number | CubeMoveAngle) {
-		if (!Number.isInteger(sliceStart) || sliceStart < 1 || sliceStart > spec.edgeLength) throw 'Invalid slice start';
-		if (!Number.isInteger(sliceEnd) || sliceEnd < sliceStart || sliceEnd > spec.edgeLength) throw 'Invalid slice end';
-		if (!Number.isInteger(angle)) throw 'Invalid angel';
+		if (!Number.isInteger(sliceStart) || sliceStart < 1 || sliceStart > spec.edgeLength) throw `Invalid slice start: ${sliceStart}`;
+		if (!Number.isInteger(sliceEnd) || sliceEnd < sliceStart || sliceEnd > spec.edgeLength) throw `Invalid slice end: ${sliceEnd}`;
+		if (!Number.isInteger(angle)) throw `Invalid angel: ${angle}`;
 	}
 
 	static import(spec: CubeSpecification, value: CubeMoveExport): CubeMove {
